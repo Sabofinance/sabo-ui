@@ -23,7 +23,10 @@ export const Header = () => {
   return (
     <header className="header">
       <div className="header-inner">
-        <div className="logo">sabo<span>.</span></div>
+        {/* Logo linking to home */}
+        <NavLink to="/" className="logo">
+          sabo<span>.</span>
+        </NavLink>
 
         <nav className="nav-pill">
           <NavLink to="/" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} end>Home</NavLink>
@@ -54,7 +57,10 @@ export const Header = () => {
 
         <div className={`mobile-menu ${isMenuOpen ? 'open' : ''}`}>
           <div className="mobile-menu-header">
-            <div className="mobile-logo">sabo<span>.</span></div>
+            {/* Mobile logo linking to home */}
+            <NavLink to="/" className="mobile-logo" onClick={closeMenu}>
+              sabo<span>.</span>
+            </NavLink>
           </div>
           
           <nav className="mobile-nav">
