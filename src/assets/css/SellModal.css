@@ -1,0 +1,136 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  font-family: 'Inter', sans-serif;
+}
+
+.sell-modal-content {
+  background: #fff;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 20px;
+  padding: 30px;
+  position: relative;
+}
+
+.modal-close-icon {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #94a3b8;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 5px;
+}
+
+.modal-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.input-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+/* Ash shadow card for Amount and Rate only */
+.input-box-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  padding: 12px 15px;
+  border-radius: 12px;
+}
+
+.clean-input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0f172a;
+  outline: none;
+}
+
+/* Total You Receive - Clean, No border, No shadow, Dark color */
+.total-receive-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.total-receive-amount {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0A1E28;
+  letter-spacing: -0.5px;
+}
+
+/* Fee Info */
+.fee-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 25px;
+  color: #64748b;
+}
+
+.fee-amt {
+  color: #3b82f6;
+  font-weight: 700;
+}
+
+/* Button */
+.btn-submit-sabo {
+  width: 100%;
+  padding: 16px;
+  background: #C8F032;
+  color: #0A1E28;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.btn-submit-sabo:active {
+  transform: scale(0.98);
+}
+
+.btn-submit-sabo:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 5px;
+}

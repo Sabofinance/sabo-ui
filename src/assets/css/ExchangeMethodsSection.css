@@ -1,0 +1,110 @@
+/* src/assets/css/ExchangeMethodsSection.css */
+
+.exchange-methods-wrapper {
+  width: 100%;
+  padding: 140px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+.layout-stack {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Add 3D perspective to the entire stack */
+  perspective: 1200px;
+}
+
+/* ====================== GRAY PLATE ====================== */
+.gray-bg-plate {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -80px);
+  width: 92%;
+  height: 520px;
+  background-color: #E9EBEE;
+  border-radius: 60px;
+  z-index: 1;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.07);
+  /* Subtle 3D shadow for depth */
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+}
+
+/* ====================== CARDS LAYER ====================== */
+.cards-layer {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  transform: translateY(-35px);
+  /* Add 3D transform style */
+  transform-style: preserve-3d;
+}
+
+/* ====================== MAIN GRAPHIC ====================== */
+.exchange-main-graphic {
+  width: 100%;
+  max-width: 940px;
+  height: auto;
+  display: block;
+  /* HD sharpness */
+  image-rendering: crisp-edges; /* or auto */
+  /* Base shadow */
+  filter: drop-shadow(0 40px 80px rgba(0, 0, 0, 0.16));
+  /* 3D transition */
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), filter 0.3s ease;
+  /* Slight 3D tilt at rest (optional) */
+  transform: rotateX(2deg) rotateY(1deg);
+}
+
+/* 3D Hover Effect */
+.exchange-main-graphic:hover {
+  transform: rotateX(5deg) rotateY(3deg) scale(1.02) translateZ(20px);
+  filter: drop-shadow(0 60px 100px rgba(0, 0, 0, 0.25));
+  cursor: pointer;
+}
+
+/* ====================== MOBILE RESPONSIVE ====================== */
+@media (max-width: 768px) {
+  .exchange-methods-wrapper {
+    padding: 80px 20px;
+  }
+
+  .gray-bg-plate {
+    width: 94%;
+    height: 380px;
+    transform: translate(-50%, -40px);
+    border-radius: 40px;
+  }
+
+  .cards-layer {
+    transform: translateY(-22px);
+  }
+
+  .exchange-main-graphic {
+    max-width: 96%;
+    transform: rotateX(1deg) rotateY(1deg); /* less tilt on mobile */
+  }
+
+  .exchange-main-graphic:hover {
+    transform: rotateX(3deg) rotateY(2deg) scale(1.02) translateZ(10px);
+  }
+}
+
+@media (max-width: 480px) {
+  .gray-bg-plate {
+    height: 320px;
+    transform: translate(-50%, -20px);
+  }
+
+  .exchange-main-graphic:hover {
+    transform: rotateX(2deg) rotateY(1deg) scale(1.01) translateZ(5px);
+  }
+}

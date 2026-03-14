@@ -1,0 +1,312 @@
+/* src/assets/css/Header.css */
+
+:root {
+  --dark-navy: #0A1E28;
+  --primary-lime: #C8F032;
+  --text-gray: #666666;
+}
+
+.header {
+  padding: 20px 40px;
+  background-color: white;
+  border-bottom: 1px solid #f0f0f0;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Logo */
+.logo {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--dark-navy);
+  letter-spacing: -0.5px;
+}
+
+.logo span { 
+  color: var(--text-gray);
+  font-weight: 400;
+  margin-left: 1px;
+}
+
+/* Navigation Pill */
+.nav-pill {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--dark-navy);
+  font-weight: 500;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background-color: rgba(200, 240, 50, 0.2);
+}
+
+.nav-link.active {
+  background-color: var(--primary-lime);
+  color: var(--dark-navy);
+  font-weight: 600;
+}
+
+/* Header Auth */
+.header-auth {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Join Us - Dark navy background, lemon text */
+.btn-join {
+  background: var(--dark-navy);
+  border: none;
+  color: var(--primary-lime);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 25px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-join:hover {
+  background: #1a3a4a; /* slightly lighter dark navy */
+  color: #b8dc20; /* slightly darker lemon */
+}
+
+/* Log in - Dark navy text (can stay as is) */
+.btn-login-text {
+  background: none;
+  border: none;
+  color: var(--dark-navy);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 10px 15px;
+  transition: color 0.2s ease;
+}
+
+.btn-login-text:hover {
+  color: var(--primary-lime);
+}
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1002;
+}
+
+.hamburger span {
+  width: 100%;
+  height: 2px;
+  background: var(--dark-navy);
+  transition: all 0.3s ease;
+}
+
+.hamburger.open span:first-child {
+  transform: rotate(45deg) translate(6px, 6px);
+  background: var(--primary-lime);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:last-child {
+  transform: rotate(-45deg) translate(6px, -6px);
+  background: var(--primary-lime);
+}
+
+/* Mobile Menu */
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 300px;
+  height: 100vh;
+  background: white;
+  z-index: 1001;
+  transition: right 0.3s ease;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-menu.open {
+  right: 0;
+}
+
+.mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.mobile-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dark-navy);
+}
+
+.mobile-logo span {
+  color: var(--text-gray);
+}
+
+.close-menu {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6B7280;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.close-menu:hover {
+  color: var(--dark-navy);
+}
+
+.mobile-nav {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-nav-link {
+  padding: 14px 16px;
+  color: #4B5563;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.mobile-nav-link:hover {
+  background: #F9FAFB;
+  color: var(--dark-navy);
+}
+
+.mobile-nav-link.active {
+  background: var(--primary-lime);
+  color: var(--dark-navy);
+  font-weight: 600;
+}
+
+.mobile-auth {
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Mobile Login */
+.mobile-login {
+  background: none;
+  border: 1px solid #E5E7EB;
+  color: #4B5563;
+  padding: 14px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobile-login:hover {
+  border-color: var(--primary-lime);
+  color: var(--dark-navy);
+}
+
+/* Mobile Join - Dark navy background, lemon text */
+.mobile-join {
+  background: var(--dark-navy);
+  border: none;
+  color: var(--primary-lime);
+  padding: 14px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobile-join:hover {
+  background: #1a3a4a;
+  color: #b8dc20;
+  transform: translateY(-1px);
+}
+
+/* Overlay */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .nav-pill,
+  .header-auth {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .mobile-menu {
+    display: block;
+  }
+
+  .header {
+    padding: 15px 20px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .mobile-menu {
+    width: 280px;
+  }
+  
+  .logo {
+    font-size: 22px;
+  }
+}

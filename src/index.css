@@ -1,0 +1,179 @@
+/* -----------------------------
+   SABO Global Theme
+------------------------------ */
+
+:root {
+  /* Brand - Primary Green */
+  --primary: #C8F032;
+  --primary-hover: #B8DC20;
+  --primary-muted: #BEDC28;
+  --primary-lime: #C8F032;  /* Added for header */
+
+  /* Dark Navy */
+  --dark: #0A1E28;
+  --dark-secondary: #142828;
+  --dark-navy: #0A1E28;     /* Added for header */
+
+  /* Backgrounds */
+  --bg-base: #F0F0E6;
+  --bg-white: #FFFFFF;
+  --bg-section: #F5F5EC;
+  --bg-dark: #0A1E28;
+
+  /* Text */
+  --text-primary: #0A1E28;
+  --text-body: #2C3E35;
+  --text-muted: #6B7280;
+  --text-inverse: #FFFFFF;
+  --text-gray: #666666;      /* Added for header */
+
+  /* Borders */
+  --border: #D2D2D2;
+  --border-light: #E6E6E6;
+
+  /* Semantic */
+  --success: #64D296;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  --info: #78E6DC;
+
+  /* Layout */
+  --container-width: 1280px;
+
+  /* Hero specific */
+  --sabo-lime: #D7FF5F;
+  --sabo-dark: #1A1A1A;
+  --sabo-gray: #666666;
+
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+/* -----------------------------
+   Reset
+------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-base);
+  color: var(--text-body);
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* -----------------------------
+   Typography
+------------------------------ */
+
+h1, h2, h3, h4 {
+  color: var(--text-primary);
+  margin: 0;
+}
+
+p {
+  color: var(--text-body);
+  line-height: 1.6;
+}
+
+/* -----------------------------
+   Links
+------------------------------ */
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+/* -----------------------------
+   Buttons
+------------------------------ */
+
+button {
+  border-radius: 10px;
+  border: none;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--dark);
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-dark {
+  background: var(--dark);
+  color: white;
+}
+
+.btn-dark:hover {
+  background: var(--dark-secondary);
+  transform: translateY(-1px);
+}
+
+/* -----------------------------
+   Container
+------------------------------ */
+
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%;
+}
+
+/* -----------------------------
+   Cards
+------------------------------ */
+
+.card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+/* -----------------------------
+   Sections
+------------------------------ */
+
+.section {
+  padding: 80px 0;
+}
+
+.section-dark {
+  background: var(--bg-dark);
+  color: white;
+}
+
+/* -----------------------------
+   Utility Classes
+------------------------------ */
+
+.text-center {
+  text-align: center;
+}
+
+.mt-20 { margin-top: 20px; }
+.mt-40 { margin-top: 40px; }
+.mb-20 { margin-bottom: 20px; }
+.mb-40 { margin-bottom: 40px; }

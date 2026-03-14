@@ -1,0 +1,284 @@
+/**
+ * SABO Dashboard Sidebar - High Depth Final (Final Spacing)
+ * Theme: #0A1E28 (Dark Navy) & #C8F032 (Sabo Lime)
+ * Active State: Deep Lemon (#C8F032) background
+ */
+
+:root {
+  /* Brand Identity */
+  --sabo-primary: #C8F032;
+  --sabo-dark-navy: #0A1E28;
+
+  /* Neutral Palette */
+  --sidebar-bg: #FFFFFF;
+  --text-inactive: #6B7280;
+  --border-light: #E6E6E6;
+
+  /* Layout */
+  --sidebar-width: 280px;
+  --sidebar-padding: 3rem 1.75rem;
+  --transition-speed: 0.25s;
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ===============================
+   Base Sidebar Container
+================================ */
+
+.dashboard-sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  background-color: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  padding: var(--sidebar-padding);
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+
+  font-family: var(--font-main);
+  box-sizing: border-box;
+
+  border-right: 1px solid var(--border-light);
+  overflow-y: auto;
+}
+
+/* ===============================
+   Header / Logo Section
+================================ */
+
+.sidebar-header {
+  margin-bottom: 4rem;
+  display: flex;
+  align-items: center;
+}
+
+.brand-container {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-decoration: none;
+}
+
+/* Logo */
+
+.sabo-logo-icon {
+  position: relative;
+  width: 28px;
+  height: 28px;
+}
+
+.dot-outer {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid var(--sabo-dark-navy);
+  border-radius: 50%;
+  top: 0;
+  left: 0;
+}
+
+.dot-inner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid var(--sabo-primary);
+  border-radius: 50%;
+  bottom: 0;
+  right: 0;
+  mix-blend-mode: multiply;
+}
+
+.brand-name {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--sabo-dark-navy);
+  letter-spacing: -0.5px;
+  margin: 0;
+  text-transform: lowercase;
+}
+
+/* ===============================
+   Navigation Section
+================================ */
+
+.sidebar-nav {
+  flex: 1;
+  margin-top: 4rem;
+}
+
+.nav-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* SPACE BETWEEN LINKS */
+
+.nav-item {
+  margin-bottom: 2.4rem;
+}
+
+/* ===============================
+   Link Styling - Base State
+================================ */
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  padding: 1rem 0.5rem;
+  transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  color: var(--text-inactive);
+  border-radius: 12px;
+}
+
+.nav-link svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--text-inactive);
+  stroke-width: 1.6;
+  transition: all var(--transition-speed);
+}
+
+.link-text {
+  margin-left: 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Indicator */
+.indicator-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--sabo-dark-navy);
+  border-radius: 50%;
+  margin-left: auto;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ===============================
+   Hover Effects - Only for non-active links
+================================ */
+
+.nav-link:not(.active):hover {
+  color: var(--sabo-dark-navy);
+  background: rgba(200, 240, 50, 0.1);
+}
+
+.nav-link:not(.active):hover svg {
+  stroke: var(--sabo-dark-navy);
+}
+
+/* ===============================
+   Active State - Deep Lemon Background (Constant - No Glass)
+================================ */
+
+.nav-link.active {
+  color: var(--sabo-dark-navy) !important;
+  background: var(--sabo-primary) !important; /* Deep lemon background */
+  font-weight: 700;
+}
+
+.nav-link.active svg {
+  stroke: var(--sabo-dark-navy) !important;
+  stroke-width: 2;
+}
+
+.nav-link.active .link-text {
+  font-weight: 700;
+  color: var(--sabo-dark-navy) !important;
+}
+
+.nav-link.active .indicator-dot {
+  opacity: 1;
+  transform: scale(1);
+  background-color: var(--sabo-dark-navy);
+}
+
+/* Ensure active link colors don't change on hover */
+.nav-link.active:hover {
+  color: var(--sabo-dark-navy) !important;
+  background: var(--sabo-primary) !important; /* Same deep lemon - no change */
+}
+
+.nav-link.active:hover svg {
+  stroke: var(--sabo-dark-navy) !important;
+}
+
+.nav-link.active:hover .link-text {
+  color: var(--sabo-dark-navy) !important;
+}
+
+/* ===============================
+   Responsive
+================================ */
+
+@media (max-width: 768px) {
+
+  .dashboard-sidebar {
+    width: 80px;
+    padding: 2.5rem 0.5rem;
+    align-items: center;
+  }
+
+  .brand-name {
+    display: none;
+  }
+
+  .sabo-logo-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .dot-outer,
+  .dot-inner {
+    width: 26px;
+    height: 26px;
+  }
+
+  .link-text,
+  .indicator-dot {
+    display: none;
+  }
+
+  .nav-link {
+    justify-content: center;
+    padding: 1.2rem 0;
+  }
+
+  .nav-item {
+    margin-bottom: 2rem;
+  }
+
+  .nav-link svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Active state in mobile - deep lemon background */
+  .nav-link.active {
+    background: var(--sabo-primary) !important;
+  }
+  
+  .nav-link.active svg {
+    stroke: var(--sabo-dark-navy) !important;
+  }
+}
+
+/* ===============================
+   Rendering Quality
+================================ */
+
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+  .dashboard-sidebar {
+    -webkit-font-smoothing: antialiased;
+  }
+}

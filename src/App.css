@@ -1,0 +1,78 @@
+/* -----------------------------
+   SABO App Layout
+------------------------------ */
+
+#root {
+  min-height: 100vh;
+}
+
+/* Navbar */
+
+.navbar {
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+}
+
+/* Logo */
+
+.logo {
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--dark);
+}
+
+/* Hero */
+
+.hero {
+  padding: 120px 0;
+  background: var(--bg-base);
+}
+
+.hero-title {
+  font-size: 48px;
+  font-weight: 700;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  color: var(--text-muted);
+  margin-top: 16px;
+}
+
+/* Feature grid */
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+/* Footer */
+
+.footer {
+  background: var(--dark);
+  color: white;
+  padding: 40px 0;
+  margin-top: 80px;
+}
+
+/* Utility */
+
+.text-center {
+  text-align: center;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mt-40 {
+  margin-top: 40px;
+}

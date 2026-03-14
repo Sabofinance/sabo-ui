@@ -1,0 +1,347 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --sabo-dark: #0A1E28;
+  --sabo-lime: #C8F032;
+  --sabo-lime-hover: #d4f55c;
+  --sabo-blue: #3A7BFF;
+  --sabo-green: #2ECC71;
+  --bg-light: #F4F7F6;
+  --text-gray: #6B7280;
+  --text-dark: #1F2937;
+  --white: #ffffff;
+  --card-shadow: 0 20px 40px rgba(10, 30, 40, 0.08);
+  --hover-shadow: 0 30px 60px rgba(10, 30, 40, 0.12);
+  --border-light: #E5E7EB;
+  --input-border: #D1D5DB;
+  --input-focus: var(--sabo-lime);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-light);
+  color: var(--sabo-dark);
+}
+
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-light);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-light);
+}
+
+.settings-page {
+  padding: 30px 50px;
+}
+
+.page-header {
+  margin-bottom: 30px;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--sabo-dark);
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: var(--text-gray);
+}
+
+/* Tab Switcher (reused from ProfilePage) */
+.tab-switcher {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 10px;
+}
+
+.tab-button {
+  padding: 10px 28px;
+  background: transparent;
+  border: none;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+}
+
+.tab-button.active {
+  background: var(--sabo-lime);
+  color: var(--sabo-dark);
+}
+
+.tab-button:hover:not(.active) {
+  background: rgba(200, 240, 50, 0.1);
+  color: var(--sabo-dark);
+}
+
+/* Settings Card */
+.settings-card {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
+}
+
+.settings-card:hover {
+  box-shadow: var(--hover-shadow);
+}
+
+.settings-card-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--sabo-dark);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--sabo-lime);
+}
+
+.section-subtitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sabo-dark);
+  margin: 20px 0 16px;
+}
+
+/* Form Styles */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-gray);
+}
+
+.form-group input {
+  padding: 12px 16px;
+  border: 1px solid var(--input-border);
+  border-radius: 16px;
+  font-size: 16px;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--sabo-lime);
+  box-shadow: 0 0 0 3px rgba(200, 240, 50, 0.2);
+}
+
+.password-form {
+  margin-bottom: 24px;
+}
+
+.btn-primary {
+  padding: 12px 24px;
+  background: var(--sabo-lime);
+  border: none;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--sabo-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.btn-primary:hover {
+  background: var(--sabo-lime-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(200, 240, 50, 0.3);
+}
+
+/* Settings Item */
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.settings-item:last-child {
+  border-bottom: none;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-label {
+  font-weight: 600;
+  color: var(--sabo-dark);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.item-description {
+  font-size: 13px;
+  color: var(--text-gray);
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+  margin-left: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--sabo-lime);
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* Action Button */
+.action-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--sabo-lime);
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--sabo-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+}
+
+.action-btn:hover {
+  background: var(--sabo-lime);
+}
+
+/* Theme Selector */
+.theme-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  border-radius: 30px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+}
+
+.theme-btn.active {
+  background: var(--sabo-lime);
+  color: var(--sabo-dark);
+  border-color: var(--sabo-lime);
+}
+
+.theme-btn:hover {
+  border-color: var(--sabo-lime);
+}
+
+/* Color Picker */
+.color-picker input {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--border-light);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .settings-page {
+    padding: 20px 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+  .settings-page {
+    padding: 20px;
+  }
+  .tab-switcher {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .switch {
+    margin-left: 0;
+  }
+  .theme-selector {
+    flex-wrap: wrap;
+  }
+}

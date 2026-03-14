@@ -1,0 +1,398 @@
+/* TransactionModals.css - Styles for confirmation and success modals */
+
+/* Reuse modal overlay from SellSuccessModal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 30, 40, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  font-family: 'Outfit', sans-serif;
+  padding: 20px;
+}
+
+/* Confirmation Modal Content */
+.confirm-modal-content {
+  background: #ffffff;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 28px;
+  padding: 40px 30px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-close-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #f8fafc;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #94a3b8;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.modal-close-icon:hover {
+  background: #0A1E28;
+  color: #C8F032;
+  transform: rotate(90deg);
+}
+
+/* Mini Card Preview - exact replica of dashboard card, scaled down */
+.mini-card-preview {
+  margin: 25px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.mini-card-visual {
+  width: 340px;
+  height: 200px;
+  border-radius: 20px;
+  padding: 20px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  box-shadow: 0 15px 30px rgba(10, 30, 40, 0.2);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.mini-card-preview.ngn .mini-card-visual {
+  background: linear-gradient(135deg, #0A1E28 0%, #2ECC71 100%);
+}
+
+.mini-card-preview.gbp .mini-card-visual {
+  background: linear-gradient(135deg, #0A1E28 0%, #3A7BFF 100%);
+}
+
+.mini-card-preview.usd .mini-card-visual {
+  background: linear-gradient(135deg, #0A1E28 0%, #F1C40F 100%);
+}
+
+.mini-card-preview.eur .mini-card-visual {
+  background: linear-gradient(135deg, #0A1E28 0%, #3498DB 100%);
+}
+
+/* Cloud effects */
+.cloud-effect {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.cloud-1 {
+  width: 200px;
+  height: 200px;
+  top: -80px;
+  right: -50px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.cloud-2 {
+  width: 150px;
+  height: 150px;
+  bottom: -60px;
+  left: -40px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.cloud-3 {
+  width: 100px;
+  height: 100px;
+  top: 30px;
+  left: 30px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.glow-effect {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.mini-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 15px;
+}
+
+.mini-card-brand {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: white;
+}
+
+.mini-card-chip {
+  position: relative;
+  width: 40px;
+  height: 30px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  border-radius: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.chip-line {
+  width: 100%;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.2);
+  margin: 1px 0;
+}
+
+.chip-dot {
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  position: absolute;
+  right: 6px;
+  top: 6px;
+}
+
+.mini-card-number {
+  font-size: 18px;
+  letter-spacing: 2px;
+  font-weight: 400;
+  color: white;
+  position: relative;
+  z-index: 2;
+  margin: 10px 0;
+}
+
+.mini-card-footer {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.mini-card-footer .info-group small {
+  display: block;
+  font-size: 10px;
+  opacity: 0.7;
+  margin-bottom: 2px;
+  color: rgba(255,255,255,0.8);
+}
+
+.mini-card-footer .info-group p {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.card-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 20px 20px, rgba(255, 255, 255, 0.05) 2px, transparent 2px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.card-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.1) 45%, rgba(255, 255, 255, 0.15) 50%, transparent 55%);
+  transform: translateX(-100%);
+  animation: shine 8s infinite;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%); }
+  20% { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+.amount-confirm {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0A1E28;
+  margin: 25px 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 40px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+  border: none;
+}
+
+.modal-actions .cancel-btn {
+  background: transparent;
+  border: 2px solid #E5E7EB;
+  color: #6B7280;
+}
+
+.modal-actions .cancel-btn:hover {
+  border-color: #0A1E28;
+  color: #0A1E28;
+}
+
+.modal-actions .confirm-btn {
+  background: #C8F032;
+  color: #0A1E28;
+  box-shadow: 0 8px 16px rgba(200, 240, 50, 0.2);
+}
+
+.modal-actions .confirm-btn:hover {
+  background: #d4f55c;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(200, 240, 50, 0.3);
+}
+
+/* Success Modal Styles (identical to SellSuccessModal) */
+.success-modal-content {
+  background: #ffffff;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 28px;
+  padding: 50px 40px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.success-modal-content::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(200, 240, 50, 0.15) 0%, transparent 70%);
+  z-index: 0;
+}
+
+.success-icon-container {
+  position: relative;
+  z-index: 1;
+  width: 100px;
+  height: 100px;
+  background: #0A1E28;
+  border-radius: 35% 65% 65% 35% / 30% 30% 70% 70%;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid #C8F032;
+  animation: blobby 4s infinite alternate ease-in-out;
+}
+
+@keyframes blobby {
+  0% { border-radius: 35% 65% 65% 35% / 30% 30% 70% 70%; }
+  100% { border-radius: 65% 35% 35% 65% / 70% 70% 30% 30%; }
+}
+
+.success-icon-container svg {
+  width: 48px;
+  height: 48px;
+  filter: drop-shadow(0 0 8px rgba(200, 240, 50, 0.4));
+}
+
+.success-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0A1E28;
+  margin-bottom: 16px;
+  letter-spacing: -0.03em;
+}
+
+.success-message {
+  font-size: 1.1rem;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+
+.success-message strong {
+  color: #0A1E28;
+  background: linear-gradient(120deg, rgba(200, 240, 50, 0.3) 0%, rgba(200, 240, 50, 0.3) 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 0.3em;
+  background-position: 0 88%;
+}
+
+.success-actions {
+  width: 100%;
+}
+
+.btn-market {
+  width: 100%;
+  padding: 18px;
+  background: #C8F032;
+  color: #0A1E28;
+  border: none;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: block;
+  box-shadow: 0 10px 20px -5px rgba(200, 240, 50, 0.4);
+}
+
+.btn-market:hover {
+  background: #0A1E28;
+  color: #C8F032;
+  transform: translateY(-4px);
+  box-shadow: 0 15px 25px -5px rgba(10, 30, 40, 0.3);
+}
+
+@media (max-width: 480px) {
+  .success-modal-content,
+  .confirm-modal-content {
+    padding: 40px 24px;
+    max-width: 100%;
+  }
+  .mini-card-visual {
+    width: 280px;
+    height: 180px;
+  }
+  .success-title {
+    font-size: 1.5rem;
+  }
+}

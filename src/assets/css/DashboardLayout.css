@@ -1,0 +1,32 @@
+/* Dashboard Layout - Connects Sidebar and Header */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #F9FAFB;
+}
+
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 280px; /* Match sidebar width */
+  width: calc(100% - 280px);
+}
+
+.dashboard-content {
+  padding: 2rem;
+  flex: 1;
+  background-color: #F9FAFB;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-main {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+  }
+  
+  .dashboard-content {
+    padding: 1.5rem;
+  }
+}

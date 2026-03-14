@@ -1,0 +1,425 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --sabo-primary: #C8F032;
+  --sabo-dark-navy: #0A1E28;
+  --sabo-green: #2ECC71;
+  --sabo-blue: #3A7BFF;
+  --text-primary: #0A1E28;
+  --text-secondary: #6B7280;
+  --border-light: #E5E7EB;
+  --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  --bg-light: #F9FAFB;
+  --white: #FFFFFF;
+  --edit-bg: #3A7BFF;
+  --delete-bg: #EF4444;
+  --view-bg: #8B5CF6;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+}
+
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-light);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-light);
+}
+
+.my-sabit-page {
+  padding: 30px 40px;
+  width: 100%;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--sabo-dark-navy);
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.create-listing-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: var(--sabo-primary);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--sabo-dark-navy);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+  border: 1px solid #B09B2A;
+}
+
+.create-listing-btn:hover {
+  background: #d4f55c;
+}
+
+.create-listing-btn svg {
+  stroke: currentColor;
+}
+
+/* Tabs */
+.tabs-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 16px;
+}
+
+.tab-btn {
+  padding: 12px 32px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+}
+
+.tab-btn:hover {
+  border-color: var(--sabo-primary);
+  background: #F9FAFB;
+  color: var(--sabo-dark-navy);
+}
+
+.tab-btn.active {
+  background: var(--sabo-dark-navy);
+  border-color: var(--sabo-dark-navy);
+  color: var(--white);
+}
+
+/* Table Container */
+.listings-table-container {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--border-light);
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Table */
+.listings-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1200px;
+  font-size: 15px;
+}
+
+.listings-table th {
+  text-align: left;
+  padding: 18px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border-light);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: #F9FAFB;
+}
+
+.listings-table td {
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+  font-size: 15px;
+}
+
+.listings-table tbody tr:hover {
+  background: #F9FAFB;
+}
+
+/* Type Cell */
+.type-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.type-indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.type-indicator.sell {
+  background: var(--sabo-primary);
+  color: var(--sabo-dark-navy);
+}
+
+.type-indicator.buy {
+  background: var(--sabo-dark-navy);
+  color: var(--white);
+}
+
+.type-text {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.type-text.sell {
+  color: var(--sabo-dark-navy);
+}
+
+.type-text.buy {
+  color: var(--sabo-dark-navy);
+}
+
+/* Currency Badge */
+.currency-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  background: #F3F4F6;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid var(--border-light);
+}
+
+/* Amount Text */
+.amount-text {
+  font-weight: 600;
+  color: var(--sabo-dark-navy);
+  font-size: 15px;
+}
+
+/* Rate Text */
+.rate-text {
+  font-weight: 600;
+  color: #2563EB;
+  font-size: 15px;
+}
+
+/* Total Text */
+.total-text {
+  font-weight: 600;
+  color: var(--sabo-dark-navy);
+  font-size: 15px;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+  min-width: 85px;
+  text-align: center;
+}
+
+.status-badge.active {
+  background: #E6F7E6;
+  color: #0D7C2D;
+  border: 1px solid #A7D7A7;
+}
+
+.status-badge.completed {
+  background: #E6F7E6;
+  color: #0D7C2D;
+  border: 1px solid #A7D7A7;
+}
+
+.status-badge.cancelled {
+  background: #FEE9E9;
+  color: #C00F0F;
+  border: 1px solid #F9B5B5;
+}
+
+.status-badge.pending {
+  background: #FFF9E6;
+  color: #B27C0A;
+  border: 1px solid #FFE5A3;
+}
+
+/* Date Text */
+.date-text {
+  color: var(--text-secondary);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* Actions Cell */
+.actions-cell {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.action-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: 'Outfit', sans-serif;
+  min-width: 70px;
+  text-align: center;
+}
+
+.action-btn.edit {
+  background: var(--edit-bg);
+  color: var(--white);
+}
+
+.action-btn.edit:hover {
+  background: #2563EB;
+}
+
+.action-btn.delete {
+  background: var(--delete-bg);
+  color: var(--white);
+}
+
+.action-btn.delete:hover {
+  background: #DC2626;
+}
+
+.no-actions {
+  color: var(--text-secondary);
+  font-size: 14px;
+  padding: 0 8px;
+}
+
+/* No Listings */
+.no-listings {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.no-listings svg {
+  stroke: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.no-listings h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--sabo-dark-navy);
+  margin-bottom: 8px;
+}
+
+.no-listings p {
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  font-size: 15px;
+}
+
+.create-first-btn {
+  padding: 12px 28px;
+  background: var(--sabo-primary);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--sabo-dark-navy);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+  border: 1px solid #B09B2A;
+}
+
+.create-first-btn:hover {
+  background: #d4f55c;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .my-sabit-page {
+    padding: 20px 30px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .my-sabit-page {
+    padding: 20px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .create-listing-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tabs-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tab-btn {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+  }
+
+  .actions-cell {
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    width: 100%;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+
+  .my-sabit-page {
+    padding: 20px;
+  }
+}

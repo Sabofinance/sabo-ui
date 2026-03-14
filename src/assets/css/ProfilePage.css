@@ -1,0 +1,544 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --sabo-dark: #0A1E28;
+  --sabo-lime: #C8F032;
+  --sabo-lime-hover: #d4f55c;
+  --sabo-blue: #3A7BFF;
+  --sabo-green: #2ECC71;
+  --bg-light: #F4F7F6;
+  --text-gray: #6B7280;
+  --text-dark: #1F2937;
+  --white: #ffffff;
+  --card-shadow: 0 20px 40px rgba(10, 30, 40, 0.08);
+  --hover-shadow: 0 30px 60px rgba(10, 30, 40, 0.12);
+  --border-light: #E5E7EB;
+  --input-border: #D1D5DB;
+  --input-focus: var(--sabo-lime);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-light);
+  color: var(--sabo-dark);
+}
+
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-light);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-light);
+}
+
+.profile-page {
+  padding: 30px 50px;
+}
+
+.page-header {
+  margin-bottom: 30px;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--sabo-dark);
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: var(--text-gray);
+}
+
+/* Tab Switcher */
+.tab-switcher {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 10px;
+}
+
+.tab-button {
+  padding: 10px 28px;
+  background: transparent;
+  border: none;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+}
+
+.tab-button.active {
+  background: var(--sabo-lime);
+  color: var(--sabo-dark);
+}
+
+.tab-button:hover:not(.active) {
+  background: rgba(200, 240, 50, 0.1);
+  color: var(--sabo-dark);
+}
+
+/* Combined profile card */
+.combined-profile-card {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 40px;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--card-shadow);
+}
+
+.profile-header {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.avatar-wrapper-large {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profile-avatar-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--sabo-lime);
+  box-shadow: 0 10px 20px rgba(200, 240, 50, 0.2);
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--sabo-lime);
+  border: 3px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 14px rgba(200, 240, 50, 0.4);
+  color: var(--sabo-dark);
+}
+
+.avatar-edit-btn:hover {
+  background: var(--sabo-lime-hover);
+  transform: scale(1.08);
+  box-shadow: 0 8px 18px rgba(200, 240, 50, 0.5);
+}
+
+.avatar-edit-btn svg {
+  width: 21px;
+  height: 21px;
+}
+
+.profile-header-info {
+  flex: 1;
+}
+
+.profile-name {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--sabo-dark);
+  margin-bottom: 4px;
+}
+
+.profile-email {
+  font-size: 16px;
+  color: var(--text-gray);
+  margin-bottom: 12px;
+}
+
+.profile-badges {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  background: rgba(200, 240, 50, 0.1);
+  color: var(--sabo-dark);
+  border: 1px solid rgba(200, 240, 50, 0.3);
+}
+
+.badge.verified {
+  background: rgba(46, 204, 113, 0.1);
+  color: var(--sabo-green);
+  border-color: rgba(46, 204, 113, 0.3);
+}
+
+.badge svg {
+  stroke: currentColor;
+}
+
+.edit-toggle-btn {
+  padding: 10px 24px;
+  background: transparent;
+  border: 2px solid var(--sabo-lime);
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--sabo-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+  white-space: nowrap;
+}
+
+.edit-toggle-btn:hover {
+  background: var(--sabo-lime);
+}
+
+/* Personal Information Form */
+.personal-info-section {
+  margin-top: 20px;
+}
+
+.form-section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--sabo-dark);
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  letter-spacing: 0.3px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.form-group.full-width {
+  grid-column: span 2;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 14px 18px;
+  border: 1px solid var(--input-border);
+  border-radius: 16px;
+  font-size: 15px;
+  font-family: 'Outfit', sans-serif;
+  background: var(--white);
+  transition: all 0.2s ease;
+  color: var(--sabo-dark);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--sabo-lime);
+  box-shadow: 0 0 0 4px rgba(200, 240, 50, 0.2);
+  background: var(--white);
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+  background: #f9fafb;
+  color: var(--text-gray);
+  border-color: var(--border-light);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.form-group input::placeholder {
+  color: #9CA3AF;
+  font-weight: 300;
+}
+
+.form-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-primary {
+  padding: 14px 40px;
+  background: var(--sabo-lime);
+  border: none;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--sabo-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+  box-shadow: 0 4px 8px rgba(200, 240, 50, 0.3);
+}
+
+.btn-primary:hover {
+  background: var(--sabo-lime-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(200, 240, 50, 0.4);
+}
+
+/* Account Cards Section */
+.account-cards-section {
+  background: transparent;
+}
+
+.atm-cards-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: flex-start;
+  margin-top: 20px;
+}
+
+.atm-card {
+  width: 340px;
+  height: 230px;
+  background: linear-gradient(135deg, #0A1E28 0%, #2ECC71 100%);
+  border-radius: 16px;
+  padding: 20px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.4), inset 0 1px 3px rgba(255, 255, 255, 0.3);
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: 'Outfit', sans-serif;
+  transform-style: preserve-3d;
+  flex-shrink: 0;
+}
+
+.atm-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.atm-card.gbp {
+  background: linear-gradient(135deg, #0A1E28 0%, #3A7BFF 100%);
+}
+
+.atm-card:hover {
+  transform: translateY(-8px) rotateX(2deg) rotateY(-1deg);
+  box-shadow: 0 30px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 4px rgba(255, 255, 255, 0.4);
+}
+
+.atm-card .card-chip {
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.2));
+}
+
+.card-chip {
+  margin-bottom: 10px;
+}
+
+.card-flag {
+  font-size: 24px;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.card-number {
+  font-size: 18px;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  padding: 6px 12px;
+  border-radius: 30px;
+  width: fit-content;
+}
+
+.account-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+  color: white;
+}
+
+.account-number {
+  font-family: 'Outfit', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: white;
+}
+
+.toggle-visibility-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+  color: white;
+}
+
+.toggle-visibility-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.card-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.card-holder {
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.card-expiry {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.card-balance {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-balance .balance-label {
+  font-size: 11px;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.card-balance .balance-amount {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.card-brand {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  font-size: 12px;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .profile-page {
+    padding: 20px 30px;
+  }
+}
+
+@media (max-width: 992px) {
+  .atm-cards-container {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+  .profile-page {
+    padding: 20px;
+  }
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .edit-toggle-btn {
+    width: 100%;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-group.full-width {
+    grid-column: span 1;
+  }
+  .tab-switcher {
+    justify-content: center;
+  }
+  .atm-cards-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .atm-card {
+    width: 100%;
+    max-width: 340px;
+  }
+}
+
+@media (max-width: 600px) {
+  .account-row {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

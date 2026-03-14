@@ -1,0 +1,117 @@
+/* src/assets/css/FXStruggleSection.css */
+
+.fx-struggle-section {
+  padding: 140px 0;
+  background-color: #ffffff;
+}
+
+.fx-inner-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.fx-heading {
+  text-align: center;
+  font-size: 54px;
+  font-weight: 850;
+  line-height: 1.1;
+  color: #11181c;
+  margin-bottom: 110px;
+  letter-spacing: -2.5px;
+}
+
+.fx-light {
+  font-weight: 400;
+  letter-spacing: -1.5px;
+}
+
+.fx-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 50px;
+}
+
+.fx-item-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.fx-visual-box {
+  background-color: #E6E8E9; /* Exact Gray from company screenshots */
+  border-radius: 24px;
+  height: 350px;
+  width: 100%;
+  display: flex;
+  align-items: flex-end; 
+  justify-content: center;
+  overflow: visible; /* Allows head to pop up and bottom to bleed out */
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.fx-img-overlap {
+  height: auto;
+  display: block;
+  z-index: 2;
+  /* This pushes the image DOWN so the bottom edge is hidden in the white area */
+  margin-bottom: -30px; 
+}
+
+/* --- INDIVIDUAL CORRECTIONS --- */
+
+.img-fees {
+  width: 105%;
+  margin-top: -60px; /* Head pop */
+}
+
+.img-slow {
+  width: 80%; /* Reduced size as requested */
+  margin-top: -35px; /* Reduced head pop so it's not "too much" */
+}
+
+.img-scam {
+  width: 85%;
+  margin-top: -40px;
+}
+
+/* --- TEXT AREA --- */
+
+.fx-text-box {
+  text-align: left;
+  padding: 0 5px;
+  position: relative;
+  z-index: 3; /* Ensures text is above the bleeding image if they touch */
+}
+
+.fx-card-h3 {
+  font-size: 40px;
+  font-weight: 850;
+  color: #2A505B; /* Required Color Code */
+  margin-bottom: 12px;
+  letter-spacing: -1.5px;
+}
+
+.fx-card-p {
+  font-size: 16px;
+  color: #666666;
+  line-height: 1.5;
+  max-width: 95%;
+}
+
+.fx-card-p strong {
+  color: #333333;
+  font-weight: 800;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fx-grid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+    margin: 0 auto;
+    gap: 100px;
+  }
+  .fx-text-box { text-align: center; }
+}
