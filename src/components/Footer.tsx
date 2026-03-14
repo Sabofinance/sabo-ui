@@ -48,7 +48,7 @@ export const Footer = () => {
             <div className="footer-column">
               <h4 className="footer-column-title">Products</h4>
               <ul className="footer-list">
-                <li><a href="/p2p">P2P Market Place</a></li>
+                <li><a href="/p2p">Sabit Market Place</a></li>
                 <li><a href="/business">Sabo for Business</a></li>
               </ul>
             </div>
