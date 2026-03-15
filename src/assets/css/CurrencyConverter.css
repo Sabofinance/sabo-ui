@@ -1,0 +1,325 @@
+/* ════════════════════════════════════════
+   CURRENCY CONVERTER CARD
+   Slightly more compact — not too tall
+════════════════════════════════════════ */
+
+.cc-card {
+  background: #FAFAF4;
+  border: 2.5px solid #E8622A;
+  border-radius: 24px;
+  /* ↓ Reduced from 16px to tighten the card height */
+  padding: 10px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow:
+    0 24px 48px rgba(232, 98, 42, 0.10),
+    0 6px 18px rgba(0, 0, 0, 0.05);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  box-sizing: border-box;
+}
+
+/* ── Panel (send / receive rows) ── */
+.cc-panel {
+  background: #ffffff;
+  border-radius: 16px;
+  /* ↓ Reduced from 20px 22px — tighter but still comfortable */
+  padding: 14px 18px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.cc-panel-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #888888;
+  /* ↓ Tighter gap below label */
+  margin-bottom: 8px;
+  letter-spacing: 0.01em;
+}
+
+.cc-panel-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* ── Amount input group ── */
+.cc-amount-group {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.cc-symbol {
+  /* ↓ Slightly smaller than before */
+  font-size: 20px;
+  font-weight: 700;
+  color: #1A1A1A;
+  flex-shrink: 0;
+}
+
+.cc-input {
+  /* ↓ Reduced from 28px */
+  font-size: 24px;
+  font-weight: 700;
+  color: #1A1A1A;
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  min-width: 0;
+  font-family: inherit;
+  letter-spacing: -0.5px;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.cc-input::-webkit-outer-spin-button,
+.cc-input::-webkit-inner-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.cc-input::placeholder { color: #CCCCCC; }
+
+/* Computed output (read-only) */
+.cc-output {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1A1A1A;
+  letter-spacing: -0.5px;
+}
+
+/* ── Currency selector button ── */
+.cc-select-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cc-select-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #ffffff;
+  border: 1px solid #E8E8E8;
+  border-radius: 40px;
+  padding: 7px 12px 7px 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  white-space: nowrap;
+}
+
+.cc-select-btn:hover {
+  border-color: #E8622A;
+  box-shadow: 0 4px 10px rgba(232, 98, 42, 0.12);
+}
+
+.cc-select-flag {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.cc-select-code {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1A1A1A;
+  letter-spacing: 0.02em;
+}
+
+.cc-chevron {
+  color: #888888;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.cc-chevron.open { transform: rotate(180deg); }
+
+/* ── Dropdown menu ── */
+.cc-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #E8E8E8;
+  border-radius: 14px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.11);
+  z-index: 500;
+  overflow: hidden;
+  min-width: 200px;
+  animation: ccDropIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes ccDropIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.cc-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+  font-family: inherit;
+}
+
+.cc-dropdown-item:hover       { background: #FFF5F0; }
+.cc-dropdown-item.is-selected { background: rgba(232, 98, 42, 0.08); }
+
+.cc-dropdown-name {
+  font-size: 12px;
+  color: #888888;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* ════════════════════════════════════════
+   SWAP BUTTON ROW
+════════════════════════════════════════ */
+.cc-swap-row {
+  display: flex;
+  align-items: center;
+  /* ↓ Tighter vertical margin */
+  margin: 10px 0;
+}
+
+.cc-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.cc-swap-btn {
+  /* ↓ Slightly smaller circle but still clearly visible */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #EFEFEF;
+  border: 1.5px solid #C8C8C8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #2C2C2C;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  margin: 0 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.10);
+}
+
+.cc-swap-btn svg {
+  display: block;
+  flex-shrink: 0;
+  stroke: #2C2C2C;
+}
+
+.cc-swap-btn:hover {
+  background: #2C2C2C;
+  color: #ffffff;
+  border-color: #2C2C2C;
+  transform: rotate(180deg);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+}
+
+.cc-swap-btn:hover svg {
+  stroke: #ffffff;
+}
+
+/* ── Rate + fee badges ── */
+.cc-badges-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  /* ↓ Tighter margin */
+  margin: 10px 4px 8px;
+  flex-wrap: wrap;
+}
+
+.cc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 40px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.cc-badge--rate { background: #D7FF5F; color: #1A1A1A; }
+.cc-badge--fee  { background: #E8F4FD; color: #2D6FA8; }
+
+/* ── Total row ── */
+.cc-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #ffffff;
+  border-radius: 14px;
+  /* ↓ Tighter padding */
+  padding: 14px 18px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 6px;
+}
+
+.cc-total-label {
+  font-size: 13px;
+  color: #888888;
+  font-weight: 500;
+}
+
+.cc-total-value {
+  font-size: 19px;
+  font-weight: 800;
+  color: #1A1A1A;
+  white-space: nowrap;
+  letter-spacing: -0.3px;
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .cc-input,
+  .cc-output { font-size: 21px; }
+  .cc-symbol { font-size: 17px; }
+}
+
+@media (max-width: 480px) {
+  .cc-card  { padding: 10px; border-radius: 20px; }
+  .cc-panel { padding: 12px 14px; border-radius: 13px; }
+
+  .cc-input,
+  .cc-output { font-size: 19px; }
+  .cc-symbol { font-size: 15px; }
+
+  .cc-swap-btn     { width: 36px; height: 36px; margin: 0 10px; }
+  .cc-swap-btn svg { width: 15px; height: 15px; }
+
+  .cc-total-row   { padding: 12px 14px; border-radius: 12px; }
+  .cc-total-value { font-size: 16px; }
+  .cc-total-label { font-size: 12px; }
+  .cc-badge       { font-size: 11px; padding: 5px 10px; }
+}
+
+/* Touch tap highlight */
+.cc-select-btn,
+.cc-swap-btn,
+.cc-dropdown-item {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.06);
+}

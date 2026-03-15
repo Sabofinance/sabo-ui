@@ -1,39 +1,64 @@
-/* TransactionModals.css - Styles for confirmation and success modals */
-
-/* Reuse modal overlay from SellSuccessModal */
+/* ════════════════════════════════════════
+   MODAL OVERLAY
+════════════════════════════════════════ */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10, 30, 40, 0.7);
+  background: rgba(10, 30, 40, 0.72);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 3000;
   font-family: 'Outfit', sans-serif;
   padding: 20px;
+  box-sizing: border-box;
 }
 
-/* Confirmation Modal Content */
+/* ════════════════════════════════════════
+   CONFIRMATION MODAL
+════════════════════════════════════════ */
 .confirm-modal-content {
   background: #ffffff;
   width: 100%;
   max-width: 480px;
   border-radius: 28px;
-  padding: 40px 30px;
+  padding: 40px 32px;
   text-align: center;
   position: relative;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+  animation: modalIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-sizing: border-box;
 }
 
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92) translateY(16px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+.confirm-modal-content h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0A1E28;
+  margin: 0 0 8px;
+  letter-spacing: -0.3px;
+}
+
+.confirm-modal-content > p {
+  font-size: 14px;
+  color: #64748B;
+  margin: 0 0 4px;
+}
+
+/* Close icon */
 .modal-close-icon {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 16px;
+  right: 16px;
   background: #f8fafc;
   border: none;
-  font-size: 24px;
+  font-size: 22px;
   cursor: pointer;
   color: #94a3b8;
   width: 36px;
@@ -42,8 +67,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   z-index: 10;
+  line-height: 1;
 }
 
 .modal-close-icon:hover {
@@ -52,16 +78,16 @@
   transform: rotate(90deg);
 }
 
-/* Mini Card Preview - exact replica of dashboard card, scaled down */
+/* ── Mini card preview ── */
 .mini-card-preview {
-  margin: 25px 0;
+  margin: 24px 0 20px;
   display: flex;
   justify-content: center;
 }
 
 .mini-card-visual {
-  width: 340px;
-  height: 200px;
+  width: 320px;
+  height: 190px;
   border-radius: 20px;
   padding: 20px;
   color: white;
@@ -69,28 +95,17 @@
   flex-direction: column;
   justify-content: space-between;
   position: relative;
-  box-shadow: 0 15px 30px rgba(10, 30, 40, 0.2);
+  box-shadow: 0 16px 32px rgba(10, 30, 40, 0.22);
   overflow: hidden;
-  transition: all 0.3s ease;
 }
 
-.mini-card-preview.ngn .mini-card-visual {
-  background: linear-gradient(135deg, #0A1E28 0%, #2ECC71 100%);
-}
+/* Card gradients per currency */
+.mini-card-preview.ngn .mini-card-visual { background: linear-gradient(135deg, #0A1E28 0%, #2ECC71 100%); }
+.mini-card-preview.gbp .mini-card-visual { background: linear-gradient(135deg, #0A1E28 0%, #3A7BFF 100%); }
+.mini-card-preview.usd .mini-card-visual { background: linear-gradient(135deg, #0A1E28 0%, #F1C40F 100%); }
+.mini-card-preview.eur .mini-card-visual { background: linear-gradient(135deg, #0A1E28 0%, #3498DB 100%); }
 
-.mini-card-preview.gbp .mini-card-visual {
-  background: linear-gradient(135deg, #0A1E28 0%, #3A7BFF 100%);
-}
-
-.mini-card-preview.usd .mini-card-visual {
-  background: linear-gradient(135deg, #0A1E28 0%, #F1C40F 100%);
-}
-
-.mini-card-preview.eur .mini-card-visual {
-  background: linear-gradient(135deg, #0A1E28 0%, #3498DB 100%);
-}
-
-/* Cloud effects */
+/* Decorative blobs */
 .cloud-effect {
   position: absolute;
   background: rgba(255, 255, 255, 0.1);
@@ -99,91 +114,55 @@
   pointer-events: none;
 }
 
-.cloud-1 {
-  width: 200px;
-  height: 200px;
-  top: -80px;
-  right: -50px;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.cloud-2 {
-  width: 150px;
-  height: 150px;
-  bottom: -60px;
-  left: -40px;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.cloud-3 {
-  width: 100px;
-  height: 100px;
-  top: 30px;
-  left: 30px;
-  background: rgba(255, 255, 255, 0.08);
-}
+.cloud-1 { width: 200px; height: 200px; top: -80px;  right: -50px; background: rgba(255,255,255,0.15); }
+.cloud-2 { width: 150px; height: 150px; bottom: -60px; left: -40px; background: rgba(255,255,255,0.12); }
+.cloud-3 { width: 100px; height: 100px; top: 30px;   left: 30px;  background: rgba(255,255,255,0.08); }
 
 .glow-effect {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
+  background: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.3) 0%, transparent 60%);
   pointer-events: none;
 }
 
+/* Card internals */
 .mini-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
   z-index: 2;
-  margin-bottom: 15px;
 }
 
 .mini-card-brand {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   letter-spacing: 1px;
   color: white;
+  text-transform: lowercase;
 }
 
 .mini-card-chip {
   position: relative;
-  width: 40px;
-  height: 30px;
+  width: 38px;
+  height: 28px;
   background: linear-gradient(135deg, #FFD700, #FFA500);
   border-radius: 6px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
   padding: 4px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
-.chip-line {
-  width: 100%;
-  height: 2px;
-  background: rgba(0, 0, 0, 0.2);
-  margin: 1px 0;
-}
-
-.chip-dot {
-  width: 5px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 50%;
-  position: absolute;
-  right: 6px;
-  top: 6px;
-}
+.chip-line { width: 100%; height: 2px; background: rgba(0,0,0,0.2); margin: 2px 0; }
+.chip-dot  { width: 5px; height: 5px; background: rgba(255,255,255,0.8); border-radius: 50%; position: absolute; right: 6px; top: 6px; }
 
 .mini-card-number {
-  font-size: 18px;
+  font-size: 16px;
   letter-spacing: 2px;
   font-weight: 400;
   color: white;
   position: relative;
   z-index: 2;
-  margin: 10px 0;
+  word-break: break-all;
 }
 
 .mini-card-footer {
@@ -205,12 +184,14 @@
   font-size: 12px;
   font-weight: 600;
   color: white;
+  margin: 0;
+  word-break: break-word;
 }
 
 .card-pattern {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle at 20px 20px, rgba(255, 255, 255, 0.05) 2px, transparent 2px);
+  background-image: radial-gradient(circle at 20px 20px, rgba(255,255,255,0.05) 2px, transparent 2px);
   background-size: 40px 40px;
   pointer-events: none;
 }
@@ -218,31 +199,34 @@
 .card-shine {
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.1) 45%, rgba(255, 255, 255, 0.15) 50%, transparent 55%);
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.1) 45%, rgba(255,255,255,0.15) 50%, transparent 55%);
   transform: translateX(-100%);
   animation: shine 8s infinite;
   pointer-events: none;
 }
 
 @keyframes shine {
-  0% { transform: translateX(-100%); }
+  0%  { transform: translateX(-100%); }
   20% { transform: translateX(100%); }
-  100% { transform: translateX(100%); }
+  100%{ transform: translateX(100%); }
 }
 
+/* Amount confirm strip */
 .amount-confirm {
   background: #f8fafc;
-  padding: 16px;
-  border-radius: 16px;
-  font-size: 18px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-size: 17px;
   font-weight: 700;
   color: #0A1E28;
-  margin: 25px 0;
+  margin: 20px 0 24px;
+  border: 1px solid #E2E8F0;
 }
 
+/* Modal action buttons */
 .modal-actions {
   display: flex;
-  gap: 15px;
+  gap: 12px;
 }
 
 .modal-actions button {
@@ -250,48 +234,52 @@
   padding: 14px;
   border-radius: 40px;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: 'Outfit', sans-serif;
   border: none;
+  min-height: 50px;
 }
 
-.modal-actions .cancel-btn {
+.cancel-btn {
   background: transparent;
-  border: 2px solid #E5E7EB;
+  border: 2px solid #E5E7EB !important;
   color: #6B7280;
 }
 
-.modal-actions .cancel-btn:hover {
-  border-color: #0A1E28;
+.cancel-btn:hover {
+  border-color: #0A1E28 !important;
   color: #0A1E28;
 }
 
-.modal-actions .confirm-btn {
+.confirm-btn {
   background: #C8F032;
   color: #0A1E28;
   box-shadow: 0 8px 16px rgba(200, 240, 50, 0.2);
 }
 
-.modal-actions .confirm-btn:hover {
+.confirm-btn:hover {
   background: #d4f55c;
   transform: translateY(-2px);
   box-shadow: 0 12px 24px rgba(200, 240, 50, 0.3);
 }
 
-/* Success Modal Styles (identical to SellSuccessModal) */
+/* ════════════════════════════════════════
+   SUCCESS MODAL
+════════════════════════════════════════ */
 .success-modal-content {
   background: #ffffff;
   width: 100%;
-  max-width: 480px;
+  max-width: 460px;
   border-radius: 28px;
-  padding: 50px 40px;
+  padding: 48px 36px;
   text-align: center;
   position: relative;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  animation: modalIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-sizing: border-box;
 }
 
 .success-modal-content::before {
@@ -299,17 +287,18 @@
   position: absolute;
   top: -50px;
   right: -50px;
-  width: 150px;
-  height: 150px;
+  width: 160px;
+  height: 160px;
   background: radial-gradient(circle, rgba(200, 240, 50, 0.15) 0%, transparent 70%);
-  z-index: 0;
+  pointer-events: none;
 }
 
+/* Animated blob icon */
 .success-icon-container {
   position: relative;
   z-index: 1;
-  width: 100px;
-  height: 100px;
+  width: 90px;
+  height: 90px;
   background: #0A1E28;
   border-radius: 35% 65% 65% 35% / 30% 30% 70% 70%;
   margin: 0 auto 24px;
@@ -321,78 +310,105 @@
 }
 
 @keyframes blobby {
-  0% { border-radius: 35% 65% 65% 35% / 30% 30% 70% 70%; }
+  0%   { border-radius: 35% 65% 65% 35% / 30% 30% 70% 70%; }
   100% { border-radius: 65% 35% 35% 65% / 70% 70% 30% 30%; }
 }
 
 .success-icon-container svg {
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   filter: drop-shadow(0 0 8px rgba(200, 240, 50, 0.4));
 }
 
 .success-title {
-  font-size: 1.85rem;
+  font-size: 1.7rem;
   font-weight: 800;
   color: #0A1E28;
-  margin-bottom: 16px;
-  letter-spacing: -0.03em;
+  margin: 0 0 14px;
+  letter-spacing: -0.4px;
 }
 
 .success-message {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #475569;
   line-height: 1.6;
-  margin-bottom: 40px;
+  margin: 0 0 36px;
 }
 
 .success-message strong {
   color: #0A1E28;
-  background: linear-gradient(120deg, rgba(200, 240, 50, 0.3) 0%, rgba(200, 240, 50, 0.3) 100%);
-  background-repeat: no-repeat;
-  background-size: 100% 0.3em;
-  background-position: 0 88%;
+  font-weight: 700;
 }
 
-.success-actions {
-  width: 100%;
-}
+.success-actions { width: 100%; }
 
 .btn-market {
   width: 100%;
-  padding: 18px;
+  padding: 17px;
   background: #C8F032;
   color: #0A1E28;
   border: none;
   border-radius: 16px;
   font-weight: 800;
-  font-size: 1.1rem;
-  text-decoration: none;
-  text-align: center;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: block;
   box-shadow: 0 10px 20px -5px rgba(200, 240, 50, 0.4);
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.3px;
 }
 
 .btn-market:hover {
   background: #0A1E28;
   color: #C8F032;
-  transform: translateY(-4px);
-  box-shadow: 0 15px 25px -5px rgba(10, 30, 40, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 28px -5px rgba(10, 30, 40, 0.3);
 }
 
-@media (max-width: 480px) {
-  .success-modal-content,
-  .confirm-modal-content {
-    padding: 40px 24px;
-    max-width: 100%;
+/* ════════════════════════════════════════
+   RESPONSIVE — MODALS
+════════════════════════════════════════ */
+@media (max-width: 540px) {
+  .confirm-modal-content,
+  .success-modal-content {
+    padding: 32px 20px 28px;
+    border-radius: 22px;
   }
+
+  .confirm-modal-content h2 { font-size: 19px; }
+  .success-title            { font-size: 1.4rem; }
+  .success-message          { font-size: 0.92rem; }
+  .success-icon-container   { width: 76px; height: 76px; }
+  .success-icon-container svg { width: 36px; height: 36px; }
+
+  /* Card shrinks on small screens */
   .mini-card-visual {
-    width: 280px;
-    height: 180px;
+    width: 100%;
+    max-width: 300px;
+    height: 175px;
+    padding: 16px;
   }
-  .success-title {
-    font-size: 1.5rem;
-  }
+
+  .mini-card-number  { font-size: 13px; letter-spacing: 1.5px; }
+  .mini-card-brand   { font-size: 15px; }
+
+  .modal-actions     { flex-direction: column; gap: 10px; }
+  .modal-actions button { width: 100%; }
+
+  .amount-confirm    { font-size: 15px; padding: 12px 14px; }
+  .btn-market        { padding: 15px; font-size: 0.92rem; }
+}
+
+@media (max-width: 380px) {
+  .mini-card-visual  { height: 160px; }
+  .mini-card-number  { font-size: 12px; }
+}
+
+/* Touch highlight */
+.confirm-btn,
+.cancel-btn,
+.btn-market,
+.modal-close-icon {
+  -webkit-tap-highlight-color: rgba(200, 240, 50, 0.15);
 }

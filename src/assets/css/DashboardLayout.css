@@ -1,32 +1,31 @@
-/* Dashboard Layout - Connects Sidebar and Header */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #F9FAFB;
+  background: #F4F7F6;
+  overflow-x: hidden;
 }
 
+/* Desktop: main area sits to the right of the fixed sidebar */
 .dashboard-main {
+  margin-left: 280px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: 280px; /* Match sidebar width */
+  min-height: 100vh;
   width: calc(100% - 280px);
+  overflow-x: hidden;
+  transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
 .dashboard-content {
-  padding: 2rem;
   flex: 1;
-  background-color: #F9FAFB;
+  overflow-x: hidden;
 }
 
-/* Responsive */
+/* ── Mobile: sidebar is off-screen, main takes full width ── */
 @media (max-width: 768px) {
   .dashboard-main {
-    margin-left: 80px;
-    width: calc(100% - 80px);
-  }
-  
-  .dashboard-content {
-    padding: 1.5rem;
+    margin-left: 0 !important;
+    width: 100% !important;
   }
 }

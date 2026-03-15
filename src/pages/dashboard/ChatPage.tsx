@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DashboardHeader from '../../components/DashboardHeader';
 import DashboardSidebar from '../../components/DashboardSidebar';
+import { SidebarProvider } from '../../context/SidebarContext';
 import '../../assets/css/ChatPage.css';
 
 interface Message {
@@ -11,7 +12,6 @@ interface Message {
 }
 
 const ChatPage: React.FC = () => {
-  // Static initial messages with fixed timestamps
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -59,7 +59,7 @@ const ChatPage: React.FC = () => {
     setMessages([...messages, userMessage]);
     setNewMessage('');
 
-    // Simulate support reply after a short delay
+    // Simulate support reply
     setTimeout(() => {
       setMessages(prev => [
         ...prev,
@@ -78,77 +78,77 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="dashboard-wrapper">
-      <DashboardSidebar />
-      
-      <div className="main-content">
-        <DashboardHeader />
+    <SidebarProvider>
+      <div className="dashboard-wrapper">
+        <DashboardSidebar />
         
-        <main className="chat-page">
-          <div className="chat-container">
-            {/* Chat Header */}
-            <div className="chat-header">
-              <div className="chat-header-info">
-                <div className="support-avatar">
-                  {/* Placeholder human avatar for support */}
-                  <img 
-                    src="https://i.pravatar.cc/150?u=support" 
-                    alt="Support Agent" 
-                  />
-                </div>
-                <div>
-                  <h2>Chat with Sabo</h2>
-                  <span className="online-status">● Online</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Messages Area */}
-            <div className="messages-container">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`message-wrapper ${message.sender === 'user' ? 'user-message' : 'support-message'}`}
-                >
-                  {message.sender === 'support' && (
-                    <div className="message-avatar">
-                      {/* Placeholder human avatar for support messages */}
-                      <img 
-                        src="https://i.pravatar.cc/150?u=support" 
-                        alt="Support Agent" 
-                      />
-                    </div>
-                  )}
-                  <div className="message-bubble">
-                    <div className="message-text">{message.text}</div>
-                    <div className="message-time">{formatTime(message.timestamp)}</div>
+        <div className="main-content">
+          <DashboardHeader />
+          
+          <main className="chat-page">
+            <div className="chat-container">
+              {/* Chat Header */}
+              <div className="chat-header">
+                <div className="chat-header-info">
+                  <div className="support-avatar">
+                    <img 
+                      src="https://i.pravatar.cc/150?u=support" 
+                      alt="Support Agent" 
+                    />
+                  </div>
+                  <div>
+                    <h2>Chat with Sabo</h2>
+                    <span className="online-status">● Online</span>
                   </div>
                 </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
+              </div>
 
-            {/* Input Area */}
-            <form className="chat-input-area" onSubmit={handleSendMessage}>
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="Type your message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-              />
-              <button type="submit" disabled={!newMessage.trim()}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="22" y1="2" x2="11" y2="13" />
-                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                </svg>
-                Send
-              </button>
-            </form>
-          </div>
-        </main>
+              {/* Messages Area */}
+              <div className="messages-container">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`message-wrapper ${message.sender === 'user' ? 'user-message' : 'support-message'}`}
+                  >
+                    {message.sender === 'support' && (
+                      <div className="message-avatar">
+                        <img 
+                          src="https://i.pravatar.cc/150?u=support" 
+                          alt="Support Agent" 
+                        />
+                      </div>
+                    )}
+                    <div className="message-bubble">
+                      <div className="message-text">{message.text}</div>
+                      <div className="message-time">{formatTime(message.timestamp)}</div>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input Area */}
+              <form className="chat-input-area" onSubmit={handleSendMessage}>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Type your message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                />
+                <button type="submit" disabled={!newMessage.trim()}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                  Send
+                </button>
+              </form>
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

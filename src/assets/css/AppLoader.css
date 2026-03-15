@@ -1,0 +1,180 @@
+/* ════════════════════════════════════════
+   APP LOADER
+════════════════════════════════════════ */
+
+.app-loader {
+  position: fixed;
+  inset: 0;
+  background: #0A1E28;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  overflow: hidden;
+  animation: loaderFadeOut 0.4s ease forwards;
+  animation-delay: 1.6s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes loaderFadeOut {
+  from { opacity: 1; pointer-events: all; }
+  to   { opacity: 0; pointer-events: none; }
+}
+
+/* ── Background blobs ── */
+.loader-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: blobPulse 4s ease-in-out infinite alternate;
+}
+
+.loader-blob-1 {
+  width: 400px;
+  height: 400px;
+  background: rgba(200, 240, 50, 0.08);
+  top: -100px;
+  right: -80px;
+  animation-delay: 0s;
+}
+
+.loader-blob-2 {
+  width: 300px;
+  height: 300px;
+  background: rgba(200, 240, 50, 0.05);
+  bottom: -80px;
+  left: -60px;
+  animation-delay: 1.5s;
+}
+
+@keyframes blobPulse {
+  from { transform: scale(1)   rotate(0deg); }
+  to   { transform: scale(1.2) rotate(15deg); }
+}
+
+/* ── Centre content ── */
+.loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: contentRise 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes contentRise {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Logo ── */
+.loader-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.loader-logo-icon {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.loader-dot-outer {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  top: 0;
+  left: 0;
+  animation: dotSpin 2s linear infinite;
+}
+
+.loader-dot-inner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 3px solid #C8F032;
+  border-radius: 50%;
+  bottom: 0;
+  right: 0;
+  animation: dotSpinReverse 2s linear infinite;
+}
+
+@keyframes dotSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes dotSpinReverse {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+
+.loader-brand {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  text-transform: lowercase;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ── Tagline ── */
+.loader-tagline {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+/* ── Progress bar ── */
+.loader-bar-track {
+  width: 220px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 0.75rem;
+}
+
+.loader-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #C8F032, #a8d020);
+  border-radius: 99px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(200, 240, 50, 0.5);
+}
+
+/* ── Percentage ── */
+.loader-percent {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.30);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Bottom footer ── */
+.loader-footer {
+  position: absolute;
+  bottom: 2rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.18);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .loader-brand    { font-size: 2.2rem; }
+  .loader-bar-track { width: 170px; }
+  .loader-blob-1   { width: 280px; height: 280px; }
+  .loader-blob-2   { width: 200px; height: 200px; }
+}

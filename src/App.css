@@ -1,13 +1,12 @@
-/* -----------------------------
-   SABO App Layout
------------------------------- */
+/* ════════════════════════════════════════
+   SABO APP LAYOUT
+════════════════════════════════════════ */
 
 #root {
   min-height: 100vh;
 }
 
-/* Navbar */
-
+/* ── Navbar ── */
 .navbar {
   background: var(--bg-white);
   border-bottom: 1px solid var(--border-light);
@@ -20,16 +19,14 @@
   height: 70px;
 }
 
-/* Logo */
-
+/* ── Logo ── */
 .logo {
   font-weight: 700;
   font-size: 20px;
   color: var(--dark);
 }
 
-/* Hero */
-
+/* ── Hero ── */
 .hero {
   padding: 120px 0;
   background: var(--bg-base);
@@ -46,16 +43,14 @@
   margin-top: 16px;
 }
 
-/* Feature grid */
-
+/* ── Feature grid ── */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 30px;
 }
 
-/* Footer */
-
+/* ── Footer ── */
 .footer {
   background: var(--dark);
   color: white;
@@ -63,16 +58,20 @@
   margin-top: 80px;
 }
 
-/* Utility */
+/* ── Utilities ── */
+.text-center { text-align: center; }
+.mt-20       { margin-top: 20px; }
+.mt-40       { margin-top: 40px; }
 
-.text-center {
-  text-align: center;
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero          { padding: 80px 0; }
+  .hero-title    { font-size: 32px; }
+  .hero-subtitle { font-size: 16px; }
+  .features-grid { grid-template-columns: 1fr; gap: 20px; }
 }
 
-.mt-20 {
-  margin-top: 20px;
-}
-
-.mt-40 {
-  margin-top: 40px;
+@media (max-width: 480px) {
+  .hero       { padding: 60px 0; }
+  .hero-title { font-size: 26px; }
 }
