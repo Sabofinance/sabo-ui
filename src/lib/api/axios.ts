@@ -7,12 +7,13 @@ import axios, {
 import type { ApiResponse, AuthTokens } from "../../modules/auth/types/type";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL;
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:3001";
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
+    "Accept": "application/json",
   },
 });
 
@@ -21,7 +22,11 @@ api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken && config.headers) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+      if (typeof config.headers.set === "function") {
+        config.headers.set("Authorization", `Bearer ${accessToken}`);
+      } else {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
     }
     return config;
   },
@@ -60,7 +65,11 @@ api.interceptors.response.use(
         })
           .then((token) => {
             if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
+              if (typeof originalRequest.headers.set === "function") {
+                originalRequest.headers.set("Authorization", `Bearer ${token}`);
+              } else {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+              }
             }
             return api(originalRequest);
           })
@@ -79,20 +88,24 @@ api.interceptors.response.use(
       }
 
       try {
-        const response = await axios.post<ApiResponse<AuthTokens>>(
+        const response = await axios.post<ApiResponse<{ tokens: AuthTokens }>>(
           `${API_BASE_URL}/auth/refresh-token`,
           { refreshToken },
         );
 
-        if (response.data.success && response.data.data) {
+        if (response.data.success && response.data.data?.tokens) {
           const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-            response.data.data;
+            response.data.data.tokens;
 
           localStorage.setItem("accessToken", newAccessToken);
           localStorage.setItem("refreshToken", newRefreshToken);
 
           if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            if (typeof originalRequest.headers.set === "function") {
+              originalRequest.headers.set("Authorization", `Bearer ${newAccessToken}`);
+            } else {
+              originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            }
           }
 
           processQueue(null, newAccessToken);

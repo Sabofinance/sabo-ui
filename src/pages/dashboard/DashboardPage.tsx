@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SellModal from '../../components/SellModal';
 import ActivityChart from '../../components/ActivityChart';
 import TransactionHistory from '../../components/TransactionHistory';
+import { ratesApi, sabitsApi, walletsApi } from '../../lib/api';
 import '../../assets/css/DashboardPage.css';
 
 const mockWallets = [
@@ -37,11 +38,63 @@ const FLAG_URLS: Record<string, string> = {
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeWalletIndex, setActiveWalletIndex] = useState(0);
+  const [wallets, setWallets] = useState(mockWallets);
+  const [marketListings, setMarketListings] = useState(mockSellers);
+  const [rate, setRate] = useState<number | null>(null);
   const [isSellModalOpen,   setIsSellModalOpen]   = useState(false);
 
-  const activeWallet = mockWallets[activeWalletIndex];
-  const nextWallet   = () => setActiveWalletIndex(prev => prev === 0 ? 1 : 0);
-  const prevWallet   = () => setActiveWalletIndex(prev => prev === 0 ? 1 : 0);
+  useEffect(() => {
+    const load = async () => {
+      const [walletRes, listingRes, ratesRes] = await Promise.all([
+        walletsApi.list(),
+        sabitsApi.list({ status: "active", limit: 6 }),
+        ratesApi.getByPair("NGN", "GBP"),
+      ]);
+
+      if (walletRes.success && Array.isArray(walletRes.data) && walletRes.data.length > 0) {
+        setWallets(
+          walletRes.data.map((w: Record<string, unknown>, index: number) => ({
+            id: String(w.currency || index),
+            currency: String(w.currency || "NGN"),
+            balance: Number(w.balance || 0),
+            symbol: String(w.symbol || (w.currency === "GBP" ? "£" : "₦")),
+            cardNumber: String(w.cardNumber || "**** •••• •••• 0000"),
+            cardHolder: String(w.cardHolder || "SABO USER"),
+            expiry: String(w.expiry || "12/30"),
+            income: Number(w.income || 0),
+            outcome: Number(w.outcome || 0),
+            limit: Number(w.limit || 0),
+          })),
+        );
+      }
+
+      if (listingRes.success && Array.isArray(listingRes.data) && listingRes.data.length > 0) {
+        setMarketListings(
+          listingRes.data.map((item: Record<string, unknown>, index: number) => ({
+            id: Number(item.id || index + 1),
+            name: String(item.sellerName || item.name || "Trader"),
+            avatar: String(item.avatar || `https://i.pravatar.cc/150?u=${index + 1}`),
+            amount: Number(item.amount || 0),
+            currency: String(item.currency || "NGN"),
+            rate: Number(item.rate || 0),
+            rating: Number(item.rating || 0),
+            completed: Number(item.completed || 0),
+            type: item.type === "sell" ? "sell" : "buy",
+          })),
+        );
+      }
+
+      if (ratesRes.success && ratesRes.data && typeof ratesRes.data === "object") {
+        const typed = ratesRes.data as Record<string, unknown>;
+        setRate(Number(typed.rate || typed.value || 0));
+      }
+    };
+    void load();
+  }, []);
+
+  const activeWallet = wallets[activeWalletIndex] || wallets[0];
+  const nextWallet   = () => setActiveWalletIndex((prev) => (wallets.length ? (prev + 1) % wallets.length : 0));
+  const prevWallet   = () => setActiveWalletIndex((prev) => (wallets.length ? (prev - 1 + wallets.length) % wallets.length : 0));
 
   const handleSellSubmit       = (amount: number, rate: number) =>
     console.log(`Listing Sabit: ${amount} ${activeWallet.currency} at ₦${rate}/1 ${activeWallet.currency}`);
@@ -50,6 +103,7 @@ const DashboardPage: React.FC = () => {
 
   const formatNumber     = (num: number) => new Intl.NumberFormat('en-NG').format(num);
   const getCurrencySymbol = (c: string)  => c === 'NGN' ? '₦' : c === 'GBP' ? '£' : '';
+  const displayRate = useMemo(() => rate ?? 1650, [rate]);
 
   return (
     <>
@@ -165,7 +219,7 @@ const DashboardPage: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {mockSellers.map(seller => (
+                        {marketListings.map(seller => (
                           <tr key={seller.id}>
                             <td>
                               <div className="seller-cell">
@@ -289,7 +343,7 @@ const DashboardPage: React.FC = () => {
                           </div>
                           <span className="pair-text">NGN → GBP</span>
                         </div>
-                        <div className="rate-value-large">₦1,650.00</div>
+                        <div className="rate-value-large">₦{formatNumber(displayRate)}</div>
                         <div className="rate-sub">per £1</div>
                       </div>
 
@@ -314,7 +368,7 @@ const DashboardPage: React.FC = () => {
                           </div>
                           <span className="pair-text">GBP → NGN</span>
                         </div>
-                        <div className="rate-value-large">₦1,650.00</div>
+                        <div className="rate-value-large">₦{formatNumber(displayRate)}</div>
                         <div className="rate-sub">per £1</div>
                       </div>
 

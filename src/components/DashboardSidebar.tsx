@@ -117,6 +117,51 @@ const DashboardSidebar: React.FC = () => {
                 <span className="indicator-dot" />
               </NavLink>
             </li>
+            <li className="nav-item">
+              <NavLink to="/dashboard/wallets" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
+                <span className="link-text">Wallets</span><span className="indicator-dot" />
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/dashboard/ledger" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
+                <span className="link-text">Ledger</span><span className="indicator-dot" />
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/dashboard/deposits" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
+                <span className="link-text">Deposits</span><span className="indicator-dot" />
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/dashboard/withdrawals" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
+                <span className="link-text">Withdrawals</span><span className="indicator-dot" />
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/dashboard/beneficiaries" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
+                <span className="link-text">Beneficiaries</span><span className="indicator-dot" />
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/dashboard/conversions" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
+                <span className="link-text">Conversions</span><span className="indicator-dot" />
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/dashboard/trades" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
+                <span className="link-text">Trades</span><span className="indicator-dot" />
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/dashboard/disputes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
+                <span className="link-text">Disputes</span><span className="indicator-dot" />
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/dashboard/kyc" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
+                <span className="link-text">KYC</span><span className="indicator-dot" />
+              </NavLink>
+            </li>
 
             <li className="nav-item">
               <NavLink

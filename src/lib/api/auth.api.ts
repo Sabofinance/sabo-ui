@@ -13,8 +13,8 @@ import type {
 export const authApi = {
   loginUser: async (data: LoginRequest): Promise<ApiEnvelope<AuthTokens>> => {
     try {
-      const response = await api.post<ApiEnvelope<AuthTokens>>("/auth/login", data);
-      return normalizeSuccess<AuthTokens>(response.data?.data ?? null);
+      const response = await api.post<ApiEnvelope<{ tokens: AuthTokens }>>("/auth/login", data);
+      return normalizeSuccess<AuthTokens>(response.data?.data?.tokens ?? null);
     } catch (error) {
       return normalizeError(error);
     }
@@ -31,8 +31,8 @@ export const authApi = {
 
   verifyOtp: async (data: OtpRequest): Promise<ApiEnvelope<AuthTokens>> => {
     try {
-      const response = await api.post<ApiEnvelope<AuthTokens>>("/auth/verify-otp", data);
-      return normalizeSuccess<AuthTokens>(response.data?.data ?? null);
+      const response = await api.post<ApiEnvelope<{ tokens: AuthTokens }>>("/auth/verify-otp", data);
+      return normalizeSuccess<AuthTokens>(response.data?.data?.tokens ?? null);
     } catch (error) {
       return normalizeError(error);
     }
@@ -58,8 +58,8 @@ export const authApi = {
 
   refreshToken: async (refreshToken: string): Promise<ApiEnvelope<AuthTokens>> => {
     try {
-      const response = await api.post<ApiEnvelope<AuthTokens>>("/auth/refresh-token", { refreshToken });
-      return normalizeSuccess<AuthTokens>(response.data?.data ?? null);
+      const response = await api.post<ApiEnvelope<{ tokens: AuthTokens }>>("/auth/refresh-token", { refreshToken });
+      return normalizeSuccess<AuthTokens>(response.data?.data?.tokens ?? null);
     } catch (error) {
       return normalizeError(error);
     }

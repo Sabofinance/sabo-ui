@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ledgerApi } from '../../lib/api';
 import '../../assets/css/HistoryPage.css';
 
 interface Transaction {
@@ -23,7 +24,7 @@ const HistoryPage: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  const transactions: Transaction[] = [
+  const [transactions, setTransactions] = useState<Transaction[]>([
     {
       id: 1,
       type: 'sell',
@@ -104,7 +105,34 @@ const HistoryPage: React.FC = () => {
       date: '2024-03-11T14:30:00',
       reference: 'TXN-2024-005'
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    const loadLedger = async () => {
+      const response = await ledgerApi.listEntries();
+      if (!response.success || !Array.isArray(response.data)) return;
+
+      const mapped: Transaction[] = response.data.map((entry: Record<string, unknown>, index: number) => ({
+        id: Number(entry.id || index + 1),
+        type: entry.type === 'sell' ? 'sell' : 'buy',
+        currency: (String(entry.currency || 'NGN') as Transaction['currency']),
+        amount: Number(entry.amount || 0),
+        rate: Number(entry.rate || 0),
+        total: Number(entry.total || 0),
+        counterparty: {
+          name: String(entry.counterpartyName || 'Trader'),
+          avatar: String(entry.counterpartyAvatar || `https://i.pravatar.cc/150?u=ledger-${index}`),
+          verified: Boolean(entry.verified ?? true),
+        },
+        status: (String(entry.status || 'pending') as Transaction['status']),
+        date: String(entry.date || new Date().toISOString()),
+        reference: String(entry.reference || `TXN-${Date.now()}-${index}`),
+      }));
+      setTransactions(mapped);
+    };
+
+    void loadLedger();
+  }, []);
 
   const formatNumber = (num: number): string => {
     return new Intl.NumberFormat('en-NG').format(num);

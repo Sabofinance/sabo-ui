@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Header } from "../components/Header";
 import { useAuth } from "../context/AuthContext";
@@ -9,7 +9,6 @@ import loginImage from "../assets/images/3d-illustration-login.png";
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
   
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginRequest>();

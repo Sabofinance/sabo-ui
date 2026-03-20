@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { ChangeEvent } from 'react';
 import '../../assets/css/SettingsPage.css';
+import authApi from '../../lib/api/auth.api';
 
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'security' | 'notifications' | 'appearance'>('security');
@@ -21,16 +22,25 @@ const SettingsPage: React.FC = () => {
   // Appearance states
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('light');
   const [accentColor, setAccentColor] = useState('#C8F032');
+  const [passwordMessage, setPasswordMessage] = useState('');
 
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Validation and API call would go here
-    console.log('Password change requested', passwordData);
+    setPasswordMessage('');
+    if (!passwordData.current || !passwordData.new || passwordData.new !== passwordData.confirm) {
+      setPasswordMessage('Please provide valid password details.');
+      return;
+    }
+    const response = await authApi.changePassword({
+      currentPassword: passwordData.current,
+      newPassword: passwordData.new,
+    });
+    setPasswordMessage(response.success ? 'Password updated successfully.' : (response.error?.message || 'Failed to update password.'));
   };
 
   return (
@@ -106,6 +116,7 @@ const SettingsPage: React.FC = () => {
                       />
                     </div>
                     <button type="submit" className="btn-primary">Update Password</button>
+                    {passwordMessage && <p>{passwordMessage}</p>}
                   </form>
 
                   {/* Two-Factor Authentication */}

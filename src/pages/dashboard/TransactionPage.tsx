@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { tradesApi } from '../../lib/api';
 
 import '../../assets/css/TransactionPage.css';
 import '../../assets/css/TransactionModals.css';
@@ -112,9 +113,18 @@ const TransactionPage: React.FC = () => {
     setShowConfirmModal(true);
   };
 
-  const handleConfirmPayment = () => {
+  const handleConfirmPayment = async () => {
+    const response = await tradesApi.execute(String(listing.id || "new"), {
+      listingId: listing.id,
+      type: listing.type,
+      currency: listing.currency,
+      amount: amountToDisplay,
+      rate: listing.rate,
+    });
     setShowConfirmModal(false);
-    setShowSuccessModal(true);
+    if (response.success) {
+      setShowSuccessModal(true);
+    }
   };
 
   const handleCloseSuccess = () => {

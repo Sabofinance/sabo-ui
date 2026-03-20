@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Header } from "../components/Header";
 import { useAuth } from "../context/AuthContext";
+import authApi from "../lib/api/auth.api";
 import type { OtpRequest } from "../modules/auth/types/type";
 import "../assets/css/AuthPage.css";
 import loginImage from "../assets/images/3d-illustration-login.png";
@@ -12,7 +13,9 @@ const VerifyOtpPage: React.FC = () => {
   const { verifyOtp } = useAuth();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<OtpRequest>();
   const [generalError, setGeneralError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [email, setEmail] = useState("");
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     const pendingEmail = sessionStorage.getItem('pendingEmail');
@@ -25,12 +28,27 @@ const VerifyOtpPage: React.FC = () => {
 
   const onSubmit = async (data: OtpRequest) => {
     setGeneralError("");
+    setSuccessMessage("");
     try {
       await verifyOtp({ email, otp: data.otp });
       navigate('/dashboard');
     } catch (error: any) {
       setGeneralError(error.message || "Invalid OTP. Please try again.");
     }
+  };
+
+  const handleResendOtp = async () => {
+    if (!email) return;
+    setGeneralError("");
+    setSuccessMessage("");
+    setResending(true);
+    const response = await authApi.resendOtp({ email });
+    if (!response.success) {
+      setGeneralError(response.error?.message || "Unable to resend OTP.");
+    } else {
+      setSuccessMessage("A new OTP has been sent to your email.");
+    }
+    setResending(false);
   };
 
   return (
@@ -50,6 +68,7 @@ const VerifyOtpPage: React.FC = () => {
               </p>
 
               {generalError && <div className="general-error">{generalError}</div>}
+              {successMessage && <div className="success-message">{successMessage}</div>}
 
               <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
                 <div className="form-group">
@@ -79,6 +98,10 @@ const VerifyOtpPage: React.FC = () => {
               </form>
 
               <p className="auth-switch">
+                <button type="button" className="auth-link" onClick={handleResendOtp} disabled={resending}>
+                  {resending ? "Resending..." : "Resend OTP"}
+                </button>
+                {" · "}
                 <Link to="/login" className="auth-link">Back to Login</Link>
               </p>
             </div>

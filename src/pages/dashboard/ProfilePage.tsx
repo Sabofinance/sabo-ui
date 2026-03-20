@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import '../../assets/css/ProfilePage.css';
 import { useAuth } from '../../context/AuthContext';
+import { walletsApi } from '../../lib/api';
 
 interface Wallet {
   currency: string;
@@ -54,7 +55,7 @@ const ProfilePage: React.FC = () => {
     kycVerified: true,
   });
 
-  const [wallets] = useState<Wallet[]>([
+  const [wallets, setWallets] = useState<Wallet[]>([
     {
       currency: 'NGN',
       balance: 4950000.0,
@@ -78,6 +79,25 @@ const ProfilePage: React.FC = () => {
       expiry: '09/24',
     },
   ]);
+
+  useEffect(() => {
+    const loadWallets = async () => {
+      const response = await walletsApi.list();
+      if (!response.success || !Array.isArray(response.data)) return;
+      setWallets(response.data.map((wallet: Record<string, unknown>) => ({
+        currency: String(wallet.currency || 'NGN'),
+        balance: Number(wallet.balance || 0),
+        symbol: String(wallet.symbol || '₦'),
+        flag: String(wallet.flag || '🏦'),
+        accountNumber: String(wallet.accountNumber || '0000000000'),
+        accountName: String(wallet.accountName || user.displayName),
+        bank: String(wallet.bank || 'Sabo Bank'),
+        cardNumber: String(wallet.cardNumber || '**** **** **** 0000'),
+        expiry: String(wallet.expiry || '12/30'),
+      })));
+    };
+    void loadWallets();
+  }, [user.displayName]);
 
   const formatNumber = (num: number): string =>
     new Intl.NumberFormat('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
