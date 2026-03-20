@@ -37,7 +37,7 @@ const ConversionsTrendBarChart: React.FC<ConversionsTrendBarChartProps> = ({ poi
     );
   }
 
-  if (!safePoints.length || maxValue <= 0) {
+  if (!safePoints.length) {
     return (
       <div className="utility-card chart-card">
         <div className="chart-header">
@@ -54,7 +54,8 @@ const ConversionsTrendBarChart: React.FC<ConversionsTrendBarChartProps> = ({ poi
     return `₦${value.toFixed(0)}`;
   };
 
-  const scale = (v: number) => ((Number(v) || 0) / maxValue) * 120;
+  const maxValueForScale = maxValue > 0 ? maxValue : 1;
+  const scale = (v: number) => ((Number(v) || 0) / maxValueForScale) * 120;
 
   return (
     <div className="utility-card chart-card">

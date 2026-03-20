@@ -136,7 +136,7 @@ const ProfilePage: React.FC = () => {
 
   const handleSave = () => {
     setIsEditing(false);
-    console.log('Saved:', user);
+    // Keep this UI silent; saving is local-only unless wired to backend.
   };
 
   return (

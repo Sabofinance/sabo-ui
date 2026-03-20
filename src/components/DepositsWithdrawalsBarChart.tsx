@@ -42,7 +42,7 @@ const DepositsWithdrawalsBarChart: React.FC<DepositsWithdrawalsBarChartProps> = 
     );
   }
 
-  if (!safePoints.length || maxValue <= 0) {
+  if (!safePoints.length) {
     return (
       <div className="utility-card chart-card">
         <div className="chart-header">
@@ -62,7 +62,8 @@ const DepositsWithdrawalsBarChart: React.FC<DepositsWithdrawalsBarChartProps> = 
   const depositsTotal = safePoints.reduce((s, p) => s + (Number(p.deposits) || 0), 0);
   const withdrawalsTotal = safePoints.reduce((s, p) => s + (Number(p.withdrawals) || 0), 0);
 
-  const scale = (v: number) => ((Number(v) || 0) / maxValue) * 120;
+  const maxValueForScale = maxValue > 0 ? maxValue : 1;
+  const scale = (v: number) => ((Number(v) || 0) / maxValueForScale) * 120;
 
   return (
     <div className="utility-card chart-card">

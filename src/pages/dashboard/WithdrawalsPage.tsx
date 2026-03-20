@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { withdrawalsApi } from '../../lib/api';
 import '../../assets/css/HistoryPage.css';
+import { useToast } from '../../context/ToastContext';
 
 const WithdrawalsPage: React.FC = () => {
   const [withdrawals, setWithdrawals] = useState<Record<string, unknown>[]>([]);
-  const [error, setError] = useState('');
   const [processingId, setProcessingId] = useState<string>('');
+  const toast = useToast();
 
   useEffect(() => {
     const load = async () => {
       const response = await withdrawalsApi.list();
       if (response.success && Array.isArray(response.data)) {
         setWithdrawals(response.data);
-        setError('');
       } else {
-        setError(response.error?.message || 'Failed to load withdrawals');
+        const msg = response.error?.message || 'Failed to load withdrawals';
+        toast.error(msg);
       }
     };
     void load();
@@ -25,7 +26,8 @@ const WithdrawalsPage: React.FC = () => {
     if (response.success && Array.isArray(response.data)) {
       setWithdrawals(response.data);
     } else {
-      setError(response.error?.message || 'Failed to load withdrawals');
+      const msg = response.error?.message || 'Failed to load withdrawals';
+      toast.error(msg);
     }
   };
 
@@ -36,11 +38,11 @@ const WithdrawalsPage: React.FC = () => {
 
   const handleApprove = async (withdrawalId: string) => {
     setProcessingId(withdrawalId);
-    setError('');
     const res = await withdrawalsApi.approve(withdrawalId);
     setProcessingId('');
     if (!res.success) {
-      setError(res.error?.message || 'Failed to approve withdrawal');
+      const msg = res.error?.message || 'Failed to approve withdrawal';
+      toast.error(msg);
       return;
     }
     await reload();
@@ -48,11 +50,11 @@ const WithdrawalsPage: React.FC = () => {
 
   const handleReject = async (withdrawalId: string) => {
     setProcessingId(withdrawalId);
-    setError('');
     const res = await withdrawalsApi.reject(withdrawalId);
     setProcessingId('');
     if (!res.success) {
-      setError(res.error?.message || 'Failed to reject withdrawal');
+      const msg = res.error?.message || 'Failed to reject withdrawal';
+      toast.error(msg);
       return;
     }
     await reload();
@@ -99,7 +101,6 @@ const WithdrawalsPage: React.FC = () => {
         </table>
       </div>
 
-      {error && <p style={{ marginTop: '1rem', color: '#c62828', textAlign: 'center' }}>{error}</p>}
     </main>
   );
 };

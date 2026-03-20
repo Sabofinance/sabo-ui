@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { depositsApi } from '../../lib/api';
 import '../../assets/css/HistoryPage.css';
+import { useToast } from '../../context/ToastContext';
 
 const DepositsPage: React.FC = () => {
   const [deposits, setDeposits] = useState<Record<string, unknown>[]>([]);
-  const [error, setError] = useState('');
   const [processingId, setProcessingId] = useState<string>('');
+  const toast = useToast();
 
   useEffect(() => {
     const load = async () => {
       const response = await depositsApi.list();
       if (response.success && Array.isArray(response.data)) {
         setDeposits(response.data);
-        setError('');
       } else {
-        setError(response.error?.message || 'Failed to load deposits');
+        const msg = response.error?.message || 'Failed to load deposits';
+        toast.error(msg);
       }
     };
     void load();
@@ -25,7 +26,8 @@ const DepositsPage: React.FC = () => {
     if (response.success && Array.isArray(response.data)) {
       setDeposits(response.data);
     } else {
-      setError(response.error?.message || 'Failed to load deposits');
+      const msg = response.error?.message || 'Failed to load deposits';
+      toast.error(msg);
     }
   };
 
@@ -36,11 +38,11 @@ const DepositsPage: React.FC = () => {
 
   const handleApprove = async (depositId: string) => {
     setProcessingId(depositId);
-    setError('');
     const res = await depositsApi.approve(depositId);
     setProcessingId('');
     if (!res.success) {
-      setError(res.error?.message || 'Failed to approve deposit');
+      const msg = res.error?.message || 'Failed to approve deposit';
+      toast.error(msg);
       return;
     }
     await reload();
@@ -48,11 +50,11 @@ const DepositsPage: React.FC = () => {
 
   const handleReject = async (depositId: string) => {
     setProcessingId(depositId);
-    setError('');
     const res = await depositsApi.reject(depositId);
     setProcessingId('');
     if (!res.success) {
-      setError(res.error?.message || 'Failed to reject deposit');
+      const msg = res.error?.message || 'Failed to reject deposit';
+      toast.error(msg);
       return;
     }
     await reload();
@@ -99,7 +101,6 @@ const DepositsPage: React.FC = () => {
         </table>
       </div>
 
-      {error && <p style={{ marginTop: '1rem', color: '#c62828', textAlign: 'center' }}>{error}</p>}
     </main>
   );
 };

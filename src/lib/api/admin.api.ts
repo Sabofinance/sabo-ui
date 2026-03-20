@@ -1,3 +1,7 @@
+export const adminKycApi = {
+  approve: (id: string) => apiRequest.post(`/admin/kyc/${id}/approve`),
+  reject: (id: string, reason: string) => apiRequest.post(`/admin/kyc/${id}/reject`, { reason }),
+};
 import { apiRequest } from "./request";
 
 export const adminApi = {

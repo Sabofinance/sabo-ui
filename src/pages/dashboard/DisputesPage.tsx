@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { disputesApi } from '../../lib/api';
 import '../../assets/css/HistoryPage.css';
+import { useToast } from '../../context/ToastContext';
 
 const DisputesPage: React.FC = () => {
   const [disputes, setDisputes] = useState<Record<string, unknown>[]>([]);
-  const [error, setError] = useState('');
   const [processingId, setProcessingId] = useState<string>('');
+  const toast = useToast();
 
   useEffect(() => {
     const load = async () => {
       const response = await disputesApi.list();
       if (response.success && Array.isArray(response.data)) {
         setDisputes(response.data);
-        setError('');
       } else {
-        setError(response.error?.message || 'Failed to load disputes');
+        const msg = response.error?.message || 'Failed to load disputes';
+        toast.error(msg);
       }
     };
     void load();
@@ -25,7 +26,8 @@ const DisputesPage: React.FC = () => {
     if (response.success && Array.isArray(response.data)) {
       setDisputes(response.data);
     } else {
-      setError(response.error?.message || 'Failed to load disputes');
+      const msg = response.error?.message || 'Failed to load disputes';
+      toast.error(msg);
     }
   };
 
@@ -33,11 +35,11 @@ const DisputesPage: React.FC = () => {
 
   const handleResolve = async (disputeId: string) => {
     setProcessingId(disputeId);
-    setError('');
     const res = await disputesApi.resolve(disputeId);
     setProcessingId('');
     if (!res.success) {
-      setError(res.error?.message || 'Failed to resolve dispute');
+      const msg = res.error?.message || 'Failed to resolve dispute';
+      toast.error(msg);
       return;
     }
     await reload();
@@ -45,11 +47,11 @@ const DisputesPage: React.FC = () => {
 
   const handleClose = async (disputeId: string) => {
     setProcessingId(disputeId);
-    setError('');
     const res = await disputesApi.close(disputeId);
     setProcessingId('');
     if (!res.success) {
-      setError(res.error?.message || 'Failed to close dispute');
+      const msg = res.error?.message || 'Failed to close dispute';
+      toast.error(msg);
       return;
     }
     await reload();
@@ -103,7 +105,6 @@ const DisputesPage: React.FC = () => {
         </table>
       </div>
 
-      {error && <p style={{ marginTop: '1rem', color: '#c62828', textAlign: 'center' }}>{error}</p>}
     </main>
   );
 };

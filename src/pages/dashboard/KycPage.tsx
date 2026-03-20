@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { kycApi } from '../../lib/api';
+import { useToast } from '../../context/ToastContext';
+import { useNotifications } from '../../context/NotificationContext';
 import '../../assets/css/HistoryPage.css';
 
 const KycPage: React.FC = () => {
   const [status, setStatus] = useState('pending');
-  const [documentNumber, setDocumentNumber] = useState('');
-  const [message, setMessage] = useState('');
+  const [documentType, setDocumentType] = useState('passport');
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [selfieFile, setSelfieFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+  const { fetchNotifications } = useNotifications();
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -18,17 +24,23 @@ const KycPage: React.FC = () => {
   }, []);
 
   const handleSubmit = async () => {
-    if (!documentNumber.trim()) {
-      setMessage('Please enter a document number.');
+    if (!documentFile || !selfieFile) {
+      toast.error('Please upload both document and selfie.');
       return;
     }
-    const response = await kycApi.submit({ documentNumber });
+    setLoading(true);
+    const formData = new FormData();
+    formData.append('document_type', documentType);
+    formData.append('document', documentFile);
+    formData.append('selfie', selfieFile);
+    const response = await kycApi.upload(formData);
+    setLoading(false);
     if (response.success) {
-      setMessage('KYC submitted successfully. Our team will review it shortly.');
+      toast.info('Your KYC documents have been successfully uploaded and are now pending review.', 'KYC Submitted');
       setStatus('pending');
+      fetchNotifications();
     } else {
-      const errorMsg = response.error?.message || (typeof response.error === 'string' ? response.error : 'Failed to submit KYC.');
-      setMessage(errorMsg);
+      toast.error('Failed to submit KYC. Please try again.');
     }
   };
 
@@ -57,24 +69,24 @@ const KycPage: React.FC = () => {
       {status !== 'verified' && (
         <div className="filters-section" style={{ display: 'block', padding: '2rem' }}>
           <h3 style={{ marginBottom: '1rem' }}>Submit Documents</h3>
-          <p style={{ color: '#666', marginBottom: '1.5rem' }}>Please provide your government-issued ID number to verify your account.</p>
+          <p style={{ color: '#666', marginBottom: '1.5rem' }}>Please upload your government-issued ID and a selfie for verification.</p>
           <div className="filter-group" style={{ maxWidth: '400px', marginBottom: '1.5rem' }}>
-            <label>National ID / Passport / Driver's License Number</label>
-            <input 
-              className="filter-select"
-              style={{ width: '100%', padding: '0.8rem' }}
-              placeholder="e.g. A12345678"
-              value={documentNumber} 
-              onChange={(e) => setDocumentNumber(e.target.value)} 
-            />
+            <label>Document Type</label>
+            <select className="filter-select" value={documentType} onChange={e => setDocumentType(e.target.value)}>
+              <option value="passport">Passport</option>
+              <option value="national_id">National ID</option>
+              <option value="driver_license">Driver's License</option>
+            </select>
           </div>
-          <button className="export-btn" onClick={handleSubmit} style={{ width: '200px' }}>Submit for Review</button>
-        </div>
-      )}
-
-      {message && (
-        <div className={`notification ${message.includes('successfully') ? 'success' : 'error'}`} style={{ marginTop: '1rem', padding: '1rem', borderRadius: '8px', background: message.includes('successfully') ? '#e8f5e9' : '#ffebee', color: message.includes('successfully') ? '#2e7d32' : '#c62828' }}>
-          {message}
+          <div className="filter-group" style={{ maxWidth: '400px', marginBottom: '1.5rem' }}>
+            <label>Upload Document</label>
+            <input type="file" accept="image/*,application/pdf" onChange={e => setDocumentFile(e.target.files?.[0] || null)} />
+          </div>
+          <div className="filter-group" style={{ maxWidth: '400px', marginBottom: '1.5rem' }}>
+            <label>Upload Selfie</label>
+            <input type="file" accept="image/*" onChange={e => setSelfieFile(e.target.files?.[0] || null)} />
+          </div>
+          <button className="export-btn" onClick={handleSubmit} style={{ width: '200px' }} disabled={loading}>{loading ? 'Submitting...' : 'Submit for Review'}</button>
         </div>
       )}
     </main>

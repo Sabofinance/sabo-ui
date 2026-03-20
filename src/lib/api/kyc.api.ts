@@ -2,7 +2,7 @@ import { apiRequest } from "./request";
 
 export const kycApi = {
   getStatus: () => apiRequest.get("/kyc/status"),
-  submit: (payload: Record<string, unknown>) => apiRequest.post("/kyc", payload),
+  upload: (formData: FormData) => apiRequest.post("/kyc/upload", formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   update: (payload: Record<string, unknown>) => apiRequest.patch("/kyc", payload),
   listSubmissions: (params?: Record<string, unknown>) => apiRequest.get("/kyc/submissions", params),
   verify: (kycId: string, payload?: Record<string, unknown>) => apiRequest.patch(`/kyc/${kycId}/verify`, payload),

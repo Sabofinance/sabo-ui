@@ -1,5 +1,7 @@
 // src/components/Header.tsx
 import { useState } from 'react';
+import NotificationDropdown from './NotificationDropdown';
+import '../assets/css/NotificationDropdown.css';
 import { NavLink } from 'react-router-dom';
 import '../assets/css/Header.css';
 
@@ -20,6 +22,7 @@ export const Header = () => {
     document.body.style.overflow = 'unset';
   };
 
+  const [notifOpen, setNotifOpen] = useState(false);
   return (
     <header className="header">
       <div className="header-inner">
@@ -36,7 +39,19 @@ export const Header = () => {
           <NavLink to="/faq" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>FAQ</NavLink>
         </nav>
 
-        <div className="header-auth">
+        <div className="header-auth" style={{ position: 'relative' }}>
+          <button
+            className="notif-bell"
+            aria-label="Notifications"
+            onClick={() => setNotifOpen((v) => !v)}
+            style={{ background: 'none', border: 'none', marginRight: 16, cursor: 'pointer', position: 'relative' }}
+          >
+            <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M18 16v-5a6 6 0 10-12 0v5l-2 2v1h16v-1l-2-2z" />
+              <circle cx="12" cy="19" r="2" />
+            </svg>
+          </button>
+          {notifOpen && <NotificationDropdown />}
           <NavLink to="/signup">
             <button className="btn-join">Join Us</button>
           </NavLink>

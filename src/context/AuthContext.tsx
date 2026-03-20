@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import authApi from '../lib/api/auth.api';
 import type { User, LoginRequest, RegisterRequest, OtpRequest } from '../modules/auth/types/type';
+import { useToast } from './ToastContext';
 
 interface AuthContextType {
   user: User | null;
@@ -26,6 +27,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const toast = useToast();
   const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
@@ -62,7 +64,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     } catch (err: any) {
-      console.error('Failed to fetch user:', err);
+      // Session might be stale/expired; make it clear to the user.
+      toast.error('Your session has expired. Please sign in again.');
       setIsAuthenticated(false);
       setUser(null);
       localStorage.removeItem('user');
@@ -166,7 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await authApi.logoutUser();
     } catch (err) {
-      console.error('Logout error:', err);
+      toast.error('Failed to log out cleanly. Please try again.');
     } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');

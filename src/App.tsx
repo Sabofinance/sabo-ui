@@ -1,7 +1,9 @@
 import React, { Suspense, lazy } from 'react';
+import { NotificationProvider } from './context/NotificationContext';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AppLoader from './components/AppLoader';
 import ProtectedRoute from './context/ProtectedRoute';
+import AdminProtectedRoute from './context/AdminProtectedRoute';
 import DashboardLayout from './components/DashboardLayout';
 import { useAuth } from './context/AuthContext';
 import VerifyOtpPage from './pages/VerifyOtpPage';
@@ -33,12 +35,14 @@ const TransactionPage = lazy(() => import('./pages/dashboard/TransactionPage'));
 const WalletsPage     = lazy(() => import('./pages/dashboard/WalletsPage'));
 const LedgerPage      = lazy(() => import('./pages/dashboard/LedgerPage'));
 const DepositsPage    = lazy(() => import('./pages/dashboard/DepositsPage'));
+const DepositPage     = lazy(() => import('./pages/dashboard/DepositPage'));
 const WithdrawalsPage = lazy(() => import('./pages/dashboard/WithdrawalsPage'));
 const BeneficiariesPage = lazy(() => import('./pages/dashboard/BeneficiariesPage'));
 const ConversionsPage = lazy(() => import('./pages/dashboard/ConversionsPage'));
 const TradesPage      = lazy(() => import('./pages/dashboard/TradesPage'));
 const DisputesPage    = lazy(() => import('./pages/dashboard/DisputesPage'));
 const KycPage         = lazy(() => import('./pages/dashboard/KycPage'));
+const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -47,9 +51,10 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 function App() {
   return (
-    <Router>
-      <Suspense fallback={<AppLoader />}>
-        <Routes>
+    <NotificationProvider>
+      <Router>
+        <Suspense fallback={<AppLoader />}>
+          <Routes>
           {/* Public Routes */}
           <Route path="/"          element={<HomePage />}         />
           <Route path="/about"     element={<AboutPage />}        />
@@ -77,16 +82,19 @@ function App() {
             <Route path="wallets"         element={<WalletsPage />} />
             <Route path="ledger"          element={<LedgerPage />} />
             <Route path="deposits"        element={<DepositsPage />} />
+            <Route path="deposit"         element={<DepositPage />} />
             <Route path="withdrawals"     element={<WithdrawalsPage />} />
             <Route path="beneficiaries"   element={<BeneficiariesPage />} />
             <Route path="conversions"     element={<ConversionsPage />} />
             <Route path="trades"          element={<TradesPage />} />
             <Route path="disputes"        element={<DisputesPage />} />
             <Route path="kyc"             element={<KycPage />} />
+            <Route path="admin"          element={<AdminProtectedRoute><AdminDashboardPage /></AdminProtectedRoute>} />
           </Route>
-        </Routes>
-      </Suspense>
-    </Router>
+          </Routes>
+        </Suspense>
+      </Router>
+    </NotificationProvider>
   );
 }
 

@@ -366,6 +366,76 @@ body {
   align-items: center;
 }
 
+.btn-deposit {
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-family: 'Outfit', sans-serif;
+  flex: 1;
+  white-space: nowrap;
+  min-height: 48px;
+  background: rgba(58, 123, 255, 0.12);
+  color: #1D4ED8;
+  box-shadow: 0 6px 14px rgba(58,123,255,0.15);
+}
+
+.btn-deposit:hover {
+  transform: translateY(-2px);
+  background: rgba(58, 123, 255, 0.18);
+  box-shadow: 0 10px 20px rgba(58,123,255,0.22);
+}
+
+/* Mini wallet cards (always show NGN/USD/GBP/CAD) */
+.wallets-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.wallet-mini-card {
+  background: #ffffff;
+  border: 1px solid rgba(10, 30, 40, 0.08);
+  border-radius: 18px;
+  padding: 14px 12px;
+  box-shadow: 0 12px 30px rgba(10,30,40,0.04);
+  min-width: 0;
+}
+
+.wallet-mini-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.wallet-mini-currency {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--text-gray);
+  text-transform: uppercase;
+}
+
+.wallet-mini-balance {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--sabo-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 900px) {
+  .wallets-mini-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .btn-sell,
 .btn-buy-small {
   padding: 12px 20px;

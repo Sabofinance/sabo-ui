@@ -4,10 +4,12 @@ import NotificationPopup from './NotificationPopup';
 import { useSidebar } from '../context/SidebarContext';
 import '../assets/css/DashboardHeader.css';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const DashboardHeader: React.FC = () => {
   const { toggle } = useSidebar();
   const { user, logout } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -27,17 +29,26 @@ const DashboardHeader: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const unreadCount = 3;
+  const unreadCount = 0;
 
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
     setProfileOpen(false);
-    await logout();
-    navigate('/login');
+    try {
+      await logout();
+      navigate('/login');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to log out.');
+    }
   };
 
-  const displayName = user?.firstName ? `${user.firstName} ${user.lastName}` : "Mrs Akingbade";
-  const displayEmail = user?.email || "akingbade@sabo.com";
+  const displayName = (
+    user?.name ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+    'Account'
+  );
+  const displayEmail = user?.email || '';
+  const displayRole = user?.role ? String(user.role) : '';
 
   return (
     <header className="dashboard-header">
@@ -95,7 +106,7 @@ const DashboardHeader: React.FC = () => {
             />
             <div className="profile-info">
               <span className="profile-name">{displayName}</span>
-              <span className="profile-role">User</span>
+                <span className="profile-role">{displayRole ? displayRole : 'User'}</span>
             </div>
             <svg
               className={`dropdown-arrow ${profileOpen ? 'open' : ''}`}

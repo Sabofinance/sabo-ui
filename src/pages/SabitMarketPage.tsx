@@ -4,6 +4,7 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import '../assets/css/SabitMarketPage.css';
 import { ratesApi, sabitsApi } from '../lib/api';
+import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 
 const HOW_IT_WORKS = [
@@ -48,7 +49,7 @@ const SabitMarketPage = () => {
   const [pairRates, setPairRates] = useState<Record<string, string>>({});
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const toast = useToast();
 
   // Filtering states
   const [filterType, setFilterType] = useState<'all' | 'buy' | 'sell'>('all');
@@ -57,7 +58,6 @@ const SabitMarketPage = () => {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      setError('');
       try {
         const [ratesResList, listingsRes] = await Promise.all([
           Promise.all(
@@ -80,16 +80,16 @@ const SabitMarketPage = () => {
         if (listingsRes.success && Array.isArray(listingsRes.data)) {
           setListings(listingsRes.data);
         } else if (!listingsRes.success) {
-          setError(listingsRes.error?.message || 'Failed to load marketplace listings');
+          toast.error('Failed to load marketplace listings.');
         }
       } catch (err: any) {
-        setError('Failed to load marketplace data. Please try again later.');
+        toast.error('Failed to load marketplace data. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
     void load();
-  }, []);
+  }, [toast]);
 
   const formattedListings = useMemo(() => {
     return listings
@@ -270,7 +270,7 @@ const SabitMarketPage = () => {
               </tbody>
             </table>
           </div>
-          {error && <p style={{ marginTop: '1rem', color: 'red' }}>{error}</p>}
+          {/* Error handled by toast */}
           <div className="smp-table-cta">
             <Link to="/signup" className="smp-btn-primary">See all listings →</Link>
           </div>

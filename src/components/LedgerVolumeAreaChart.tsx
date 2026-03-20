@@ -33,7 +33,7 @@ const LedgerVolumeAreaChart: React.FC<LedgerVolumeAreaChartProps> = ({ points, l
     );
   }
 
-  if (!safePoints.length || maxVolume <= 0) {
+  if (!safePoints.length) {
     return (
       <div className="utility-card chart-card">
         <div className="chart-header">
@@ -44,6 +44,8 @@ const LedgerVolumeAreaChart: React.FC<LedgerVolumeAreaChartProps> = ({ points, l
     );
   }
 
+  const maxVolumeForScale = maxVolume > 0 ? maxVolume : 1;
+
   const width = 520;
   const height = 150;
   const padX = 24;
@@ -53,7 +55,7 @@ const LedgerVolumeAreaChart: React.FC<LedgerVolumeAreaChartProps> = ({ points, l
   const bottomY = padY + chartH;
 
   const toX = (i: number) => padX + (safePoints.length === 1 ? 0 : (i / (safePoints.length - 1)) * chartW);
-  const toY = (v: number) => padY + (1 - (v / maxVolume || 0)) * chartH;
+  const toY = (v: number) => padY + (1 - (v / maxVolumeForScale || 0)) * chartH;
 
   const areaPoints = safePoints
     .map((p, i) => `${toX(i)},${toY(Number(p.volume) || 0)}`)

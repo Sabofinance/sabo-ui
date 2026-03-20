@@ -33,7 +33,7 @@ const WalletBalancesBarChart: React.FC<WalletBalancesBarChartProps> = ({ points,
     );
   }
 
-  if (!safePoints.length || total <= 0) {
+  if (!safePoints.length) {
     return (
       <div className="utility-card chart-card">
         <h3>Wallet Balances</h3>
@@ -61,10 +61,8 @@ const WalletBalancesBarChart: React.FC<WalletBalancesBarChartProps> = ({ points,
         }}
         aria-label="Wallet balances distribution"
       >
-        {safePoints
-          .filter((p) => Number(p.balance) > 0)
-          .map((p, idx) => {
-            const pct = total > 0 ? (Number(p.balance) / total) * 100 : 0;
+        {safePoints.map((p, idx) => {
+          const pct = total > 0 ? (Number(p.balance) / total) * 100 : 100 / safePoints.length;
             return (
               <div
                 key={`${p.currency}-${idx}`}
@@ -76,7 +74,7 @@ const WalletBalancesBarChart: React.FC<WalletBalancesBarChartProps> = ({ points,
                 }}
               />
             );
-          })}
+        })}
       </div>
 
       <div
