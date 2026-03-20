@@ -1,7 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardSidebar from '../../components/DashboardSidebar';
-import { SidebarProvider } from '../../context/SidebarContext';
 import '../../assets/css/ChatPage.css';
 
 interface Message {
@@ -78,14 +75,8 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="dashboard-wrapper">
-        <DashboardSidebar />
-        
-        <div className="main-content">
-          <DashboardHeader />
-          
-          <main className="chat-page">
+    <div className="dashboard-wrapper">
+      <main className="chat-page">
             <div className="chat-container">
               {/* Chat Header */}
               <div className="chat-header">
@@ -145,10 +136,8 @@ const ChatPage: React.FC = () => {
                 </button>
               </form>
             </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </div>
   );
 };
 

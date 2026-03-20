@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardSidebar from '../../components/DashboardSidebar';
-import { SidebarProvider } from '../../context/SidebarContext';   
 import '../../assets/css/ActiveSabitPage.css';
 
 interface SabitListing {
@@ -192,14 +189,8 @@ const ActiveSabitPage: React.FC = () => {
   };
 
   return (
-    <SidebarProvider>   {/* <-- Provider added here */}
-      <div className="dashboard-wrapper">
-        <DashboardSidebar />
-        
-        <div className="main-content">
-          <DashboardHeader />
-          
-          <main className="active-sabit-page">
+    <div className="active-sabit-wrapper">
+      <main className="active-sabit-padding">
             <div className="page-header">
               <div>
                 <h1 className="page-title">Active Sabit Marketplace</h1>
@@ -375,10 +366,8 @@ const ActiveSabitPage: React.FC = () => {
                 <p>Try adjusting your filters</p>
               </div>
             )}
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </div>
   );
 };
 

@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardSidebar from '../../components/DashboardSidebar';
-import { SidebarProvider } from '../../context/SidebarContext';
 import '../../assets/css/MySabitPage.css';
 
 interface MySabitListing {
@@ -161,14 +158,8 @@ const MySabitPage: React.FC = () => {
   const cancelledCount = myListings.filter(l => l.status === 'cancelled').length;
 
   return (
-    <SidebarProvider>
-      <div className="dashboard-wrapper">
-        <DashboardSidebar />
-        
-        <div className="main-content">
-          <DashboardHeader />
-          
-          <main className="my-sabit-page">
+    <div className="my-sabit-wrapper">
+      <main className="my-sabit-page">
             <div className="page-header">
               <div>
                 <h1 className="page-title">My Sabits</h1>
@@ -310,10 +301,8 @@ const MySabitPage: React.FC = () => {
                 </div>
               )}
             </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </div>
   );
 };
 

@@ -1,47 +1,44 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 import { Header } from "../components/Header";
+import { useAuth } from "../context/AuthContext";
+import type { RegisterRequest } from "../modules/auth/types/type";
 import "../assets/css/AuthPage.css";
 import signupImage from "../assets/images/3d-illustration.png";
 
+interface SignupFormInputs extends RegisterRequest {
+  confirmPassword?: string;
+}
+
 const SignupPage: React.FC = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const navigate = useNavigate();
+  const { register: registerAuth } = useAuth();
+  
+  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<SignupFormInputs>();
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
+  const [generalError, setGeneralError] = useState("");
 
   const togglePassword = () => setShowPassword((prev) => !prev);
   const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = "Full name is required.";
-    if (!formData.email.trim()) newErrors.email = "Email is required.";
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid.";
-    if (!formData.password.trim()) newErrors.password = "Password is required.";
-    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters.";
-    if (!formData.confirmPassword.trim()) newErrors.confirmPassword = "Please confirm your password.";
-    else if (formData.confirmPassword !== formData.password) newErrors.confirmPassword = "Passwords do not match.";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const password = watch("password");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validate()) {
-      console.log("Signup data:", formData);
-      alert("Signup successful (demo)");
+  const onSubmit = async (data: SignupFormInputs) => {
+    setGeneralError("");
+    try {
+      await registerAuth({
+        name: data.name,
+        email: data.email,
+        phone: data.phone || "",
+        password: data.password,
+      });
+      // Registration successful
+      navigate("/login");
+    } catch (error: any) {
+      setGeneralError(error.message || "An error occurred during registration.");
     }
   };
 
@@ -64,19 +61,19 @@ const SignupPage: React.FC = () => {
               <h2 className="auth-title">Create Account</h2>
               <p className="auth-subtitle">Join SABO today and start exchanging with confidence.</p>
 
-              <form onSubmit={handleSubmit} className="auth-form">
+              {generalError && <div className="general-error">{generalError}</div>}
+
+              <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
                 <div className="form-group">
                   <label htmlFor="name" className="form-label">Full Name</label>
                   <input
                     type="text"
                     id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
+                    {...register("name", { required: "Full name is required" })}
                     className={`form-input ${errors.name ? "error" : ""}`}
                     placeholder="Enter your full name"
                   />
-                  {errors.name && <span className="error-text">{errors.name}</span>}
+                  {errors.name && <span className="error-text">{errors.name.message}</span>}
                 </div>
 
                 <div className="form-group">
@@ -84,13 +81,26 @@ const SignupPage: React.FC = () => {
                   <input
                     type="email"
                     id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
+                    {...register("email", { 
+                      required: "Email is required",
+                      pattern: { value: /\S+@\S+\.\S+/, message: "Email is invalid" }
+                    })}
                     className={`form-input ${errors.email ? "error" : ""}`}
                     placeholder="Enter your email"
                   />
-                  {errors.email && <span className="error-text">{errors.email}</span>}
+                  {errors.email && <span className="error-text">{errors.email.message}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="phone" className="form-label">Phone Number</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    {...register("phone", { required: "Phone number is required" })}
+                    className={`form-input ${errors.phone ? "error" : ""}`}
+                    placeholder="Enter your phone number"
+                  />
+                  {errors.phone && <span className="error-text">{errors.phone.message}</span>}
                 </div>
 
                 <div className="form-group">
@@ -99,9 +109,10 @@ const SignupPage: React.FC = () => {
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
+                      {...register("password", { 
+                        required: "Password is required",
+                        minLength: { value: 6, message: "Password must be at least 6 characters" }
+                      })}
                       className={`form-input ${errors.password ? "error" : ""}`}
                       placeholder="Create a password"
                     />
@@ -124,7 +135,7 @@ const SignupPage: React.FC = () => {
                       )}
                     </button>
                   </div>
-                  {errors.password && <span className="error-text">{errors.password}</span>}
+                  {errors.password && <span className="error-text">{errors.password.message}</span>}
                 </div>
 
                 <div className="form-group">
@@ -133,9 +144,10 @@ const SignupPage: React.FC = () => {
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       id="confirmPassword"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
+                      {...register("confirmPassword", { 
+                        required: "Please confirm your password",
+                        validate: value => value === password || "Passwords do not match"
+                      })}
                       className={`form-input ${errors.confirmPassword ? "error" : ""}`}
                       placeholder="Confirm your password"
                     />
@@ -158,10 +170,16 @@ const SignupPage: React.FC = () => {
                       )}
                     </button>
                   </div>
-                  {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
+                  {errors.confirmPassword && <span className="error-text">{errors.confirmPassword.message}</span>}
                 </div>
 
-                <button type="submit" className="auth-btn">Sign Up</button>
+                <button 
+                  type="submit" 
+                  className="auth-btn" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Signing up..." : "Sign Up"}
+                </button>
               </form>
 
               <div className="divider">

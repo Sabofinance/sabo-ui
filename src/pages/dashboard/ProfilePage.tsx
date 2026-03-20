@@ -1,9 +1,7 @@
 import React, { useState, useRef } from 'react';
 import type { ChangeEvent } from 'react';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardSidebar from '../../components/DashboardSidebar';
-import { SidebarProvider } from '../../context/SidebarContext';
 import '../../assets/css/ProfilePage.css';
+import { useAuth } from '../../context/AuthContext';
 
 interface Wallet {
   currency: string;
@@ -34,23 +32,24 @@ interface User {
 }
 
 const ProfilePage: React.FC = () => {
+  const { user: authUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'account'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [visibleAccounts, setVisibleAccounts] = useState<{ [key: string]: boolean }>({});
 
   const [user, setUser] = useState<User>({
-    firstName: 'Akingbade',
-    lastName: 'Adeniyi',
-    displayName: 'Mrs. Akingbade',
-    email: 'akingbade@sabo.com',
-    phone: '+234 801 234 5678',
+    firstName: authUser?.firstName || 'Akingbade',
+    lastName: authUser?.lastName || 'Adeniyi',
+    displayName: authUser?.firstName ? `${authUser.firstName} ${authUser.lastName}` : 'Mrs. Akingbade',
+    email: authUser?.email || 'akingbade@sabo.com',
+    phone: authUser?.phoneNumber || '+234 801 234 5678',
     dob: '1985-06-15',
     address: '123 Sabo Road',
     city: 'Yaba',
     country: 'Nigeria',
     postalCode: '101245',
-    joined: 'January 2024',
+    joined: authUser?.createdAt ? new Date(authUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'January 2024',
     avatar: 'https://i.pravatar.cc/300?u=akingbade',
     kycVerified: true,
   });
@@ -118,12 +117,8 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="dashboard-wrapper">
-        <DashboardSidebar />
-        <div className="main-content">
-          <DashboardHeader />
-          <main className="profile-page">
+    <div className="dashboard-wrapper">
+      <main className="profile-page">
             <div className="page-header">
               <h1 className="page-title">Profile</h1>
               <p className="page-subtitle">Manage your personal information and view your cards</p>
@@ -430,10 +425,8 @@ const ProfilePage: React.FC = () => {
                 </div>
               </div>
             )}
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </div>
   );
 };
 

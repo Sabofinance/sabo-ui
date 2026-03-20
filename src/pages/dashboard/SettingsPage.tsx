@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import type { ChangeEvent } from 'react';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardSidebar from '../../components/DashboardSidebar';
-import { SidebarProvider } from '../../context/SidebarContext';
 import '../../assets/css/SettingsPage.css';
 
 const SettingsPage: React.FC = () => {
@@ -37,12 +34,8 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="dashboard-wrapper">
-        <DashboardSidebar />
-        <div className="main-content">
-          <DashboardHeader />
-          <main className="settings-page">
+    <div className="dashboard-wrapper">
+      <main className="settings-page">
             <div className="page-header">
               <h1 className="page-title">Settings</h1>
               <p className="page-subtitle">Manage your security, notifications, and preferences</p>
@@ -240,10 +233,8 @@ const SettingsPage: React.FC = () => {
                 </>
               )}
             </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </div>
   );
 };
 

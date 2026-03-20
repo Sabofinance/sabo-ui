@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import NotificationPopup from './NotificationPopup';
 import { useSidebar } from '../context/SidebarContext';
 import '../assets/css/DashboardHeader.css';
+import { useAuth } from '../context/AuthContext';
 
 const DashboardHeader: React.FC = () => {
   const { toggle } = useSidebar();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -25,6 +28,16 @@ const DashboardHeader: React.FC = () => {
   }, []);
 
   const unreadCount = 3;
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setProfileOpen(false);
+    await logout();
+    navigate('/login');
+  };
+
+  const displayName = user?.firstName ? `${user.firstName} ${user.lastName}` : "Mrs Akingbade";
+  const displayEmail = user?.email || "akingbade@sabo.com";
 
   return (
     <header className="dashboard-header">
@@ -77,11 +90,11 @@ const DashboardHeader: React.FC = () => {
           >
             <img
               src="https://i.pravatar.cc/150?u=akingbade"
-              alt="Mrs Akingbade"
+              alt={displayName}
               className="profile-avatar"
             />
             <div className="profile-info">
-              <span className="profile-name">Mrs Akingbade</span>
+              <span className="profile-name">{displayName}</span>
               <span className="profile-role">User</span>
             </div>
             <svg
@@ -102,8 +115,8 @@ const DashboardHeader: React.FC = () => {
                   className="dropdown-avatar"
                 />
                 <div className="dropdown-user-info">
-                  <span className="dropdown-user-name">Mrs Akingbade</span>
-                  <span className="dropdown-user-email">akingbade@sabo.com</span>
+                  <span className="dropdown-user-name">{displayName}</span>
+                  <span className="dropdown-user-email">{displayEmail}</span>
                 </div>
               </div>
 
@@ -132,7 +145,7 @@ const DashboardHeader: React.FC = () => {
               <div className="dropdown-divider"></div>
 
               <Link to="/" className="dropdown-item logout"
-                onClick={() => setProfileOpen(false)}>
+                onClick={handleLogout}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" strokeWidth="1.8">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

@@ -1,6 +1,12 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AppLoader from './components/AppLoader';
+import ProtectedRoute from './context/ProtectedRoute';
+import DashboardLayout from './components/DashboardLayout';
+import { useAuth } from './context/AuthContext';
+import VerifyOtpPage from './pages/VerifyOtpPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 /* ── Public Pages ── */
 const HomePage        = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
@@ -25,6 +31,11 @@ const ProfilePage     = lazy(() => import('./pages/dashboard/ProfilePage'));
 const SettingsPage    = lazy(() => import('./pages/dashboard/SettingsPage'));
 const TransactionPage = lazy(() => import('./pages/dashboard/TransactionPage'));
 
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+};
+
 function App() {
   return (
     <Router>
@@ -36,20 +47,25 @@ function App() {
           <Route path="/features"  element={<FeaturesPage />}     />
           <Route path="/faq"       element={<FaqPage />}          />
           <Route path="/contact"   element={<ContactPage />}      />
-          <Route path="/login"     element={<LoginPage />}        />
-          <Route path="/signup"    element={<SignupPage />}        />
+          <Route path="/login"     element={<PublicRoute><LoginPage /></PublicRoute>} />
+          <Route path="/signup"    element={<PublicRoute><SignupPage /></PublicRoute>} />
+          <Route path="/verify-otp" element={<PublicRoute><VerifyOtpPage /></PublicRoute>} />
+          <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+          <Route path="/reset-password"  element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
           <Route path="/p2p"       element={<SabitMarketPage />}  />
           <Route path="/business"  element={<SaboBusinessPage />} />
 
-          {/* Dashboard Routes */}
-          <Route path="/dashboard"                 element={<DashboardPage />}   />
-          <Route path="/dashboard/active-sabits"   element={<ActiveSabitPage />} />
-          <Route path="/dashboard/my-sabits"       element={<MySabitPage />}     />
-          <Route path="/dashboard/history"         element={<HistoryPage />}     />
-          <Route path="/dashboard/chat"            element={<ChatPage />}        />
-          <Route path="/dashboard/profile"         element={<ProfilePage />}     />
-          <Route path="/dashboard/settings"        element={<SettingsPage />}    />
-          <Route path="/dashboard/transaction/:id" element={<TransactionPage />} />
+          {/* Dashboard Routes (Protected) */}
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+            <Route index element={<DashboardPage />} />
+            <Route path="active-sabits"   element={<ActiveSabitPage />} />
+            <Route path="my-sabits"       element={<MySabitPage />}     />
+            <Route path="history"         element={<HistoryPage />}     />
+            <Route path="chat"            element={<ChatPage />}        />
+            <Route path="profile"         element={<ProfilePage />}     />
+            <Route path="settings"        element={<SettingsPage />}    />
+            <Route path="transaction/:id" element={<TransactionPage />} />
+          </Route>
         </Routes>
       </Suspense>
     </Router>

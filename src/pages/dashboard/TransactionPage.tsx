@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardSidebar from '../../components/DashboardSidebar';
-import { SidebarProvider } from '../../context/SidebarContext';
+
 import '../../assets/css/TransactionPage.css';
 import '../../assets/css/TransactionModals.css';
 
@@ -125,13 +123,8 @@ const TransactionPage: React.FC = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="dashboard-wrapper">
-        <DashboardSidebar />
-        <div className="main-content">
-          <DashboardHeader />
-          
-          <main className="transaction-page">
+    <div className="dashboard-wrapper">
+      <main className="transaction-page">
             {/* Back Navigation */}
             <button className="back-btn" onClick={() => navigate('/dashboard/active-sabits')}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
@@ -249,7 +242,6 @@ const TransactionPage: React.FC = () => {
               </div>
             </div>
           </main>
-        </div>
 
         {/* Confirmation Modal */}
         {showConfirmModal && (
@@ -330,7 +322,6 @@ const TransactionPage: React.FC = () => {
           </div>
         )}
       </div>
-    </SidebarProvider>
   );
 };
 

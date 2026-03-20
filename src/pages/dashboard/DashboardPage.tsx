@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardSidebar from '../../components/DashboardSidebar';
 import SellModal from '../../components/SellModal';
 import ActivityChart from '../../components/ActivityChart';
 import TransactionHistory from '../../components/TransactionHistory';
-import { SidebarProvider } from '../../context/SidebarContext';
 import '../../assets/css/DashboardPage.css';
 
 const mockWallets = [
@@ -55,14 +52,8 @@ const DashboardPage: React.FC = () => {
   const getCurrencySymbol = (c: string)  => c === 'NGN' ? '₦' : c === 'GBP' ? '£' : '';
 
   return (
-    <SidebarProvider>
-      <div className="dashboard-wrapper">
-        <DashboardSidebar />
-
-        <div className="main-content">
-          <DashboardHeader />
-
-          <main className="dashboard-padding">
+    <>
+      <main className="dashboard-padding">
 
             {/* Welcome */}
             <div className="welcome-message">
@@ -348,19 +339,18 @@ const DashboardPage: React.FC = () => {
               </div>
             </div>
           </main>
-        </div>
 
-        {isSellModalOpen && (
-          <SellModal
-            currency={activeWallet.currency}
-            balance={activeWallet.balance}
-            symbol={activeWallet.symbol}
-            onClose={() => setIsSellModalOpen(false)}
-            onSubmit={handleSellSubmit}
-          />
-        )}
-      </div>
-    </SidebarProvider>
+          {isSellModalOpen && (
+            <SellModal
+              currency={activeWallet.currency}
+              balance={activeWallet.balance}
+              symbol={activeWallet.symbol}
+              onClose={() => setIsSellModalOpen(false)}
+              onSubmit={handleSellSubmit}
+            />
+          )}
+        </>
+
   );
 };
 

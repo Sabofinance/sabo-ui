@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardSidebar from '../../components/DashboardSidebar';
-import { SidebarProvider } from '../../context/SidebarContext';
 import '../../assets/css/HistoryPage.css';
 
 interface Transaction {
@@ -179,14 +176,7 @@ const HistoryPage: React.FC = () => {
     .reduce((sum, t) => sum + t.total, 0);
 
   return (
-    <SidebarProvider>
-      <div className="dashboard-wrapper">
-        <DashboardSidebar />
-        
-        <div className="main-content">
-          <DashboardHeader />
-          
-          <main className="history-page">
+    <main className="history-page">
             <div className="page-header">
               <div>
                 <h1 className="page-title">Transaction History</h1>
@@ -394,10 +384,7 @@ const HistoryPage: React.FC = () => {
               <button className="page-number">8</button>
               <button className="page-arrow">›</button>
             </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    </main>
   );
 };
 

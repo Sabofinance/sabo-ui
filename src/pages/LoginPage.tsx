@@ -1,60 +1,31 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useForm } from "react-hook-form";
 import { Header } from "../components/Header";
+import { useAuth } from "../context/AuthContext";
+import type { LoginRequest } from "../modules/auth/types/type";
 import "../assets/css/AuthPage.css";
 import loginImage from "../assets/images/3d-illustration-login.png";
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    identifier: "",
-    password: "",
-  });
+  const location = useLocation();
+  const { login } = useAuth();
+  
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginRequest>();
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState("");
-
-  // Demo credentials (only these work)
-  const demoCredentials = {
-    identifier: "demo@sabo.com",
-    password: "demo123",
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear field-specific error when user types
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
-    // Clear general error when user types
-    if (generalError) setGeneralError("");
-  };
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.identifier.trim()) newErrors.identifier = "Email or username is required.";
-    if (!formData.password.trim()) newErrors.password = "Password is required.";
-    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters.";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setGeneralError(""); // clear any previous general error
-
-    if (validate()) {
-      // Check against demo credentials
-      if (
-        formData.identifier === demoCredentials.identifier &&
-        formData.password === demoCredentials.password
-      ) {
-        console.log("Login successful with demo account");
-        navigate('/dashboard');
-      } else {
-        setGeneralError("Invalid email/username or password.");
-      }
+  const onSubmit = async (data: LoginRequest) => {
+    setGeneralError("");
+    try {
+      await login(data);
+      // As per flow, redirect to verify-otp page after successful step 1
+      navigate('/verify-otp');
+    } catch (error: any) {
+      setGeneralError(error.message || "An error occurred during login.");
     }
   };
 
@@ -82,22 +53,20 @@ const LoginPage: React.FC = () => {
 
               {generalError && <div className="general-error">{generalError}</div>}
 
-              <form onSubmit={handleSubmit} className="auth-form">
+              <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
                 <div className="form-group">
-                  <label htmlFor="identifier" className="form-label">
-                    Email or Username
+                  <label htmlFor="email" className="form-label">
+                    Email Address
                   </label>
                   <input
-                    type="text"
-                    id="identifier"
-                    name="identifier"
-                    value={formData.identifier}
-                    onChange={handleChange}
-                    className={`form-input ${errors.identifier ? "error" : ""}`}
-                    placeholder="Enter your email or username"
+                    type="email"
+                    id="email"
+                    {...register("email", { required: "Email is required" })}
+                    className={`form-input ${errors.email ? "error" : ""}`}
+                    placeholder="Enter your email"
                     autoComplete="username"
                   />
-                  {errors.identifier && <span className="error-text">{errors.identifier}</span>}
+                  {errors.email && <span className="error-text">{errors.email.message}</span>}
                 </div>
 
                 <div className="form-group">
@@ -108,9 +77,10 @@ const LoginPage: React.FC = () => {
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
+                      {...register("password", { 
+                        required: "Password is required",
+                        minLength: { value: 6, message: "Password must be at least 6 characters" }
+                      })}
                       className={`form-input ${errors.password ? "error" : ""}`}
                       placeholder="Enter your password"
                       autoComplete="current-password"
@@ -138,10 +108,16 @@ const LoginPage: React.FC = () => {
                   <Link to="/forgot-password" className="forgot-link">
                     Forgot your password?
                   </Link>
-                  {errors.password && <span className="error-text">{errors.password}</span>}
+                  {errors.password && <span className="error-text">{errors.password.message}</span>}
                 </div>
 
-                <button type="submit" className="auth-btn">Sign In</button>
+                <button 
+                  type="submit" 
+                  className="auth-btn" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Signing in..." : "Sign In"}
+                </button>
               </form>
 
               <div className="divider">
