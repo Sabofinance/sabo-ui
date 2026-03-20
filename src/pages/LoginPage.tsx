@@ -29,9 +29,7 @@ const LoginPage: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    console.log("Google login");
-    // For demo, just navigate (or you could restrict this too)
-    navigate('/dashboard');
+    setGeneralError('Google login is not connected yet. Please sign in with email/password.');
   };
 
   return (

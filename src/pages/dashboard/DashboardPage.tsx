@@ -1,9 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SellModal from '../../components/SellModal';
-import ActivityChart, { type ActivityChartPoint } from '../../components/ActivityChart';
+import { type ActivityChartPoint } from '../../components/ActivityChart';
+import LedgerVolumeAreaChart from '../../components/LedgerVolumeAreaChart';
+import DepositsWithdrawalsBarChart, { type DepositsWithdrawalsPoint } from '../../components/DepositsWithdrawalsBarChart';
+import WalletBalancesBarChart, { type WalletBarPoint } from '../../components/WalletBalancesBarChart';
+import ConversionsTrendBarChart, { type ConversionTrendPoint } from '../../components/ConversionsTrendBarChart';
 import TransactionHistory, { type TransactionItem } from '../../components/TransactionHistory';
-import { ledgerApi, ratesApi, sabitsApi, walletsApi } from '../../lib/api';
+import { conversionsApi, depositsApi, ledgerApi, ratesApi, sabitsApi, withdrawalsApi, walletsApi } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import '../../assets/css/DashboardPage.css';
 
@@ -49,10 +53,19 @@ const DashboardPage: React.FC = () => {
   const [rate, setRate] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [buyTargetCurrency, setBuyTargetCurrency] = useState<string>('GBP');
 
   const [activityPoints, setActivityPoints] = useState<ActivityChartPoint[]>([]);
   const [activityLoading, setActivityLoading] = useState(false);
   const [activityError, setActivityError] = useState('');
+
+  const [depositWithdrawalPoints, setDepositWithdrawalPoints] = useState<DepositsWithdrawalsPoint[]>([]);
+  const [depositWithdrawalLoading, setDepositWithdrawalLoading] = useState(false);
+  const [depositWithdrawalError, setDepositWithdrawalError] = useState('');
+
+  const [conversionPoints, setConversionPoints] = useState<ConversionTrendPoint[]>([]);
+  const [conversionLoading, setConversionLoading] = useState(false);
+  const [conversionError, setConversionError] = useState('');
 
   const [recentTransactions, setRecentTransactions] = useState<TransactionItem[]>([]);
   const [recentLoading, setRecentLoading] = useState(false);
@@ -75,6 +88,10 @@ const DashboardPage: React.FC = () => {
         ]);
 
         if (walletRes.success && Array.isArray(walletRes.data)) {
+          const currenciesInWallets = walletRes.data
+            .map((w: Record<string, unknown>) => String(w.currency || 'NGN'))
+            .filter((c: string) => c && c !== 'NGN');
+
           setWallets(
             walletRes.data.map((w: Record<string, unknown>, index: number) => ({
               id: String(w.id || w.currency || index),
@@ -89,6 +106,13 @@ const DashboardPage: React.FC = () => {
               limit: Number(w.limit || 0),
             })),
           );
+
+          // Default "buy currency" when the active wallet is NGN.
+          if (currenciesInWallets.length) {
+            setBuyTargetCurrency((prev) => (prev ? prev : currenciesInWallets[0]));
+          } else {
+            setBuyTargetCurrency('GBP');
+          }
         } else if (!walletRes.success) {
           setError(walletRes.error?.message || 'Failed to load wallets');
         }
@@ -120,10 +144,17 @@ const DashboardPage: React.FC = () => {
         setActivityError('');
         setRecentLoading(true);
         setRecentError('');
+        setDepositWithdrawalLoading(true);
+        setDepositWithdrawalError('');
+        setConversionLoading(true);
+        setConversionError('');
 
-        const [ledgerRes, rateHistoryRes] = await Promise.all([
+        const [ledgerRes, rateHistoryRes, depositsRes, withdrawalsRes, conversionsRes] = await Promise.all([
           ledgerApi.listEntries({ limit: 50 }),
           ratesApi.list({ base: 'NGN', quote: 'GBP', range: '7d' }),
+          depositsApi.list({ limit: 50 }),
+          withdrawalsApi.list({ limit: 50 }),
+          conversionsApi.list({ limit: 50 }),
         ]);
 
         if (ledgerRes.success && Array.isArray(ledgerRes.data)) {
@@ -211,6 +242,104 @@ const DashboardPage: React.FC = () => {
           setActivityError(ledgerRes.error?.message || 'Failed to load activity');
         }
 
+        // Deposits vs Withdrawals chart (last 7 days; best-effort mapping based on `date`/`createdAt`)
+        const depNow = new Date();
+        const dayMs = 24 * 60 * 60 * 1000;
+        const dayBuckets = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(depNow.getTime() - (6 - i) * dayMs);
+          const start = new Date(d.toDateString()).getTime();
+          const end = start + dayMs;
+          const label = d.toLocaleDateString('en-GB', { weekday: 'short' });
+          return { start, end, label, deposits: 0, withdrawals: 0 };
+        });
+
+        const addToBucket = (
+          dateValue: unknown,
+          amountValue: unknown,
+          key: 'deposits' | 'withdrawals',
+        ) => {
+          const t = new Date(String(dateValue || '')).getTime();
+          if (!Number.isFinite(t)) return;
+          const bucket = dayBuckets.find((b) => t >= b.start && t < b.end);
+          if (!bucket) return;
+          const amt = Number(amountValue || 0);
+          if (!Number.isFinite(amt) || amt <= 0) return;
+          bucket[key] += amt;
+        };
+
+        if (depositsRes.success && Array.isArray(depositsRes.data)) {
+          for (const dep of depositsRes.data) {
+            const d = dep as Record<string, unknown>;
+            addToBucket(
+              d.date ?? d.createdAt ?? d.created_at ?? d.timestamp,
+              d.amount ?? d.value,
+              'deposits',
+            );
+          }
+        }
+
+        if (withdrawalsRes.success && Array.isArray(withdrawalsRes.data)) {
+          for (const w of withdrawalsRes.data) {
+            const wd = w as Record<string, unknown>;
+            addToBucket(
+              wd.date ?? wd.createdAt ?? wd.created_at ?? wd.timestamp,
+              wd.amount ?? wd.value,
+              'withdrawals',
+            );
+          }
+        }
+
+        if (
+          (!depositsRes.success || !Array.isArray(depositsRes.data)) &&
+          (!withdrawalsRes.success || !Array.isArray(withdrawalsRes.data))
+        ) {
+          setDepositWithdrawalError(
+            depositsRes.error?.message || withdrawalsRes.error?.message || 'Failed to load deposits/withdrawals',
+          );
+          setDepositWithdrawalPoints([]);
+        } else {
+          setDepositWithdrawalPoints(
+            dayBuckets.map((b) => ({ day: b.label, deposits: b.deposits, withdrawals: b.withdrawals })),
+          );
+        }
+
+        // Conversion trend chart (last 7 days; best-effort mapping based on `date`/`createdAt`)
+        const convNow = new Date();
+        const convDayBuckets = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(convNow.getTime() - (6 - i) * dayMs);
+          const start = new Date(d.toDateString()).getTime();
+          const end = start + dayMs;
+          const label = d.toLocaleDateString('en-GB', { weekday: 'short' });
+          return { start, end, label, value: 0 };
+        });
+
+        const addConvToBucket = (dateValue: unknown, amountValue: unknown) => {
+          const t = new Date(String(dateValue || '')).getTime();
+          if (!Number.isFinite(t)) return;
+          const bucket = convDayBuckets.find((b) => t >= b.start && t < b.end);
+          if (!bucket) return;
+          const amt = Number(amountValue || 0);
+          if (!Number.isFinite(amt) || amt <= 0) return;
+          bucket.value += amt;
+        };
+
+        if (conversionsRes.success && Array.isArray(conversionsRes.data)) {
+          for (const c of conversionsRes.data) {
+            const conv = c as Record<string, unknown>;
+            addConvToBucket(
+              conv.date ?? conv.createdAt ?? conv.created_at ?? conv.timestamp,
+              conv.amount ?? conv.value ?? conv.total,
+            );
+          }
+
+          setConversionPoints(
+            convDayBuckets.map((b) => ({ day: b.label, value: b.value })),
+          );
+        } else {
+          setConversionError(conversionsRes.error?.message || 'Failed to load conversions');
+          setConversionPoints([]);
+        }
+
         // Exchange rate history chart (best-effort mapping)
         if (rateHistoryRes.success && Array.isArray(rateHistoryRes.data)) {
           const values = rateHistoryRes.data
@@ -234,6 +363,8 @@ const DashboardPage: React.FC = () => {
         setLoading(false);
         setActivityLoading(false);
         setRecentLoading(false);
+        setDepositWithdrawalLoading(false);
+        setConversionLoading(false);
       }
     };
     void load();
@@ -243,22 +374,45 @@ const DashboardPage: React.FC = () => {
   const nextWallet   = () => setActiveWalletIndex((prev) => (wallets.length ? (prev + 1) % wallets.length : 0));
   const prevWallet   = () => setActiveWalletIndex((prev) => (wallets.length ? (prev - 1 + wallets.length) % wallets.length : 0));
 
-  const handleSellSubmit       = (amount: number, rate: number) =>
-    console.log(`Listing Sabit: ${amount} ${activeWallet.currency} at ₦${rate}/1 ${activeWallet.currency}`);
+  const handleSellSubmit = async (
+    amountSent: number,
+    rateValue: number,
+    amountReceived: number,
+    receiveCurrency: string,
+  ) => {
+    // Sell modal covers both scenarios:
+    // - Selling a non-NGN wallet currency => create `type: "sell"` sabit in that currency.
+    // - Selling NGN => create `type: "buy"` sabit in the selected target currency.
+    const sellingCurrency = activeWallet.currency;
+
+    const payload =
+      sellingCurrency === 'NGN'
+        ? {
+            type: 'buy',
+            currency: receiveCurrency, // selected target currency
+            amount: amountReceived, // finalReceive computed in SellModal
+            rate: rateValue,
+            status: 'active',
+          }
+        : {
+            type: 'sell',
+            currency: sellingCurrency,
+            amount: amountSent, // rawAmount computed in SellModal
+            rate: rateValue,
+            status: 'active',
+          };
+
+    const res = await sabitsApi.create(payload as Record<string, unknown>);
+    if (!res.success) {
+      throw new Error(res.error?.message || 'Failed to create sabit');
+    }
+  };
   const handleBuyClick         = () => navigate('/dashboard/active-sabits');
   const handleViewAllHistory   = () => navigate('/dashboard/history');
 
   const formatNumber     = (num: number) => new Intl.NumberFormat('en-NG').format(num);
   const getCurrencySymbol = (c: string)  => c === 'NGN' ? '₦' : c === 'GBP' ? '£' : '';
   const displayRate = useMemo(() => rate ?? null, [rate]);
-
-  const rateChangePct = useMemo(() => {
-    if (rateHistoryValues.length < 2) return null;
-    const first = rateHistoryValues[0];
-    const last = rateHistoryValues[rateHistoryValues.length - 1];
-    if (!first || !Number.isFinite(first) || !Number.isFinite(last)) return null;
-    return ((last - first) / first) * 100;
-  }, [rateHistoryValues]);
 
   const rateSparklinePoints = useMemo(() => {
     const values = rateHistoryValues;
@@ -371,6 +525,35 @@ const DashboardPage: React.FC = () => {
                       </div>
 
                       <div className="card-actions-row">
+                        {activeWallet.currency === 'NGN' && (
+                          <div className="buy-target-select" style={{ marginBottom: '10px' }}>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#64748B', marginBottom: '6px' }}>
+                              Buy Currency
+                            </label>
+                            <select
+                              value={buyTargetCurrency}
+                              onChange={(e) => setBuyTargetCurrency(e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '10px 12px',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(226,232,240,1)',
+                                background: 'rgba(255,255,255,0.7)',
+                                color: '#0A1E28',
+                                outline: 'none',
+                              }}
+                            >
+                              {Array.from(new Set(wallets.map((w) => w.currency).filter((c) => c !== 'NGN'))).map((c) => (
+                                <option key={c} value={c}>
+                                  {c}
+                                </option>
+                              ))}
+                              {!wallets.some((w) => w.currency === buyTargetCurrency) && (
+                                <option value={buyTargetCurrency}>{buyTargetCurrency}</option>
+                              )}
+                            </select>
+                          </div>
+                        )}
                         <button className="btn-sell" onClick={() => setIsSellModalOpen(true)}>
                           SELL {activeWallet.currency}
                         </button>
@@ -429,7 +612,7 @@ const DashboardPage: React.FC = () => {
                             <td className="action-cell">
                               <button
                                 className={`action-btn ${seller.type === 'sell' ? 'btn-buy-market' : 'btn-sell-market'}`}
-                                onClick={() => console.log(`Action: ${seller.name}`)}
+                                onClick={() => navigate(`/dashboard/transaction/${seller.id}`)}
                               >
                                 {seller.type === 'sell' ? 'Buy' : 'Sell'}
                               </button>
@@ -452,6 +635,11 @@ const DashboardPage: React.FC = () => {
 
               {/* ════ RIGHT COLUMN ════ */}
               <div className="right-column">
+
+                {/* Wallet balances distribution */}
+                <WalletBalancesBarChart
+                  points={wallets.map((w): WalletBarPoint => ({ currency: w.currency, balance: w.balance }))}
+                />
 
                 {/* Trading stats */}
                 <div className="utility-card">
@@ -572,7 +760,19 @@ const DashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                <ActivityChart
+                <DepositsWithdrawalsBarChart
+                  points={depositWithdrawalPoints}
+                  loading={depositWithdrawalLoading}
+                  error={depositWithdrawalError}
+                />
+
+                <ConversionsTrendBarChart
+                  points={conversionPoints}
+                  loading={conversionLoading}
+                  error={conversionError}
+                />
+
+                <LedgerVolumeAreaChart
                   points={activityPoints}
                   loading={activityLoading}
                   error={activityError}
@@ -586,6 +786,7 @@ const DashboardPage: React.FC = () => {
               currency={activeWallet.currency}
               balance={activeWallet.balance}
               symbol={activeWallet.symbol}
+              targetCurrency={buyTargetCurrency}
               onClose={() => setIsSellModalOpen(false)}
               onSubmit={handleSellSubmit}
             />

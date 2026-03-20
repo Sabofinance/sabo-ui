@@ -43,8 +43,7 @@ const SignupPage: React.FC = () => {
   };
 
   const handleGoogleSignup = () => {
-    console.log("Google signup");
-    alert("Google signup (demo)");
+    setGeneralError('Google signup is not connected yet. Please sign up with email/password.');
   };
 
   return (

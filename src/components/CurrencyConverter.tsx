@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import '../assets/css/CurrencyConverter.css';
+import { conversionsApi } from '../lib/api';
 
 interface Currency {
   code: string;
@@ -14,25 +15,6 @@ const CURRENCIES: Currency[] = [
   { code: 'CAD', name: 'Canadian Dollar', symbol: 'CA$', flag: 'https://flagcdn.com/w40/ca.png' },
   { code: 'NGN', name: 'Nigerian Naira',  symbol: '₦',   flag: 'https://flagcdn.com/w40/ng.png' },
 ];
-
-const NGN_RATES: Record<string, number> = {
-  NGN: 1,
-  GBP: 1650,
-  USD: 1300,
-  CAD: 960,
-};
-
-const FLAT_FEES: Record<string, number> = {
-  GBP: 1,
-  USD: 1.5,
-  CAD: 2,
-  NGN: 1500,
-};
-
-const convertAmount = (amount: number, from: string, to: string): number => {
-  if (from === to) return amount;
-  return (amount * NGN_RATES[from]) / NGN_RATES[to];
-};
 
 const fmt = (n: number, decimals = 2): string =>
   n.toLocaleString('en-US', {
@@ -105,11 +87,86 @@ const CurrencyConverter: React.FC = () => {
   const [sendCurrency,  setSendCurrency]  = useState<Currency>(CURRENCIES[0]); // GBP
   const [recvCurrency,  setRecvCurrency]  = useState<Currency>(CURRENCIES[3]); // NGN
 
-  const amount   = Math.max(0, parseFloat(rawAmount) || 0);
-  const fee      = FLAT_FEES[sendCurrency.code] ?? 1;
-  const received = convertAmount(amount, sendCurrency.code, recvCurrency.code);
-  const total    = amount + fee;
-  const rate     = convertAmount(1, sendCurrency.code, recvCurrency.code);
+  const amount = Math.max(0, parseFloat(rawAmount) || 0);
+
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState<string>('');
+  const [receivedAmount, setReceivedAmount] = useState<number | null>(null);
+  const [ratePerUnit, setRatePerUnit] = useState<number | null>(null);
+  const [feeAmount, setFeeAmount] = useState<number | null>(null);
+
+  const totalAmount = feeAmount != null ? amount + feeAmount : amount;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      if (!sendCurrency.code || !recvCurrency.code || amount <= 0) {
+        setReceivedAmount(null);
+        setRatePerUnit(null);
+        setFeeAmount(null);
+        setQuoteError('');
+        return;
+      }
+
+      setQuoteLoading(true);
+      setQuoteError('');
+
+      try {
+        // Fast-path for identical currencies (still derived from user input).
+        if (sendCurrency.code === recvCurrency.code) {
+          if (cancelled) return;
+          setReceivedAmount(amount);
+          setRatePerUnit(1);
+          setFeeAmount(0);
+          return;
+        }
+
+        const res = await conversionsApi.quote({
+          fromCurrency: sendCurrency.code,
+          toCurrency: recvCurrency.code,
+          amount,
+        });
+
+        if (!res.success) {
+          if (cancelled) return;
+          setQuoteError(res.error?.message || 'Failed to quote conversion');
+          setReceivedAmount(null);
+          setRatePerUnit(null);
+          setFeeAmount(null);
+          return;
+        }
+
+        const d = res.data as any;
+
+        const receivedV = Number(
+          d?.received ?? d?.amountReceived ?? d?.toAmount ?? d?.amountOut ?? d?.outputAmount ?? d?.value ?? 0,
+        );
+        const rateV = Number(d?.rate ?? d?.exchangeRate ?? d?.unitRate ?? d?.valuePerUnit ?? 0);
+        const feeRaw = d?.feeAmount ?? d?.fee ?? d?.platformFee ?? d?.serviceFee ?? null;
+        const feeV = feeRaw == null ? null : Number(feeRaw);
+
+        if (cancelled) return;
+        setReceivedAmount(Number.isFinite(receivedV) ? receivedV : null);
+        setRatePerUnit(Number.isFinite(rateV) && rateV > 0 ? rateV : null);
+        setFeeAmount(feeV != null && Number.isFinite(feeV) ? feeV : null);
+      } catch (err: any) {
+        if (cancelled) return;
+        setQuoteError(err?.message || 'Failed to quote conversion');
+        setReceivedAmount(null);
+        setRatePerUnit(null);
+        setFeeAmount(null);
+      } finally {
+        if (!cancelled) setQuoteLoading(false);
+      }
+    };
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [amount, sendCurrency.code, recvCurrency.code]);
 
   const handleSwap = () => {
     setSendCurrency(recvCurrency);
@@ -187,7 +244,9 @@ const CurrencyConverter: React.FC = () => {
         <div className="cc-panel-body">
           <div className="cc-amount-group">
             <span className="cc-symbol">{recvCurrency.symbol}</span>
-            <span className="cc-output">{fmt(received)}</span>
+            <span className="cc-output">
+              {quoteLoading ? '—' : receivedAmount == null ? '—' : fmt(receivedAmount)}
+            </span>
           </div>
           <CurrencyDropdown
             selected={recvCurrency}
@@ -200,18 +259,21 @@ const CurrencyConverter: React.FC = () => {
       {/* RATE + FEE BADGES */}
       <div className="cc-badges-row">
         <span className="cc-badge cc-badge--rate">
-          {sendCurrency.symbol}1 = {recvCurrency.symbol}{fmt(rate)}
+          {sendCurrency.symbol}1 = {recvCurrency.symbol}
+          {quoteLoading || ratePerUnit == null ? '—' : fmt(ratePerUnit)}
         </span>
         <span className="cc-badge cc-badge--fee">
-          Fee = {sendCurrency.symbol}{fmt(fee)}
+          Fee = {feeAmount == null ? '—' : `${sendCurrency.symbol}${fmt(feeAmount)}`}
         </span>
       </div>
+
+      {quoteError && <p style={{ color: '#c62828', marginTop: 8, fontSize: 12 }}>{quoteError}</p>}
 
       {/* TOTAL */}
       <div className="cc-total-row">
         <span className="cc-total-label">Total amount to be sent</span>
         <span className="cc-total-value">
-          {sendCurrency.symbol} {fmt(total)}
+          {sendCurrency.symbol} {fmt(totalAmount)}
         </span>
       </div>
 

@@ -6,18 +6,25 @@ interface SellModalProps {
   balance: number;
   currency: string;
   symbol: string;
+  // When selling NGN, this controls which foreign currency you want to buy.
+  // (When selling a non-NGN wallet currency, the receive currency is always NGN.)
+  targetCurrency?: string;
   onClose: () => void;
-  onSubmit: (amount: number, rate: number) => void;
-  onSuccess?: (amount: number, received: number, receiveSymbol: string) => void;
+  onSubmit: (
+    amountSent: number,
+    rate: number,
+    amountReceived: number,
+    receiveCurrency: string,
+  ) => Promise<void>;
 }
 
 const SellModal: React.FC<SellModalProps> = ({
   balance,
   currency,
   symbol,
+  targetCurrency = 'GBP',
   onClose,
   onSubmit,
-  onSuccess,
 }) => {
   const [amount, setAmount] = useState<string>('');
   const [rate, setRate] = useState<string>('');
@@ -27,11 +34,29 @@ const SellModal: React.FC<SellModalProps> = ({
     received: number;
     receiveSymbol: string;
   } | null>(null);
+  const [submitError, setSubmitError] = useState<string>('');
+  const [submitting, setSubmitting] = useState(false);
 
   const FEE_PERCENT = 0.01;
   const isSellingNaira = currency === 'NGN';
-  const receiveSymbol = isSellingNaira ? '£' : '₦';
-  const receiveCurrency = isSellingNaira ? 'GBP' : 'NGN';
+
+  const getCurrencySymbol = (c: string): string => {
+    switch (c) {
+      case 'GBP':
+        return '£';
+      case 'USD':
+        return '$';
+      case 'EUR':
+        return '€';
+      case 'NGN':
+        return '₦';
+      default:
+        return '';
+    }
+  };
+
+  const receiveCurrency = isSellingNaira ? targetCurrency : 'NGN';
+  const receiveSymbol = getCurrencySymbol(receiveCurrency);
 
   const rawAmount = parseFloat(amount.replace(/[^0-9.]/g, '')) || 0;
   const rawRate = parseFloat(rate.replace(/[^0-9.]/g, '')) || 0;
@@ -57,24 +82,30 @@ const SellModal: React.FC<SellModalProps> = ({
     if (dots <= 1) setter(value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError('');
 
     if (rawAmount > 0 && rawRate > 0 && rawAmount <= balance) {
-      // Store data for success screen
-      setSuccessData({
-        amount: rawAmount,
-        received: finalReceive,
-        receiveSymbol,
-      });
+      setSubmitting(true);
+      try {
+        // Wait for API create to succeed before showing the success screen.
+        await onSubmit(rawAmount, rawRate, finalReceive, receiveCurrency);
 
-      // Show success modal (which will replace the sell modal entirely)
-      setShowSuccess(true);
+        // Store data for success screen
+        setSuccessData({
+          amount: rawAmount,
+          received: finalReceive,
+          receiveSymbol,
+        });
 
-      // Notify parent
-      onSubmit(rawAmount, rawRate);
-      if (onSuccess) {
-        onSuccess(rawAmount, finalReceive, receiveSymbol);
+        setShowSuccess(true);
+      } catch (err: any) {
+        setSubmitError(
+          err?.message || (typeof err === 'string' ? err : '') || 'Failed to create listing. Please try again.',
+        );
+      } finally {
+        setSubmitting(false);
       }
     }
   };
@@ -129,7 +160,9 @@ const SellModal: React.FC<SellModalProps> = ({
 
           {/* Exchange Rate */}
           <div className="form-group">
-            <label className="input-label">Exchange Rate (₦ per £1)</label>
+            <label className="input-label">
+              Exchange Rate (₦ per {receiveSymbol || '1'})
+            </label>
             <div className="input-box-wrapper">
               <input
                 type="text"
@@ -167,11 +200,20 @@ const SellModal: React.FC<SellModalProps> = ({
             </span>
           </div>
 
+          {submitError && <div className="error-text" style={{ marginTop: '10px' }}>{submitError}</div>}
+
           {/* Submit Button */}
           <button
             type="submit"
             className="btn-submit-sabo"
-            disabled={!amount || !rate || rawAmount <= 0 || rawAmount > balance || rawRate <= 0}
+            disabled={
+              submitting ||
+              !amount ||
+              !rate ||
+              rawAmount <= 0 ||
+              rawAmount > balance ||
+              rawRate <= 0
+            }
           >
             SELL {currency}
           </button>

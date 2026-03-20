@@ -4,21 +4,66 @@ import '../../assets/css/HistoryPage.css';
 
 const WithdrawalsPage: React.FC = () => {
   const [withdrawals, setWithdrawals] = useState<Record<string, unknown>[]>([]);
+  const [error, setError] = useState('');
+  const [processingId, setProcessingId] = useState<string>('');
 
   useEffect(() => {
     const load = async () => {
       const response = await withdrawalsApi.list();
-      if (response.success && Array.isArray(response.data)) setWithdrawals(response.data);
+      if (response.success && Array.isArray(response.data)) {
+        setWithdrawals(response.data);
+        setError('');
+      } else {
+        setError(response.error?.message || 'Failed to load withdrawals');
+      }
     };
     void load();
   }, []);
+
+  const reload = async () => {
+    const response = await withdrawalsApi.list();
+    if (response.success && Array.isArray(response.data)) {
+      setWithdrawals(response.data);
+    } else {
+      setError(response.error?.message || 'Failed to load withdrawals');
+    }
+  };
+
+  const canActOn = (status: unknown) => {
+    const s = String(status || '').toLowerCase();
+    return s === 'pending' || s === 'submitted' || s === 'review';
+  };
+
+  const handleApprove = async (withdrawalId: string) => {
+    setProcessingId(withdrawalId);
+    setError('');
+    const res = await withdrawalsApi.approve(withdrawalId);
+    setProcessingId('');
+    if (!res.success) {
+      setError(res.error?.message || 'Failed to approve withdrawal');
+      return;
+    }
+    await reload();
+  };
+
+  const handleReject = async (withdrawalId: string) => {
+    setProcessingId(withdrawalId);
+    setError('');
+    const res = await withdrawalsApi.reject(withdrawalId);
+    setProcessingId('');
+    if (!res.success) {
+      setError(res.error?.message || 'Failed to reject withdrawal');
+      return;
+    }
+    await reload();
+  };
 
   return (
     <main className="history-page">
       <div className="page-header"><h1 className="page-title">Withdrawals</h1></div>
       <div className="history-table-container">
         <table className="history-table">
-          <thead><tr><th>ID</th><th>Amount</th><th>Currency</th><th>Status</th></tr></thead>
+          <thead><tr><th>ID</th><th>Amount</th><th>Currency</th><th>Status</th><th>Action</th></tr></thead>
           <tbody>
             {withdrawals.map((withdrawal, index) => (
               <tr key={String(withdrawal.id || index)}>
@@ -26,11 +71,35 @@ const WithdrawalsPage: React.FC = () => {
                 <td>{String(withdrawal.amount || 0)}</td>
                 <td>{String(withdrawal.currency || '-')}</td>
                 <td>{String(withdrawal.status || '-')}</td>
+                <td>
+                  {canActOn(withdrawal.status) ? (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        className="page-number"
+                        disabled={processingId === String(withdrawal.id || index)}
+                        onClick={() => void handleApprove(String(withdrawal.id || index))}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        className="page-number"
+                        disabled={processingId === String(withdrawal.id || index)}
+                        onClick={() => void handleReject(String(withdrawal.id || index))}
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  ) : (
+                    <span style={{ color: '#64748B' }}>—</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {error && <p style={{ marginTop: '1rem', color: '#c62828', textAlign: 'center' }}>{error}</p>}
     </main>
   );
 };
