@@ -7,7 +7,7 @@ import axios, {
 import type { ApiResponse, AuthTokens } from "../../modules/auth/types/type";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+  import.meta.env.VITE_API_BASE_URL;
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -31,6 +31,7 @@ api.interceptors.request.use(
 // Flag to prevent multiple refresh calls
 let isRefreshing = false;
 let failedQueue: any[] = [];
+const MAX_REQUEST_RETRIES = 1;
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((prom) => {
@@ -49,6 +50,7 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
+      _retryCount?: number;
     };
 
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -106,6 +108,19 @@ api.interceptors.response.use(
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
+      }
+    }
+
+    // Retry once for transient failures (network/timeout/5xx), excluding 401.
+    if (originalRequest && error.response?.status !== 401) {
+      const status = error.response?.status ?? 0;
+      const isRetryableStatus = status >= 500 || status === 0;
+      const isRetryableCode = error.code === "ECONNABORTED" || !error.response;
+      const retryCount = originalRequest._retryCount ?? 0;
+
+      if ((isRetryableStatus || isRetryableCode) && retryCount < MAX_REQUEST_RETRIES) {
+        originalRequest._retryCount = retryCount + 1;
+        return api(originalRequest);
       }
     }
 

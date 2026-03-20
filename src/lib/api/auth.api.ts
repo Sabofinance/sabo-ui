@@ -1,6 +1,6 @@
 import api from "./axios";
+import { normalizeError, normalizeSuccess, type ApiEnvelope } from "./response";
 import type {
-  ApiResponse,
   AuthTokens,
   LoginRequest,
   RegisterRequest,
@@ -11,44 +11,96 @@ import type {
 } from "../../modules/auth/types/type";
 
 export const authApi = {
-  loginUser: async (data: LoginRequest) => {
-    const response = await api.post<ApiResponse<AuthTokens>>("/auth/login", data);
-    return response.data;
+  loginUser: async (data: LoginRequest): Promise<ApiEnvelope<AuthTokens>> => {
+    try {
+      const response = await api.post<ApiEnvelope<AuthTokens>>("/auth/login", data);
+      return normalizeSuccess<AuthTokens>(response.data?.data ?? null);
+    } catch (error) {
+      return normalizeError(error);
+    }
   },
 
-  registerUser: async (data: RegisterRequest) => {
-    const response = await api.post<ApiResponse<User>>("/auth/register", data);
-    return response.data;
+  registerUser: async (data: RegisterRequest): Promise<ApiEnvelope<User>> => {
+    try {
+      const response = await api.post<ApiEnvelope<User>>("/auth/register", data);
+      return normalizeSuccess<User>(response.data?.data ?? null);
+    } catch (error) {
+      return normalizeError(error);
+    }
   },
 
-  verifyOtp: async (data: OtpRequest) => {
-    const response = await api.post<ApiResponse<AuthTokens>>("/auth/verify-otp", data);
-    return response.data;
+  verifyOtp: async (data: OtpRequest): Promise<ApiEnvelope<AuthTokens>> => {
+    try {
+      const response = await api.post<ApiEnvelope<AuthTokens>>("/auth/verify-otp", data);
+      return normalizeSuccess<AuthTokens>(response.data?.data ?? null);
+    } catch (error) {
+      return normalizeError(error);
+    }
   },
 
-  forgotPassword: async (data: ForgotPasswordRequest) => {
-    const response = await api.post<ApiResponse<null>>("/auth/forgot-password", data);
-    return response.data;
+  forgotPassword: async (data: ForgotPasswordRequest): Promise<ApiEnvelope<null>> => {
+    try {
+      const response = await api.post<ApiEnvelope<null>>("/auth/forgot-password", data);
+      return normalizeSuccess<null>(response.data?.data ?? null);
+    } catch (error) {
+      return normalizeError(error);
+    }
   },
 
-  resetPassword: async (data: ResetPasswordRequest) => {
-    const response = await api.post<ApiResponse<null>>("/auth/reset-password", data);
-    return response.data;
+  resetPassword: async (data: ResetPasswordRequest): Promise<ApiEnvelope<null>> => {
+    try {
+      const response = await api.post<ApiEnvelope<null>>("/auth/reset-password", data);
+      return normalizeSuccess<null>(response.data?.data ?? null);
+    } catch (error) {
+      return normalizeError(error);
+    }
   },
 
-  refreshToken: async (refreshToken: string) => {
-    const response = await api.post<ApiResponse<AuthTokens>>("/auth/refresh-token", { refreshToken });
-    return response.data;
+  refreshToken: async (refreshToken: string): Promise<ApiEnvelope<AuthTokens>> => {
+    try {
+      const response = await api.post<ApiEnvelope<AuthTokens>>("/auth/refresh-token", { refreshToken });
+      return normalizeSuccess<AuthTokens>(response.data?.data ?? null);
+    } catch (error) {
+      return normalizeError(error);
+    }
   },
 
-  logoutUser: async () => {
-    const response = await api.post<ApiResponse<null>>("/auth/logout");
-    return response.data;
+  logoutUser: async (): Promise<ApiEnvelope<null>> => {
+    try {
+      const response = await api.post<ApiEnvelope<null>>("/auth/logout");
+      return normalizeSuccess<null>(response.data?.data ?? null);
+    } catch (error) {
+      return normalizeError(error);
+    }
   },
 
-  getCurrentUser: async () => {
-    const response = await api.get<ApiResponse<User>>("/auth/me");
-    return response.data;
+  getCurrentUser: async (): Promise<ApiEnvelope<User>> => {
+    try {
+      const response = await api.get<ApiEnvelope<User>>("/auth/me");
+      return normalizeSuccess<User>(response.data?.data ?? null);
+    } catch (error) {
+      return normalizeError(error);
+    }
+  },
+
+  resendOtp: async (payload: { email: string }): Promise<ApiEnvelope<null>> => {
+    try {
+      const response = await api.post<ApiEnvelope<null>>("/auth/resend-otp", payload);
+      return normalizeSuccess<null>(response.data?.data ?? null);
+    } catch (error) {
+      return normalizeError(error);
+    }
+  },
+
+  changePassword: async (
+    payload: { currentPassword: string; newPassword: string },
+  ): Promise<ApiEnvelope<null>> => {
+    try {
+      const response = await api.patch<ApiEnvelope<null>>("/auth/change-password", payload);
+      return normalizeSuccess<null>(response.data?.data ?? null);
+    } catch (error) {
+      return normalizeError(error);
+    }
   },
 };
 
