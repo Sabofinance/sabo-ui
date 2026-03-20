@@ -1,9 +1,20 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
 import { adminApi } from '../../lib/api';
 
 type UserRecord = Record<string, unknown>;
+
+const extractArray = (value: unknown): unknown[] => {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== 'object') return [];
+  const obj = value as Record<string, unknown>;
+  const keys = ['users', 'items', 'results', 'rows', 'records', 'list', 'data', 'transactions', 'submissions', 'deposits', 'disputes'];
+  for (const key of keys) {
+    if (Array.isArray(obj[key])) return obj[key] as unknown[];
+  }
+  return [];
+};
 
 const AdminUsersPage: React.FC = () => {
   const toast = useToast();
@@ -19,8 +30,10 @@ const AdminUsersPage: React.FC = () => {
   const loadUsers = async () => {
     setLoading(true);
     const res = await adminApi.listUsers();
-    if (res.success && Array.isArray(res.data)) {
-      setUsers(res.data as UserRecord[]);
+    console.log('AdminUsersPage loadUsers res', res);
+    if (res.success) {
+      const list = extractArray(res.data);
+      setUsers(Array.isArray(list) ? (list as UserRecord[]) : []);
     } else {
       toast.error(res.error?.message || 'Could not load users.');
     }

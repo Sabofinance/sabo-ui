@@ -10,7 +10,7 @@ const DashboardSidebar: React.FC = () => {
   const { user } = useAuth();
   const { adminUser, isAdminAuthenticated } = useAdminAuth();
   const activeRole = isAdminAuthenticated ? adminUser?.role : user?.role;
-  const isAdmin = String(activeRole || '').toLowerCase() === 'admin';
+  const isAdmin = ['admin', 'super_admin'].includes(String(activeRole || '').toLowerCase());
 
   return (
     <>

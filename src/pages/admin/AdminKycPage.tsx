@@ -4,6 +4,17 @@ import { adminApi } from '../../lib/api';
 
 type KycRecord = Record<string, unknown>;
 
+const extractArray = (value: unknown): unknown[] => {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== 'object') return [];
+  const obj = value as Record<string, unknown>;
+  const keys = ['submissions', 'items', 'results', 'rows', 'records', 'list', 'data', 'users', 'transactions', 'deposits', 'disputes'];
+  for (const key of keys) {
+    if (Array.isArray(obj[key])) return obj[key] as unknown[];
+  }
+  return [];
+};
+
 const AdminKycPage: React.FC = () => {
   const toast = useToast();
   const [submissions, setSubmissions] = useState<KycRecord[]>([]);
@@ -13,8 +24,13 @@ const AdminKycPage: React.FC = () => {
   const loadSubmissions = async () => {
     setLoading(true);
     const res = await adminApi.listKyc();
-    if (res.success && Array.isArray(res.data)) setSubmissions(res.data as KycRecord[]);
-    else toast.error(res.error?.message || 'Could not load KYC submissions');
+    console.log('AdminKycPage loadSubmissions res', res);
+    if (res.success) {
+      const list = extractArray(res.data);
+      setSubmissions(Array.isArray(list) ? (list as KycRecord[]) : []);
+    } else {
+      toast.error(res.error?.message || 'Could not load KYC submissions');
+    }
     setLoading(false);
   };
 

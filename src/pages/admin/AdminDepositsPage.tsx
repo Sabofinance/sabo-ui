@@ -4,6 +4,17 @@ import { adminApi } from '../../lib/api';
 
 type DepositRecord = Record<string, unknown>;
 
+const extractArray = (value: unknown): unknown[] => {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== 'object') return [];
+  const obj = value as Record<string, unknown>;
+  const keys = ['deposits', 'items', 'results', 'rows', 'records', 'list', 'data', 'users', 'transactions', 'submissions', 'disputes'];
+  for (const key of keys) {
+    if (Array.isArray(obj[key])) return obj[key] as unknown[];
+  }
+  return [];
+};
+
 const AdminDepositsPage: React.FC = () => {
   const toast = useToast();
   const [deposits, setDeposits] = useState<DepositRecord[]>([]);
@@ -13,8 +24,13 @@ const AdminDepositsPage: React.FC = () => {
   const load = async () => {
     setLoading(true);
     const res = await adminApi.listDeposits({ status: 'pending' });
-    if (res.success && Array.isArray(res.data)) setDeposits(res.data as DepositRecord[]);
-    else toast.error(res.error?.message || 'Could not load deposits');
+    console.log('AdminDepositsPage load res', res);
+    if (res.success) {
+      const list = extractArray(res.data);
+      setDeposits(Array.isArray(list) ? (list as DepositRecord[]) : []);
+    } else {
+      toast.error(res.error?.message || 'Could not load deposits');
+    }
     setLoading(false);
   };
 

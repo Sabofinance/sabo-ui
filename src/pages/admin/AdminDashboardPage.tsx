@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useToast } from '../../context/ToastContext';
-import { adminApi, kycApi, depositsApi } from '../../lib/api';
+import { adminApi } from '../../lib/api';
 import { useNotifications } from '../../context/NotificationContext';
 
 type AnyRecord = Record<string, unknown>;
@@ -310,6 +310,8 @@ const AdminDashboardPage: React.FC = () => {
   const [kycSubmissions, setKycSubmissions] = useState<AnyRecord[]>([]);
   const [pendingDeposits, setPendingDeposits] = useState<AnyRecord[]>([]);
   const [adminTransactions, setAdminTransactions] = useState<AnyRecord[]>([]);
+  const [disputes, setDisputes] = useState<AnyRecord[]>([]);
+  const [dashboardData, setDashboardData] = useState<AnyRecord | null>(null);
   const [depositsActionLoadingId, setDepositsActionLoadingId] = useState('');
   const [kycActionLoadingId, setKycActionLoadingId] = useState('');
   const [userActionLoadingId, setUserActionLoadingId] = useState('');
@@ -318,25 +320,63 @@ const AdminDashboardPage: React.FC = () => {
     String(u.status || u.state || u.accountStatus || (u.isSuspended ? 'suspended' : '') || '').toLowerCase();
   const isSuspended = (u: AnyRecord) => userStatusValue(u).includes('suspend');
 
+  const safeList = (value: unknown): AnyRecord[] => {
+    if (Array.isArray(value)) return value as AnyRecord[];
+    if (!value || typeof value !== 'object') return [];
+    const obj = value as Record<string, unknown>;
+    const candidates = ['users', 'submissions', 'deposits', 'transactions', 'disputes', 'recentKyc', 'items', 'results', 'rows', 'records', 'list', 'data'];
+    for (const key of candidates) {
+      if (Array.isArray(obj[key])) return obj[key] as AnyRecord[];
+    }
+    return [];
+  };
+
   const listAll = async () => {
     setLoading(true); setError(''); setSelectedUser(null);
     try {
       const [dashRes, txRes] = await Promise.all([adminApi.getDashboard(), adminApi.listTransactions({ limit: 30 })]);
-      if (!dashRes.success) toast.error(dashRes.error?.message || 'Failed to load admin overview');
-      if (txRes.success && Array.isArray(txRes.data)) setAdminTransactions(txRes.data);
-      else toast.error(txRes.error?.message || 'Failed to load admin transactions');
+      console.log('AdminDashboard getDashboard', dashRes);
+      console.log('AdminDashboard listTransactions', txRes);
+      if (!dashRes.success) {
+        toast.error(dashRes.error?.message || 'Failed to load admin overview');
+      } else {
+        setDashboardData(dashRes.data as AnyRecord ?? null);
+      }
+
+      if (txRes.success) {
+        setAdminTransactions(safeList(txRes.data));
+      } else {
+        toast.error(txRes.error?.message || 'Failed to load admin transactions');
+      }
 
       const usersRes = await adminApi.listUsers();
-      if (usersRes.success && Array.isArray(usersRes.data)) setUsers(usersRes.data);
-      else toast.error(usersRes.error?.message || 'Failed to load users');
+      if (usersRes.success) {
+        const usersList = safeList(usersRes.data);
+        setUsers(usersList);
+      } else {
+        toast.error(usersRes.error?.message || 'Failed to load users');
+      }
 
-      const kycRes = await kycApi.listSubmissions();
-      if (kycRes.success && Array.isArray(kycRes.data)) setKycSubmissions(kycRes.data);
-      else toast.error(kycRes.error?.message || 'Failed to load KYC submissions');
+      const kycRes = await adminApi.listKyc();
+      if (kycRes.success) {
+        setKycSubmissions(safeList(kycRes.data));
+      } else {
+        toast.error(kycRes.error?.message || 'Failed to load KYC submissions');
+      }
 
-      const depRes = await depositsApi.list({ status: 'pending' });
-      if (depRes.success && Array.isArray(depRes.data)) setPendingDeposits(depRes.data);
-      else toast.error(depRes.error?.message || 'Failed to load pending deposits');
+      const depRes = await adminApi.listDeposits({ status: 'pending' });
+      if (depRes.success) {
+        setPendingDeposits(safeList(depRes.data));
+      } else {
+        toast.error(depRes.error?.message || 'Failed to load pending deposits');
+      }
+
+      const disputesRes = await adminApi.listDisputes({ status: 'open', limit: 10 });
+      if (disputesRes.success) {
+        setDisputes(safeList(disputesRes.data));
+      } else {
+        toast.error(disputesRes.error?.message || 'Failed to load disputes');
+      }
     } catch (err: any) {
       const msg = err?.message || 'Failed to load admin dashboard';
       setError(msg); toast.error(msg);
@@ -348,11 +388,25 @@ const AdminDashboardPage: React.FC = () => {
   useEffect(() => { void listAll(); }, []);
 
   /* Derived counts */
-  const totalUsers = users.length;
-  const suspendedUsers = useMemo(() => users.filter(u => isSuspended(u)).length, [users]);
-  const activeUsers = Math.max(0, totalUsers - suspendedUsers);
+  const usersSummary = dashboardData?.users && typeof dashboardData.users === 'object' ? (dashboardData.users as AnyRecord) : null;
+  const kycSummary = dashboardData?.kyc && typeof dashboardData.kyc === 'object' ? (dashboardData.kyc as AnyRecord) : null;
+
+  const totalUsers = Number(usersSummary?.total ?? usersSummary?.usersCount ?? users.length);
+  const suspendedUsers = useMemo(() => {
+    if (typeof usersSummary?.suspended === 'number') return usersSummary.suspended;
+    if (typeof usersSummary?.suspended === 'string') return Number(usersSummary.suspended) || 0;
+    return users.filter(u => isSuspended(u)).length;
+  }, [users, usersSummary]);
+  const activeUsers = Number(usersSummary?.active ?? usersSummary?.activeUsers ?? Math.max(0, totalUsers - suspendedUsers));
 
   const kycCounts = useMemo(() => {
+    if (kycSummary) {
+      return {
+        pending: Number(kycSummary.pending ?? kycSummary.unverified ?? 0),
+        verified: Number(kycSummary.verified ?? kycSummary.approved ?? 0),
+        rejected: Number(kycSummary.rejected ?? 0),
+      };
+    }
     const c = { pending: 0, verified: 0, rejected: 0 };
     for (const s of kycSubmissions) {
       const st = String(s.status || s.state || '').toLowerCase();
@@ -374,6 +428,19 @@ const AdminDashboardPage: React.FC = () => {
   };
 
   const kycTrendPoints = useMemo(() => {
+    const chartsData = dashboardData?.charts as AnyRecord | undefined;
+    const dashboardTrend = Array.isArray(chartsData?.kycSubmissions)
+      ? chartsData.kycSubmissions as AnyRecord[]
+      : Array.isArray(dashboardData?.kycTrend)
+        ? dashboardData.kycTrend as AnyRecord[]
+        : [];
+    if (dashboardTrend.length > 0) {
+      return dashboardTrend.map((p) => ({
+        day: String(p.day || p.label || '?'),
+        value: Number(p.value || p.count || 0),
+      }));
+    }
+
     const b = make7Buckets();
     for (const k of kycSubmissions) {
       const t = toDateMs((k as AnyRecord).createdAt ?? (k as AnyRecord).created_at ?? (k as AnyRecord).date ?? (k as AnyRecord).timestamp);
@@ -382,9 +449,22 @@ const AdminDashboardPage: React.FC = () => {
       if (bk) bk.value++;
     }
     return b.map(x => ({ day: x.label, value: x.value }));
-  }, [kycSubmissions]);
+  }, [kycSubmissions, dashboardData]);
 
   const depositTrendPoints = useMemo(() => {
+    const chartsData = dashboardData?.charts as AnyRecord | undefined;
+    const dashboardTrend = Array.isArray(chartsData?.deposits)
+      ? chartsData.deposits as AnyRecord[]
+      : Array.isArray(dashboardData?.depositTrend)
+        ? dashboardData.depositTrend as AnyRecord[]
+        : [];
+    if (dashboardTrend.length > 0) {
+      return dashboardTrend.map((p) => ({
+        day: String(p.day || p.label || '?'),
+        value: Number(p.value || p.count || 0),
+      }));
+    }
+
     const b = make7Buckets();
     for (const d of pendingDeposits) {
       const t = toDateMs((d as AnyRecord).createdAt ?? (d as AnyRecord).created_at ?? (d as AnyRecord).date ?? (d as AnyRecord).timestamp);
@@ -393,7 +473,7 @@ const AdminDashboardPage: React.FC = () => {
       if (bk) bk.value++;
     }
     return b.map(x => ({ day: x.label, value: x.value }));
-  }, [pendingDeposits]);
+  }, [pendingDeposits, dashboardData]);
 
   /* Actions */
   const fetchUserDetails = async (userId: string) => {
@@ -441,7 +521,7 @@ const AdminDashboardPage: React.FC = () => {
   const handleApproveDeposit = async (depositId: string) => {
     setDepositsActionLoadingId(depositId);
     try {
-      const res = await depositsApi.approve(depositId);
+      const res = await adminApi.approveDeposit(depositId);
       if (!res.success) { toast.error(res.error?.message || 'Failed to approve deposit'); return; }
       toast.success('Deposit approved'); await listAll();
     } finally { setDepositsActionLoadingId(''); }
@@ -450,7 +530,7 @@ const AdminDashboardPage: React.FC = () => {
   const handleRejectDeposit = async (depositId: string) => {
     setDepositsActionLoadingId(depositId);
     try {
-      const res = await depositsApi.reject(depositId);
+      const res = await adminApi.rejectDeposit(depositId);
       if (!res.success) { toast.error(res.error?.message || 'Failed to reject deposit'); return; }
       toast.success('Deposit rejected'); await listAll();
     } finally { setDepositsActionLoadingId(''); }
@@ -515,6 +595,7 @@ const AdminDashboardPage: React.FC = () => {
             { label: 'Active Users', value: activeUsers, sub: 'In good standing', color: '#dcfce7', accent: '#16a34a' },
             { label: 'Suspended', value: suspendedUsers, sub: 'Access restricted', color: '#fee2e2', accent: '#dc2626' },
             { label: 'KYC Submissions', value: kycSubmissions.length, sub: `${kycCounts.pending} pending review`, color: '#fef3c7', accent: '#d97706' },
+            { label: 'Open Disputes', value: disputes.length, sub: 'Needs resolution', color: '#fee2e2', accent: '#dc2626' },
           ].map(s => (
             <div key={s.label} className="adm-stat" style={{ '--dot-color': s.color } as React.CSSProperties}>
               <span className="adm-stat-label">{s.label}</span>
@@ -691,6 +772,43 @@ const AdminDashboardPage: React.FC = () => {
                                 </button>
                               </div>
                             </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Open Disputes */}
+            <div className="adm-card adm-rise adm-d5">
+              <div className="adm-card-head">
+                <h3>Open Disputes</h3>
+                <span className="adm-tag adm-tag-red">{disputes.length} open</span>
+              </div>
+              <div className="adm-table-wrap">
+                <table className="adm-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>User</th>
+                      <th>Status</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {disputes.length === 0 ? (
+                      <tr><td colSpan={4} className="adm-empty">No open disputes.</td></tr>
+                    ) : (
+                      disputes.slice(0, 8).map((d, i) => {
+                        const id = String(d.id || d._id || d.disputeId || i + 1);
+                        return (
+                          <tr key={id}>
+                            <td className="mono">#{id}</td>
+                            <td style={{ color: 'var(--muted)' }}>{String(d.userEmail || d.email || d.user || '—')}</td>
+                            <td><span className="adm-tag adm-tag-amber">{String(d.status || d.state || 'open')}</span></td>
+                            <td>{String(d.amount || d.value || '—')}</td>
                           </tr>
                         );
                       })

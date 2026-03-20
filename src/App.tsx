@@ -45,6 +45,12 @@ const TradesPage      = lazy(() => import('./pages/dashboard/TradesPage'));
 const DisputesPage    = lazy(() => import('./pages/dashboard/DisputesPage'));
 const KycPage         = lazy(() => import('./pages/dashboard/KycPage'));
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
+const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
+const AdminUserDetailsPage = lazy(() => import('./pages/admin/AdminUserDetailsPage'));
+const AdminKycPage = lazy(() => import('./pages/admin/AdminKycPage'));
+const AdminDepositsPage = lazy(() => import('./pages/admin/AdminDepositsPage'));
+const AdminAdminsPage = lazy(() => import('./pages/admin/AdminAdminsPage'));
+const AdminLogsPage = lazy(() => import('./pages/admin/AdminLogsPage'));
 
 const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
 const AdminVerifyOtpPage = lazy(() => import('./pages/admin/AdminVerifyOtpPage'));
@@ -122,7 +128,13 @@ function App() {
             <Route path="trades"          element={<UserProtectedRoute><TradesPage /></UserProtectedRoute>} />
             <Route path="disputes"        element={<UserProtectedRoute><DisputesPage /></UserProtectedRoute>} />
             <Route path="kyc"             element={<UserProtectedRoute><KycPage /></UserProtectedRoute>} />
-            <Route path="admin"          element={<AdminProtectedRoute><AdminDashboardPage /></AdminProtectedRoute>} />
+            <Route path="admin" element={<AdminProtectedRoute><AdminDashboardPage /></AdminProtectedRoute>} />
+            <Route path="admin/users" element={<AdminProtectedRoute><AdminUsersPage /></AdminProtectedRoute>} />
+            <Route path="admin/users/:id" element={<AdminProtectedRoute><AdminUserDetailsPage /></AdminProtectedRoute>} />
+            <Route path="admin/kyc" element={<AdminProtectedRoute><AdminKycPage /></AdminProtectedRoute>} />
+            <Route path="admin/deposits" element={<AdminProtectedRoute><AdminDepositsPage /></AdminProtectedRoute>} />
+            <Route path="admin/admins" element={<AdminProtectedRoute allowedRoles={["super_admin"]}><AdminAdminsPage /></AdminProtectedRoute>} />
+            <Route path="admin/logs" element={<AdminProtectedRoute allowedRoles={["super_admin"]}><AdminLogsPage /></AdminProtectedRoute>} />
           </Route>
           </Routes>
         </Suspense>

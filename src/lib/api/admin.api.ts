@@ -37,6 +37,9 @@ export const adminApi = {
 
   // Legacy compatibility
   listTransactions: (params?: Record<string, unknown>) => apiRequest.get("/admin/transactions", params),
+
+  // Disputes
+  listDisputes: (params?: Record<string, unknown>) => apiRequest.get<Record<string, unknown>[]>("/admin/disputes", params),
 };
 
 export default adminApi;
