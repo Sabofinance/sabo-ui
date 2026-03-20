@@ -9,30 +9,14 @@ interface Message {
 }
 
 const ChatPage: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      text: "Hello! 👋 How can I help you today?",
-      sender: 'support',
-      timestamp: new Date('2024-03-15T10:30:00')
-    },
-    {
-      id: 2,
-      text: "I have a question about my recent transaction.",
-      sender: 'user',
-      timestamp: new Date('2024-03-15T10:35:00')
-    },
-    {
-      id: 3,
-      text: "Sure, I'd be happy to assist. Could you please provide the transaction reference?",
-      sender: 'support',
-      timestamp: new Date('2024-03-15T10:40:00')
-    }
-  ]);
+  // No mocked chat transcript: the real chat backend/API isn't wired in this build.
+  // Keeping this empty prevents dummy/static data from appearing in production.
+  const [messages] = useState<Message[]>([]);
 
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string>('');
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,30 +28,8 @@ const ChatPage: React.FC = () => {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
-
-    const userMessage: Message = {
-      id: messages.length + 1,
-      text: newMessage,
-      sender: 'user',
-      timestamp: new Date()
-    };
-
-    setMessages([...messages, userMessage]);
-    setNewMessage('');
-
-    // Simulate support reply
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev,
-        {
-          id: prev.length + 1,
-          text: "Thanks for your message. Our team will get back to you shortly.",
-          sender: 'support',
-          timestamp: new Date()
-        }
-      ]);
-    }, 1000);
+    // Without a connected backend, we don't persist/send messages to avoid "fake" chat.
+    setError('Chat is not connected to the backend in this build.');
   };
 
   const formatTime = (date: Date) => {
@@ -96,25 +58,31 @@ const ChatPage: React.FC = () => {
 
               {/* Messages Area */}
               <div className="messages-container">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`message-wrapper ${message.sender === 'user' ? 'user-message' : 'support-message'}`}
-                  >
-                    {message.sender === 'support' && (
-                      <div className="message-avatar">
-                        <img 
-                          src="https://i.pravatar.cc/150?u=support" 
-                          alt="Support Agent" 
-                        />
+                {messages.length === 0 ? (
+                  <p style={{ color: '#64748B', textAlign: 'center', marginTop: '2rem' }}>
+                    No messages yet.
+                  </p>
+                ) : (
+                  messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`message-wrapper ${message.sender === 'user' ? 'user-message' : 'support-message'}`}
+                    >
+                      {message.sender === 'support' && (
+                        <div className="message-avatar">
+                          <img
+                            src="https://i.pravatar.cc/150?u=support"
+                            alt="Support Agent"
+                          />
+                        </div>
+                      )}
+                      <div className="message-bubble">
+                        <div className="message-text">{message.text}</div>
+                        <div className="message-time">{formatTime(message.timestamp)}</div>
                       </div>
-                    )}
-                    <div className="message-bubble">
-                      <div className="message-text">{message.text}</div>
-                      <div className="message-time">{formatTime(message.timestamp)}</div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
                 <div ref={messagesEndRef} />
               </div>
 
@@ -125,7 +93,10 @@ const ChatPage: React.FC = () => {
                   type="text"
                   placeholder="Type your message..."
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  onChange={(e) => {
+                    setError('');
+                    setNewMessage(e.target.value);
+                  }}
                 />
                 <button type="submit" disabled={!newMessage.trim()}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -135,6 +106,12 @@ const ChatPage: React.FC = () => {
                   Send
                 </button>
               </form>
+
+              {error && (
+                <p style={{ color: '#c62828', margin: '1rem 0 0', textAlign: 'center' }}>
+                  {error}
+                </p>
+              )}
             </div>
       </main>
     </div>

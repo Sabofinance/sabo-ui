@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/css/MySabitPage.css';
+import { sabitsApi } from '../../lib/api';
 
 interface MySabitListing {
   id: number;
@@ -20,85 +21,64 @@ interface MySabitListing {
 const MySabitPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'cancelled'>('active');
+  const [myListings, setMyListings] = useState<MySabitListing[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const myListings: MySabitListing[] = [
-    {
-      id: 1,
-      type: 'sell',
-      currency: 'GBP',
-      amount: 5000,
-      rate: 1650,
-      total: 8250000,
-      status: 'active',
-      createdAt: '2024-03-15T10:30:00',
-      counterparty: {
-        name: 'CryptoKing',
-        avatar: 'https://i.pravatar.cc/150?u=5'
-      }
-    },
-    {
-      id: 2,
-      type: 'buy',
-      currency: 'NGN',
-      amount: 2500000,
-      rate: 1580,
-      total: 3950000,
-      status: 'active',
-      createdAt: '2024-03-14T15:45:00',
-      counterparty: {
-        name: 'FXTrader',
-        avatar: 'https://i.pravatar.cc/150?u=6'
-      }
-    },
-    {
-      id: 3,
-      type: 'sell',
-      currency: 'USD',
-      amount: 10000,
-      rate: 1550,
-      total: 15500000,
-      status: 'active',
-      createdAt: '2024-03-13T09:15:00'
-    },
-    {
-      id: 4,
-      type: 'sell',
-      currency: 'GBP',
-      amount: 3000,
-      rate: 1640,
-      total: 4920000,
-      status: 'completed',
-      createdAt: '2024-03-10T11:20:00',
-      counterparty: {
-        name: 'NaijaPounds',
-        avatar: 'https://i.pravatar.cc/150?u=8'
-      }
-    },
-    {
-      id: 5,
-      type: 'buy',
-      currency: 'EUR',
-      amount: 8000,
-      rate: 1720,
-      total: 13760000,
-      status: 'completed',
-      createdAt: '2024-03-09T14:30:00',
-      counterparty: {
-        name: 'EuroMaster',
-        avatar: 'https://i.pravatar.cc/150?u=9'
-      }
-    },
-    {
-      id: 6,
-      type: 'sell',
-      currency: 'GBP',
-      amount: 15000,
-      rate: 1660,
-      total: 24900000,
-      status: 'cancelled',
-      createdAt: '2024-03-08T16:45:00'
+  const loadListings = async () => {
+    setLoading(true);
+    setError('');
+    const response = await sabitsApi.list({ mine: true });
+    if (response.success && Array.isArray(response.data)) {
+      const mapped: MySabitListing[] = response.data.map((item: Record<string, unknown>, idx: number) => {
+        const statusRaw = String(item.status || item.state || 'active');
+        const status =
+          statusRaw === 'completed' ? 'completed' :
+          statusRaw === 'cancelled' ? 'cancelled' :
+          statusRaw === 'pending' ? 'active' :
+          'active';
+
+        const typeRaw = String(item.type || (item.side as string) || 'sell');
+        const type = typeRaw === 'buy' ? 'buy' : 'sell';
+
+        const amount = Number(item.amount || 0);
+        const rate = Number(item.rate || 0);
+        const total = Number(item.total || item.value || amount * rate);
+
+        return {
+          id: Number(item.id || idx + 1),
+          type,
+          currency: String(item.currency || 'NGN') as MySabitListing['currency'],
+          amount,
+          rate,
+          total,
+          status: status as MySabitListing['status'],
+          createdAt: String(item.createdAt || item.created_at || new Date().toISOString()),
+          counterparty: item.seller
+            ? {
+                name: String((item.seller as any).name || ''),
+                avatar: String((item.seller as any).avatar || ''),
+              }
+            : item.counterparty
+              ? {
+                  name: String((item.counterparty as any).name || ''),
+                  avatar: String((item.counterparty as any).avatar || ''),
+                }
+              : undefined,
+        };
+      });
+      setMyListings(mapped);
+    } else {
+      setMyListings([]);
+      setError(response.error?.message || 'Failed to load your sabits');
     }
-  ];
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void loadListings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filteredListings = myListings.filter(listing => {
     if (activeTab === 'active') return listing.status === 'active';
@@ -146,11 +126,19 @@ const MySabitPage: React.FC = () => {
   };
 
   const handleEdit = (id: number) => {
-    console.log('Edit listing:', id);
+    void id;
+    navigate('/dashboard/active-sabits');
   };
 
   const handleDelete = (id: number) => {
-    console.log('Delete listing:', id);
+    void (async () => {
+      const response = await sabitsApi.cancel(String(id));
+      if (!response.success) {
+        setError(response.error?.message || 'Failed to cancel sabit');
+        return;
+      }
+      await loadListings();
+    })();
   };
 
   const activeCount = myListings.filter(l => l.status === 'active').length;
@@ -196,6 +184,9 @@ const MySabitPage: React.FC = () => {
                 Cancelled ({cancelledCount})
               </button>
             </div>
+
+            {loading && <p style={{ marginTop: '1rem' }}>Loading your sabits...</p>}
+            {error && !loading && <p style={{ marginTop: '1rem', color: 'red' }}>{error}</p>}
 
             {/* Listings Table */}
             <div className="listings-table-container">

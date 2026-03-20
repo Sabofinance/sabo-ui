@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/css/ActiveSabitPage.css';
+import { sabitsApi } from '../../lib/api';
 
 interface SabitListing {
   id: number;
@@ -24,145 +25,9 @@ const ActiveSabitPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedCurrency, setSelectedCurrency] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
-
-  const listings: SabitListing[] = [
-    {
-      id: 1,
-      seller: {
-        name: 'CryptoKing',
-        avatar: 'https://i.pravatar.cc/150?u=5',
-        rating: 4.9,
-        completedTrades: 1250,
-        verified: true
-      },
-      type: 'sell',
-      currency: 'GBP',
-      amount: 5000,
-      rate: 1650,
-      available: 3500,
-      paymentMethods: ['Bank Transfer', 'Card'],
-      timeLimit: '15 min'
-    },
-    {
-      id: 2,
-      seller: {
-        name: 'FXTrader',
-        avatar: 'https://i.pravatar.cc/150?u=6',
-        rating: 4.8,
-        completedTrades: 892,
-        verified: true
-      },
-      type: 'buy',
-      currency: 'NGN',
-      amount: 2500000,
-      rate: 1580,
-      available: 1500000,
-      paymentMethods: ['Bank Transfer'],
-      timeLimit: '30 min'
-    },
-    {
-      id: 3,
-      seller: {
-        name: 'SabiTrader',
-        avatar: 'https://i.pravatar.cc/150?u=7',
-        rating: 5.0,
-        completedTrades: 2103,
-        verified: true
-      },
-      type: 'sell',
-      currency: 'USD',
-      amount: 10000,
-      rate: 1550,
-      available: 7500,
-      paymentMethods: ['Bank Transfer', 'PayPal'],
-      timeLimit: '10 min'
-    },
-    {
-      id: 4,
-      seller: {
-        name: 'NaijaPounds',
-        avatar: 'https://i.pravatar.cc/150?u=8',
-        rating: 4.7,
-        completedTrades: 567,
-        verified: false
-      },
-      type: 'buy',
-      currency: 'GBP',
-      amount: 3000,
-      rate: 1640,
-      available: 3000,
-      paymentMethods: ['Bank Transfer'],
-      timeLimit: '20 min'
-    },
-    {
-      id: 5,
-      seller: {
-        name: 'EuroMaster',
-        avatar: 'https://i.pravatar.cc/150?u=9',
-        rating: 4.9,
-        completedTrades: 1543,
-        verified: true
-      },
-      type: 'sell',
-      currency: 'EUR',
-      amount: 8000,
-      rate: 1720,
-      available: 6000,
-      paymentMethods: ['Bank Transfer', 'Card', 'Crypto'],
-      timeLimit: '25 min'
-    },
-    {
-      id: 6,
-      seller: {
-        name: 'GBPWhale',
-        avatar: 'https://i.pravatar.cc/150?u=10',
-        rating: 4.6,
-        completedTrades: 345,
-        verified: false
-      },
-      type: 'sell',
-      currency: 'GBP',
-      amount: 15000,
-      rate: 1660,
-      available: 10000,
-      paymentMethods: ['Bank Transfer'],
-      timeLimit: '45 min'
-    },
-    {
-      id: 7,
-      seller: {
-        name: 'NairaBridge',
-        avatar: 'https://i.pravatar.cc/150?u=11',
-        rating: 5.0,
-        completedTrades: 3120,
-        verified: true
-      },
-      type: 'buy',
-      currency: 'USD',
-      amount: 20000,
-      rate: 1540,
-      available: 15000,
-      paymentMethods: ['Bank Transfer', 'Card'],
-      timeLimit: '15 min'
-    },
-    {
-      id: 8,
-      seller: {
-        name: 'ForexKing',
-        avatar: 'https://i.pravatar.cc/150?u=12',
-        rating: 4.8,
-        completedTrades: 978,
-        verified: true
-      },
-      type: 'sell',
-      currency: 'EUR',
-      amount: 6000,
-      rate: 1710,
-      available: 4500,
-      paymentMethods: ['Bank Transfer', 'Crypto'],
-      timeLimit: '20 min'
-    }
-  ];
+  const [listings, setListings] = useState<SabitListing[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const formatNumber = (num: number): string => {
     return new Intl.NumberFormat('en-NG').format(num);
@@ -178,15 +43,57 @@ const ActiveSabitPage: React.FC = () => {
     }
   };
 
-  const filteredListings = listings.filter(listing => {
+  const filteredListings = useMemo(() => listings.filter((listing) => {
     if (selectedCurrency !== 'all' && listing.currency !== selectedCurrency) return false;
     if (selectedType !== 'all' && listing.type !== selectedType) return false;
     return true;
-  });
+  }), [listings, selectedCurrency, selectedType]);
 
   const handleTradeClick = (listing: SabitListing) => {
-    navigate(`/dashboard/transaction/${listing.id}`, { state: { listing } });
+    navigate(`/dashboard/transaction/${listing.id}`);
   };
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      const params: Record<string, unknown> = { status: 'active' };
+      if (selectedCurrency !== 'all') params.currency = selectedCurrency;
+      if (selectedType !== 'all') params.type = selectedType;
+
+      const response = await sabitsApi.list(params);
+      if (response.success && Array.isArray(response.data)) {
+        const mapped: SabitListing[] = response.data.map((item: Record<string, unknown>, idx: number) => {
+          const seller = item.seller as any;
+          return {
+            id: Number(item.id || idx + 1),
+            seller: {
+              name: String(item.sellerName || seller?.name || item.name || ''),
+              avatar: String(item.sellerAvatar || seller?.avatar || item.avatar || ''),
+              rating: Number(item.rating || item.sellerRating || seller?.rating || 0),
+              completedTrades: Number(item.completed || item.completedTrades || item.sellerCompletedTrades || seller?.completedTrades || 0),
+              verified: Boolean(item.verified ?? seller?.verified ?? false),
+            },
+            type: item.type === 'sell' ? 'sell' : 'buy',
+            currency: String(item.currency || 'NGN') as SabitListing['currency'],
+            amount: Number(item.amount || 0),
+            rate: Number(item.rate || 0),
+            available: Number(item.available || item.remaining || 0),
+            paymentMethods: Array.isArray(item.paymentMethods)
+              ? (item.paymentMethods as string[])
+              : ((item.paymentMethodsList as string[] | undefined) || []),
+            timeLimit: String(item.timeLimit || item.time_limit || ''),
+          };
+        });
+        setListings(mapped);
+      } else {
+        setListings([]);
+        setError(response.success ? '' : (response.error?.message || 'Failed to load listings'));
+      }
+      setLoading(false);
+    };
+    void load();
+  }, [selectedCurrency, selectedType]);
 
   return (
     <div className="active-sabit-wrapper">
@@ -204,7 +111,7 @@ const ActiveSabitPage: React.FC = () => {
                 </div>
                 <div className="stat-badge">
                   <span className="stat-label">24h Volume</span>
-                  <span className="stat-value">₦12.5M</span>
+                  <span className="stat-value">—</span>
                 </div>
               </div>
             </div>
@@ -281,12 +188,16 @@ const ActiveSabitPage: React.FC = () => {
             </div>
 
             {/* Listings Grid */}
+            {loading && <p style={{ marginTop: '1rem' }}>Loading listings...</p>}
+            {error && !loading && <p style={{ marginTop: '1rem', color: 'red' }}>{error}</p>}
             <div className="listings-grid">
               {filteredListings.map((listing) => (
                 <div key={listing.id} className="listing-card">
                   <div className="card-header">
-                    <div className="seller-info">
-                      <img src={listing.seller.avatar} alt={listing.seller.name} className="seller-avatar" />
+                      <div className="seller-info">
+                      {listing.seller.avatar && (
+                        <img src={listing.seller.avatar} alt={listing.seller.name} className="seller-avatar" />
+                      )}
                       <div>
                         <div className="seller-name-row">
                           <h3 className="seller-name">{listing.seller.name}</h3>

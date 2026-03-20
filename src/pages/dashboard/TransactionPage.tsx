@@ -42,6 +42,7 @@ const TransactionPage: React.FC = () => {
   const [listing, setListing] = useState<ListingData | null>(null);
   const [wallets, setWallets] = useState<WalletView[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
 
   const [agreed, setAgreed] = useState(false);
@@ -130,24 +131,48 @@ const TransactionPage: React.FC = () => {
   };
 
   const handleConfirmPayment = async () => {
-    if (!listing) return;
-    if (!debitWallet) return;
-    const createRes = await tradesApi.create({ sabitId: listing.id });
-    if (!createRes.success) return;
+    if (!listing || !debitWallet || processing) return;
+    
+    setProcessing(true);
+    setError('');
+    
+    try {
+      const createRes = await tradesApi.create({ sabitId: listing.id });
+      if (!createRes.success) {
+        setError(createRes.error?.message || 'Failed to initiate trade. Please try again.');
+        setShowConfirmModal(false);
+        setProcessing(false);
+        return;
+      }
 
-    const tradeId = (createRes.data as any)?.id || (createRes.data as any)?.tradeId;
-    if (!tradeId) return;
+      const tradeId = (createRes.data as any)?.id || (createRes.data as any)?.tradeId;
+      if (!tradeId) {
+        setError('Trade initialization failed. No trade ID returned.');
+        setShowConfirmModal(false);
+        setProcessing(false);
+        return;
+      }
 
-    const response = await tradesApi.execute(String(tradeId), {
-      listingId: listing.id,
-      type: listing.type,
-      currency: listing.currency,
-      amount: amountToDisplay,
-      rate: listing.rate,
-    });
-    setShowConfirmModal(false);
-    if (response.success) {
-      setShowSuccessModal(true);
+      const response = await tradesApi.execute(String(tradeId), {
+        listingId: listing.id,
+        type: listing.type,
+        currency: listing.currency,
+        amount: amountToDisplay,
+        rate: listing.rate,
+      });
+
+      setShowConfirmModal(false);
+      
+      if (response.success) {
+        setShowSuccessModal(true);
+      } else {
+        setError(response.error?.message || 'Trade execution failed. Please contact support.');
+      }
+    } catch (err: any) {
+      setError('An unexpected error occurred during the transaction.');
+      setShowConfirmModal(false);
+    } finally {
+      setProcessing(false);
     }
   };
 

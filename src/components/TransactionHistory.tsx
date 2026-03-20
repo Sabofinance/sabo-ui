@@ -15,55 +15,26 @@ interface Transaction {
   status: 'completed' | 'pending' | 'cancelled';
 }
 
+export type TransactionItem = Transaction;
+
 interface TransactionHistoryProps {
   onViewAll?: () => void;
   limit?: number; // Optional prop to limit number of transactions shown
+  transactions?: Transaction[];
+  loading?: boolean;
+  error?: string;
 }
 
-const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onViewAll, limit }) => {
+const TransactionHistory: React.FC<TransactionHistoryProps> = ({
+  onViewAll,
+  limit,
+  transactions,
+  loading,
+  error,
+}) => {
   const navigate = useNavigate();
-
-  const transactions: Transaction[] = [
-    {
-      id: 1,
-      type: 'buy',
-      currency: 'GBP',
-      amount: 500,
-      rate: 1650,
-      total: 825000,
-      counterparty: 'Sarah.eth',
-      avatar: 'https://i.pravatar.cc/150?u=2',
-      date: '2024-03-15T10:30:00',
-      status: 'completed'
-    },
-    {
-      id: 2,
-      type: 'sell',
-      currency: 'NGN',
-      amount: 2500,
-      rate: 1580,
-      total: 3950000,
-      counterparty: 'MikeCrypto',
-      avatar: 'https://i.pravatar.cc/150?u=3',
-      date: '2024-03-14T15:45:00',
-      status: 'completed'
-    },
-    {
-      id: 3,
-      type: 'buy',
-      currency: 'GBP',
-      amount: 300,
-      rate: 1680,
-      total: 504000,
-      counterparty: 'EmmaTrades',
-      avatar: 'https://i.pravatar.cc/150?u=4',
-      date: '2024-03-13T09:15:00',
-      status: 'completed'
-    }
-  ];
-
-  // Apply limit if provided, otherwise show all transactions
-  const displayedTransactions = limit ? transactions.slice(0, limit) : transactions;
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+  const displayedTransactions = limit ? safeTransactions.slice(0, limit) : safeTransactions;
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -89,6 +60,34 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onViewAll, limi
       navigate('/dashboard/history');
     }
   };
+
+  if (loading) {
+    return (
+      <section className="transaction-history-section">
+        <div className="section-header">
+          <h3>Recent Transactions</h3>
+          <button className="view-all-btn" onClick={handleViewAll}>
+            View All
+          </button>
+        </div>
+        <p>Loading transactions...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="transaction-history-section">
+        <div className="section-header">
+          <h3>Recent Transactions</h3>
+          <button className="view-all-btn" onClick={handleViewAll}>
+            View All
+          </button>
+        </div>
+        <p>{error}</p>
+      </section>
+    );
+  }
 
   return (
     <section className="transaction-history-section">

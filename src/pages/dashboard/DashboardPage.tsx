@@ -57,122 +57,184 @@ const DashboardPage: React.FC = () => {
   const [recentTransactions, setRecentTransactions] = useState<TransactionItem[]>([]);
   const [recentLoading, setRecentLoading] = useState(false);
   const [recentError, setRecentError] = useState('');
+  const [tradingStats, setTradingStats] = useState<
+    { label: string; pct: number; cls: string }[]
+  >([]);
+  const [rateHistoryValues, setRateHistoryValues] = useState<number[]>([]);
   const [isSellModalOpen,   setIsSellModalOpen]   = useState(false);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setError('');
-      const [walletRes, listingRes, ratesRes] = await Promise.all([
-        walletsApi.list(),
-        sabitsApi.list({ status: "active", limit: 6 }),
-        ratesApi.getByPair("NGN", "GBP"),
-      ]);
+      try {
+        const [walletRes, listingRes, ratesRes] = await Promise.all([
+          walletsApi.list(),
+          sabitsApi.list({ status: "active", limit: 6 }),
+          ratesApi.getByPair("NGN", "GBP"),
+        ]);
 
-      if (walletRes.success && Array.isArray(walletRes.data) && walletRes.data.length > 0) {
-        setWallets(
-          walletRes.data.map((w: Record<string, unknown>, index: number) => ({
-            id: String(w.currency || index),
-            currency: String(w.currency || "NGN"),
-            balance: Number(w.balance || 0),
-            symbol: String(w.symbol || (w.currency === "GBP" ? "£" : "₦")),
-            cardNumber: String(w.cardNumber || ''),
-            cardHolder: String(w.cardHolder || ''),
-            expiry: String(w.expiry || ''),
-            income: Number(w.income || 0),
-            outcome: Number(w.outcome || 0),
-            limit: Number(w.limit || 0),
-          })),
-        );
-      } else if (!walletRes.success) {
-        setError(walletRes.error?.message || 'Failed to load wallets');
+        if (walletRes.success && Array.isArray(walletRes.data)) {
+          setWallets(
+            walletRes.data.map((w: Record<string, unknown>, index: number) => ({
+              id: String(w.id || w.currency || index),
+              currency: String(w.currency || "NGN"),
+              balance: Number(w.balance || 0),
+              symbol: String(w.symbol || (w.currency === "GBP" ? "£" : "₦")),
+              cardNumber: String(w.cardNumber || ''),
+              cardHolder: String(w.cardHolder || ''),
+              expiry: String(w.expiry || ''),
+              income: Number(w.income || 0),
+              outcome: Number(w.outcome || 0),
+              limit: Number(w.limit || 0),
+            })),
+          );
+        } else if (!walletRes.success) {
+          setError(walletRes.error?.message || 'Failed to load wallets');
+        }
+
+        if (listingRes.success && Array.isArray(listingRes.data)) {
+          setMarketListings(
+            listingRes.data.map((item: Record<string, unknown>, index: number) => ({
+              id: Number(item.id || index + 1),
+              name: String(item.sellerName || item.name || ''),
+              avatar: String(item.avatar || ''),
+              amount: Number(item.amount || 0),
+              currency: String(item.currency || "NGN"),
+              rate: Number(item.rate || 0),
+              rating: Number(item.rating || 0),
+              completed: Number(item.completed || 0),
+              type: item.type === "sell" ? "sell" : "buy",
+            })),
+          );
+        } else if (!listingRes.success) {
+          setError(listingRes.error?.message || 'Failed to load marketplace listings');
+        }
+
+        if (ratesRes.success && ratesRes.data && typeof ratesRes.data === "object") {
+          const typed = ratesRes.data as Record<string, unknown>;
+          setRate(Number(typed.rate || typed.value || 0));
+        }
+
+        setActivityLoading(true);
+        setActivityError('');
+        setRecentLoading(true);
+        setRecentError('');
+
+        const [ledgerRes, rateHistoryRes] = await Promise.all([
+          ledgerApi.listEntries({ limit: 50 }),
+          ratesApi.list({ base: 'NGN', quote: 'GBP', range: '7d' }),
+        ]);
+
+        if (ledgerRes.success && Array.isArray(ledgerRes.data)) {
+          const allMapped = ledgerRes.data.map((entry: Record<string, unknown>, idx: number) => {
+            const counterparty =
+              (entry.counterpartyName as string | undefined) ||
+              (entry.counterparty as any)?.name ||
+              '';
+            const avatar =
+              (entry.counterpartyAvatar as string | undefined) ||
+              (entry.counterparty as any)?.avatar ||
+              '';
+
+            const typeRaw = String(entry.type || 'buy');
+            const type: TransactionItem['type'] = typeRaw === 'sell' ? 'sell' : 'buy';
+
+            const statusRaw = String(entry.status || 'completed');
+            const status: TransactionItem['status'] =
+              statusRaw === 'pending' || statusRaw === 'cancelled' || statusRaw === 'completed'
+                ? (statusRaw as TransactionItem['status'])
+                : 'completed';
+
+            const currency = String(entry.currency || '');
+            const total = Number(entry.total || entry.value || 0);
+            const amount = Number(entry.amount || 0);
+            const rateValue = Number(entry.rate || entry.exchangeRate || 0);
+
+            return {
+              id: Number(entry.id || idx + 1),
+              type,
+              currency,
+              amount,
+              rate: rateValue,
+              total: total || (amount * rateValue),
+              counterparty,
+              avatar,
+              date: String(entry.date || entry.createdAt || new Date().toISOString()),
+              status,
+            };
+          });
+
+          setRecentTransactions(allMapped.slice(0, 3));
+
+          // Compute chart points from ledger entries (only completed transactions)
+          const now = new Date();
+          const dayMs = 24 * 60 * 60 * 1000;
+          const dayBuckets = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(now.getTime() - (6 - i) * dayMs);
+            const start = new Date(d.toDateString()).getTime();
+            const end = start + dayMs;
+            const label = d.toLocaleDateString('en-GB', { weekday: 'short' });
+            return { start, end, label, trades: 0, volume: 0 };
+          });
+
+          for (const tx of allMapped) {
+            if (tx.status !== 'completed') continue;
+            const t = new Date(tx.date).getTime();
+            if (!Number.isFinite(t)) continue;
+            const bucket = dayBuckets.find((b) => t >= b.start && t < b.end);
+            if (!bucket) continue;
+            bucket.trades += 1;
+            bucket.volume += tx.total || 0;
+          }
+          setActivityPoints(dayBuckets.map(b => ({ day: b.label, trades: b.trades, volume: b.volume })));
+
+          // Derive trading stats (Buy vs Sell volume)
+          const buyVol = allMapped.filter(t => t.type === 'buy' && t.status === 'completed').reduce((s, t) => s + t.total, 0);
+          const sellVol = allMapped.filter(t => t.type === 'sell' && t.status === 'completed').reduce((s, t) => s + t.total, 0);
+          const totalVol = buyVol + sellVol;
+
+          setTradingStats([
+            { 
+              label: 'Buying Volume', 
+              pct: totalVol > 0 ? (buyVol / totalVol) * 100 : 0, 
+              cls: 'buy-bar' 
+            },
+            { 
+              label: 'Selling Volume', 
+              pct: totalVol > 0 ? (sellVol / totalVol) * 100 : 0, 
+              cls: 'sell-bar' 
+            }
+          ]);
+        } else if (!ledgerRes.success) {
+          setRecentError(ledgerRes.error?.message || 'Failed to load transactions');
+          setActivityError(ledgerRes.error?.message || 'Failed to load activity');
+        }
+
+        // Exchange rate history chart (best-effort mapping)
+        if (rateHistoryRes.success && Array.isArray(rateHistoryRes.data)) {
+          const values = rateHistoryRes.data
+            .map((x: Record<string, unknown>) => {
+              const v = Number(x.rate ?? x.value ?? x.exchangeRate ?? 0);
+              const date = String(x.date || x.createdAt || '');
+              return { v, date };
+            })
+            .filter((x) => Number.isFinite(x.v) && x.v > 0);
+
+          values.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+          const lastValues = values.map((x) => x.v).slice(-10);
+          setRateHistoryValues(lastValues);
+        } else {
+          setRateHistoryValues([]);
+        }
+      } catch (err: any) {
+        setError('An unexpected error occurred while loading dashboard data');
+        console.error('Dashboard load error:', err);
+      } finally {
+        setLoading(false);
+        setActivityLoading(false);
+        setRecentLoading(false);
       }
-
-      if (listingRes.success && Array.isArray(listingRes.data) && listingRes.data.length > 0) {
-        setMarketListings(
-          listingRes.data.map((item: Record<string, unknown>, index: number) => ({
-            id: Number(item.id || index + 1),
-            name: String(item.sellerName || item.name || ''),
-            avatar: String(item.avatar || ''),
-            amount: Number(item.amount || 0),
-            currency: String(item.currency || "NGN"),
-            rate: Number(item.rate || 0),
-            rating: Number(item.rating || 0),
-            completed: Number(item.completed || 0),
-            type: item.type === "sell" ? "sell" : "buy",
-          })),
-        );
-      } else if (!listingRes.success) {
-        setError(listingRes.error?.message || 'Failed to load sabits');
-      }
-
-      if (ratesRes.success && ratesRes.data && typeof ratesRes.data === "object") {
-        const typed = ratesRes.data as Record<string, unknown>;
-        setRate(Number(typed.rate || typed.value || 0));
-      }
-
-      setActivityLoading(true);
-      setActivityError('');
-      const [activityRes, recentRes] = await Promise.all([
-        ledgerApi.getSummary({ range: '7d' }),
-        ledgerApi.listEntries({ limit: 3 }),
-      ]);
-
-      if (activityRes.success && activityRes.data && typeof activityRes.data === 'object') {
-        const d = activityRes.data as any;
-        const arr: any[] = Array.isArray(d)
-          ? d
-          : (d?.byDay || d?.volumeByDay || d?.items || []) as any[];
-
-        const points = arr
-          .map((x: any) => ({
-            day: String(x.day || x.date || x.label || ''),
-            trades: Number(x.trades || x.tradeCount || 0),
-            volume: Number(x.volume || x.amount || 0),
-          }))
-          .filter((p: ActivityChartPoint) => Boolean(p.day) && (p.trades > 0 || p.volume > 0));
-
-        setActivityPoints(points);
-      } else if (!activityRes.success) {
-        setActivityError(activityRes.error?.message || 'Failed to load activity chart');
-      }
-      setActivityLoading(false);
-
-      setRecentLoading(true);
-      setRecentError('');
-      if (recentRes.success && Array.isArray(recentRes.data)) {
-        const mapped = recentRes.data.map((entry: Record<string, unknown>, idx: number) => {
-          const counterparty =
-            (entry.counterpartyName as string | undefined) ||
-            (entry.counterparty as any)?.name ||
-            '';
-          const avatar =
-            (entry.counterpartyAvatar as string | undefined) ||
-            (entry.counterparty as any)?.avatar ||
-            '';
-
-          const typeRaw = String(entry.type || 'buy');
-          const type: TransactionItem['type'] = typeRaw === 'sell' ? 'sell' : 'buy';
-
-          return {
-            id: Number(entry.id || idx + 1),
-            type,
-            currency: String(entry.currency || ''),
-            amount: Number(entry.amount || 0),
-            rate: Number(entry.rate || entry.exchangeRate || 0),
-            total: Number(entry.total || entry.value || 0),
-            counterparty,
-            avatar,
-            date: String(entry.date || entry.createdAt || new Date().toISOString()),
-            status: (String(entry.status || 'completed') as TransactionItem['status']) || 'completed',
-          };
-        });
-        setRecentTransactions(mapped);
-      } else if (!recentRes.success) {
-        setRecentError(recentRes.error?.message || 'Failed to load transactions');
-      }
-      setRecentLoading(false);
-      setLoading(false);
     };
     void load();
   }, []);
@@ -189,6 +251,35 @@ const DashboardPage: React.FC = () => {
   const formatNumber     = (num: number) => new Intl.NumberFormat('en-NG').format(num);
   const getCurrencySymbol = (c: string)  => c === 'NGN' ? '₦' : c === 'GBP' ? '£' : '';
   const displayRate = useMemo(() => rate ?? null, [rate]);
+
+  const rateChangePct = useMemo(() => {
+    if (rateHistoryValues.length < 2) return null;
+    const first = rateHistoryValues[0];
+    const last = rateHistoryValues[rateHistoryValues.length - 1];
+    if (!first || !Number.isFinite(first) || !Number.isFinite(last)) return null;
+    return ((last - first) / first) * 100;
+  }, [rateHistoryValues]);
+
+  const rateSparklinePoints = useMemo(() => {
+    const values = rateHistoryValues;
+    if (values.length < 2) return '';
+
+    const width = 100;
+    const height = 40;
+    const padding = 6;
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || 1;
+
+    return values
+      .map((v, i) => {
+        const x = (i / (values.length - 1)) * width;
+        const y = height - padding - ((v - min) / range) * (height - padding * 2);
+        return `${x},${y}`;
+      })
+      .join(' ');
+  }, [rateHistoryValues]);
 
   if (loading) {
     return <main className="dashboard-padding"><p>Loading dashboard...</p></main>;
@@ -302,7 +393,7 @@ const DashboardPage: React.FC = () => {
                 <section className="marketplace-section">
                   <div className="section-header">
                     <h3>Active Sabit Marketplace</h3>
-                    <span className="filter-badge">Live • 3 listings</span>
+                    <span className="filter-badge">Live • {marketListings.length} listings</span>
                   </div>
                   <div className="table-responsive">
                     <table className="sabit-table">
@@ -366,22 +457,21 @@ const DashboardPage: React.FC = () => {
                 <div className="utility-card">
                   <h3>Trading Statistics</h3>
                   <div className="stat-bar-group">
-                    {[
-                      { label: 'NGN/GBP Trades',       cls: 'ngn-gbp',       pct: 52 },
-                      { label: 'GBP/NGN Trades',       cls: 'gbp-ngn',       pct: 21 },
-                      { label: 'Same Currency Trades',  cls: 'same-currency', pct: 15 },
-                      { label: 'Cross-Pair Trades',    cls: 'cross-pair',    pct: 12 },
-                    ].map(bar => (
-                      <div className="bar-item" key={bar.cls}>
-                        <div className="bar-label">
-                          <span>{bar.label}</span>
-                          <span>{bar.pct}%</span>
+                    {tradingStats.length ? (
+                      tradingStats.map((bar) => (
+                        <div className="bar-item" key={bar.cls}>
+                          <div className="bar-label">
+                            <span>{bar.label}</span>
+                            <span>{bar.pct}%</span>
+                          </div>
+                          <div className="bar-bg">
+                            <div className={`bar-fill ${bar.cls}`} style={{ width: `${bar.pct}%` }} />
+                          </div>
                         </div>
-                        <div className="bar-bg">
-                          <div className={`bar-fill ${bar.cls}`} style={{ width: `${bar.pct}%` }} />
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p style={{ color: '#64748B', marginTop: '8px' }}>No trading statistics yet.</p>
+                    )}
                   </div>
                 </div>
 
@@ -392,33 +482,20 @@ const DashboardPage: React.FC = () => {
 
                     {/* Sparkline chart */}
                     <div className="mini-chart">
-                      <svg viewBox="0 0 100 40" className="rate-chart" preserveAspectRatio="none">
-                        <defs>
-                          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%"   stopColor="#C8F032" stopOpacity="0.3"/>
-                            <stop offset="100%" stopColor="#C8F032" stopOpacity="0"/>
-                          </linearGradient>
-                        </defs>
-                        {/* Fill area under line */}
-                        <path
-                          d="M0,30 L10,20 L20,25 L30,15 L40,18 L50,8 L60,12 L70,5 L80,10 L90,3 L100,5 L100,40 L0,40 Z"
-                          fill="url(#chartGrad)"
-                        />
-                        {/* Main line */}
-                        <path
-                          d="M0,30 L10,20 L20,25 L30,15 L40,18 L50,8 L60,12 L70,5 L80,10 L90,3 L100,5"
-                          stroke="#C8F032"
-                          strokeWidth="2"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        {/* Live dot */}
-                        <circle cx="100" cy="5" r="3" fill="#C8F032">
-                          <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
-                          <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
-                        </circle>
-                      </svg>
+                      {rateSparklinePoints ? (
+                        <svg viewBox="0 0 100 40" className="rate-chart" preserveAspectRatio="none">
+                          <polyline
+                            points={rateSparklinePoints}
+                            stroke="#C8F032"
+                            strokeWidth="2"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      ) : (
+                        <p style={{ color: '#64748B', margin: 0 }}>No rate history</p>
+                      )}
                     </div>
 
                     {/* Rate pair cards — using real flag images */}

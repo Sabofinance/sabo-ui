@@ -1,7 +1,10 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import '../assets/css/SabitMarketPage.css';
+import { ratesApi, sabitsApi } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 const HOW_IT_WORKS = [
   {
@@ -27,17 +30,10 @@ const HOW_IT_WORKS = [
 ];
 
 const CURRENCIES = [
-  { from: 'NGN', to: 'GBP', flag1: 'https://flagcdn.com/w40/ng.png', flag2: 'https://flagcdn.com/w40/gb.png', rate: '₦1,650', label: 'per £1' },
-  { from: 'NGN', to: 'USD', flag1: 'https://flagcdn.com/w40/ng.png', flag2: 'https://flagcdn.com/w40/us.png', rate: '₦1,300', label: 'per $1' },
-  { from: 'NGN', to: 'CAD', flag1: 'https://flagcdn.com/w40/ng.png', flag2: 'https://flagcdn.com/w40/ca.png', rate: '₦960',   label: 'per CA$1' },
-  { from: 'GBP', to: 'USD', flag1: 'https://flagcdn.com/w40/gb.png', flag2: 'https://flagcdn.com/w40/us.png', rate: '$1.27',  label: 'per £1' },
-];
-
-const MOCK_LISTINGS = [
-  { id: 1, name: 'Sarah.eth',   avatar: 'https://i.pravatar.cc/150?u=10', sell: '£500 GBP',  rate: '₦1,650/£1', badge: 'SELL', trades: 312, rating: 4.9 },
-  { id: 2, name: 'TobiOluwole', avatar: 'https://i.pravatar.cc/150?u=11', sell: '₦820,000',  rate: '₦1,640/£1', badge: 'BUY',  trades: 89,  rating: 4.7 },
-  { id: 3, name: 'EmmaTrades',  avatar: 'https://i.pravatar.cc/150?u=12', sell: '$300 USD',   rate: '₦1,295/$1', badge: 'SELL', trades: 203, rating: 5.0 },
-  { id: 4, name: 'DiasporaKing',avatar: 'https://i.pravatar.cc/150?u=13', sell: 'CA$200',     rate: '₦955/CA$1', badge: 'SELL', trades: 57,  rating: 4.8 },
+  { from: 'NGN', to: 'GBP', flag1: 'https://flagcdn.com/w40/ng.png', flag2: 'https://flagcdn.com/w40/gb.png', label: 'per £1' },
+  { from: 'NGN', to: 'USD', flag1: 'https://flagcdn.com/w40/ng.png', flag2: 'https://flagcdn.com/w40/us.png', label: 'per $1' },
+  { from: 'NGN', to: 'CAD', flag1: 'https://flagcdn.com/w40/ng.png', flag2: 'https://flagcdn.com/w40/ca.png', label: 'per CA$1' },
+  { from: 'GBP', to: 'USD', flag1: 'https://flagcdn.com/w40/gb.png', flag2: 'https://flagcdn.com/w40/us.png', label: 'per £1' },
 ];
 
 const TRUST_POINTS = [
@@ -48,6 +44,99 @@ const TRUST_POINTS = [
 ];
 
 const SabitMarketPage = () => {
+  const { isAuthenticated } = useAuth();
+  const [pairRates, setPairRates] = useState<Record<string, string>>({});
+  const [listings, setListings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Filtering states
+  const [filterType, setFilterType] = useState<'all' | 'buy' | 'sell'>('all');
+  const [filterCurrency, setFilterCurrency] = useState('all');
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const [ratesResList, listingsRes] = await Promise.all([
+          Promise.all(
+            CURRENCIES.map(async (c) => {
+              const res = await ratesApi.getByPair(c.from, c.to);
+              if (!res.success) return [c.from + '_' + c.to, '—'] as const;
+              const d = res.data as any;
+              const v = Number(d?.rate ?? d?.value ?? 0);
+              const formatted = v ? String(v) : '—';
+              return [c.from + '_' + c.to, formatted] as const;
+            }),
+          ),
+          sabitsApi.list({ status: 'active' }),
+        ]);
+
+        const nextRates: Record<string, string> = {};
+        for (const [key, value] of ratesResList) nextRates[key] = value;
+        setPairRates(nextRates);
+
+        if (listingsRes.success && Array.isArray(listingsRes.data)) {
+          setListings(listingsRes.data);
+        } else if (!listingsRes.success) {
+          setError(listingsRes.error?.message || 'Failed to load marketplace listings');
+        }
+      } catch (err: any) {
+        setError('Failed to load marketplace data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    void load();
+  }, []);
+
+  const formattedListings = useMemo(() => {
+    return listings
+      .map((item: Record<string, unknown>, idx: number) => {
+        const seller = item.seller as any;
+        const id = Number(item.id || item.sabitId || idx + 1);
+        const type = String(item.type || (item.side as string) || 'sell').toLowerCase() === 'buy' ? 'buy' : 'sell';
+        const badge = type === 'sell' ? 'SELL' : 'BUY';
+        const currency = String(item.currency || 'GBP');
+        const amount = Number(item.amount || 0);
+        const rate = Number(item.rate || 0);
+        const sellerName = String(item.sellerName || seller?.name || item.name || 'Verified Trader');
+        const avatar = String(item.sellerAvatar || seller?.avatar || item.avatar || `https://i.pravatar.cc/150?u=${sellerName}`);
+        const trades = Number(item.completedTrades || item.completed || 0);
+        const rating = Number(item.rating || seller?.rating || 0);
+
+        return {
+          id,
+          type,
+          badge,
+          currency,
+          amount,
+          rate,
+          sellerName,
+          avatar,
+          trades,
+          rating,
+          raw: item,
+        };
+      })
+      .filter((item) => {
+        const matchesType = filterType === 'all' || item.type === filterType;
+        const matchesCurrency = filterCurrency === 'all' || item.currency === filterCurrency;
+        return matchesType && matchesCurrency;
+      });
+  }, [listings, filterType, filterCurrency]);        id,
+        name: sellerName,
+        avatar,
+        badge,
+        sell: currency && amount ? `${currency} ${amount}` : '',
+        rate: rate && currency ? `₦${rate}/${currency}` : '—',
+        trades,
+        rating,
+      };
+    });
+  }, [listings]);
+
   return (
     <div className="smp-page">
       <Header />
@@ -76,7 +165,9 @@ const SabitMarketPage = () => {
                 <img src={c.flag2} alt={c.to} className="overlap" />
               </div>
               <span className="smp-pill-pair">{c.from} → {c.to}</span>
-              <span className="smp-pill-rate">{c.rate}</span>
+              <span className="smp-pill-rate">
+                {pairRates[c.from + '_' + c.to] || '—'}
+              </span>
               <span className="smp-pill-label">{c.label}</span>
             </div>
           ))}
@@ -87,8 +178,45 @@ const SabitMarketPage = () => {
       <section className="smp-listings-section">
         <div className="smp-container">
           <div className="smp-section-head">
-            <h2>Live Marketplace</h2>
-            <span className="smp-live-dot">● Live · {MOCK_LISTINGS.length} listings</span>
+            <div className="smp-section-title-group">
+              <h2>Live Marketplace</h2>
+              <span className="smp-live-dot">
+                ● Live · {formattedListings.length} listings
+              </span>
+            </div>
+            <div className="market-filters">
+              <div className="filter-tabs">
+                <button 
+                  className={`filter-tab ${filterType === 'all' ? 'active' : ''}`}
+                  onClick={() => setFilterType('all')}
+                >
+                  All
+                </button>
+                <button 
+                  className={`filter-tab ${filterType === 'buy' ? 'active' : ''}`}
+                  onClick={() => setFilterType('buy')}
+                >
+                  Buy
+                </button>
+                <button 
+                  className={`filter-tab ${filterType === 'sell' ? 'active' : ''}`}
+                  onClick={() => setFilterType('sell')}
+                >
+                  Sell
+                </button>
+              </div>
+              <select 
+                className="currency-filter"
+                value={filterCurrency}
+                onChange={(e) => setFilterCurrency(e.target.value)}
+              >
+                <option value="all">All Currencies</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="CAD">CAD (CA$)</option>
+              </select>
+            </div>
           </div>
           <div className="smp-table-wrap">
             <table className="smp-table">
@@ -103,7 +231,12 @@ const SabitMarketPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {MOCK_LISTINGS.map(l => (
+                {loading && (
+                  <tr>
+                    <td colSpan={6}>Loading listings...</td>
+                  </tr>
+                )}
+                {!loading && formattedListings.map(l => (
                   <tr key={l.id}>
                     <td>
                       <div className="smp-trader-cell">
@@ -125,7 +258,10 @@ const SabitMarketPage = () => {
                       </div>
                     </td>
                     <td>
-                      <Link to="/signup" className="smp-action-btn">
+                      <Link
+                        to={isAuthenticated ? `/dashboard/transaction/${l.id}` : '/signup'}
+                        className="smp-action-btn"
+                      >
                         {l.badge === 'SELL' ? 'Buy' : 'Sell'}
                       </Link>
                     </td>
@@ -134,6 +270,7 @@ const SabitMarketPage = () => {
               </tbody>
             </table>
           </div>
+          {error && <p style={{ marginTop: '1rem', color: 'red' }}>{error}</p>}
           <div className="smp-table-cta">
             <Link to="/signup" className="smp-btn-primary">See all listings →</Link>
           </div>

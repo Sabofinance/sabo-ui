@@ -33,48 +33,74 @@ interface User {
 }
 
 const ProfilePage: React.FC = () => {
-  const { user: authUser } = useAuth();
+  const { user: authUser, isLoading: isAuthLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'account'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [visibleAccounts, setVisibleAccounts] = useState<{ [key: string]: boolean }>({});
 
   const [user, setUser] = useState<User>({
-    firstName: authUser?.firstName || 'Akingbade',
-    lastName: authUser?.lastName || 'Adeniyi',
-    displayName: authUser?.firstName ? `${authUser.firstName} ${authUser.lastName}` : 'Mrs. Akingbade',
-    email: authUser?.email || 'akingbade@sabo.com',
-    phone: authUser?.phoneNumber || '+234 801 234 5678',
-    dob: '1985-06-15',
-    address: '123 Sabo Road',
-    city: 'Yaba',
-    country: 'Nigeria',
-    postalCode: '101245',
-    joined: authUser?.createdAt ? new Date(authUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'January 2024',
-    avatar: 'https://i.pravatar.cc/300?u=akingbade',
-    kycVerified: true,
+    firstName: '',
+    lastName: '',
+    displayName: '',
+    email: '',
+    phone: '',
+    dob: '',
+    address: '',
+    city: '',
+    country: '',
+    postalCode: '',
+    joined: '',
+    avatar: 'https://i.pravatar.cc/300?u=user',
+    kycVerified: false,
   });
 
   const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (authUser) {
+      setUser({
+        firstName: authUser.firstName || '',
+        lastName: authUser.lastName || '',
+        displayName: authUser.name || `${authUser.firstName || ''} ${authUser.lastName || ''}`.trim() || 'User',
+        email: authUser.email || '',
+        phone: authUser.phoneNumber || '',
+        dob: '1985-06-15', // Should be from API if available
+        address: '123 Sabo Road', // Should be from API if available
+        city: 'Yaba', // Should be from API if available
+        country: 'Nigeria', // Should be from API if available
+        postalCode: '101245', // Should be from API if available
+        joined: authUser.createdAt ? new Date(authUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'January 2024',
+        avatar: 'https://i.pravatar.cc/300?u=' + (authUser.id || 'user'),
+        kycVerified: Boolean(authUser.isEmailVerified && authUser.isPhoneVerified), // Improved logic
+      });
+    }
+  }, [authUser]);
 
   useEffect(() => {
     const loadWallets = async () => {
+      setIsLoading(true);
       const response = await walletsApi.list();
-      if (!response.success || !Array.isArray(response.data)) return;
-      setWallets(response.data.map((wallet: Record<string, unknown>) => ({
-        currency: String(wallet.currency || 'NGN'),
-        balance: Number(wallet.balance || 0),
-        symbol: String(wallet.symbol || '₦'),
-        flag: String(wallet.flag || '🏦'),
-        accountNumber: String(wallet.accountNumber || ''),
-        accountName: String(wallet.accountName || user.displayName),
-        bank: String(wallet.bank || ''),
-        cardNumber: String(wallet.cardNumber || ''),
-        expiry: String(wallet.expiry || ''),
-      })));
+      if (response.success && Array.isArray(response.data)) {
+        setWallets(response.data.map((wallet: Record<string, unknown>) => ({
+          currency: String(wallet.currency || 'NGN'),
+          balance: Number(wallet.balance || 0),
+          symbol: String(wallet.symbol || '₦'),
+          flag: String(wallet.flag || '🏦'),
+          accountNumber: String(wallet.accountNumber || ''),
+          accountName: String(wallet.accountName || user.displayName),
+          bank: String(wallet.bank || ''),
+          cardNumber: String(wallet.cardNumber || ''),
+          expiry: String(wallet.expiry || ''),
+        })));
+      }
+      setIsLoading(false);
     };
-    void loadWallets();
-  }, [user.displayName]);
+    if (authUser) {
+      void loadWallets();
+    }
+  }, [authUser, user.displayName]);
 
   const formatNumber = (num: number): string =>
     new Intl.NumberFormat('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);

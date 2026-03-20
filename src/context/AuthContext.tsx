@@ -37,8 +37,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
 
   const fetchCurrentUser = useCallback(async () => {
-    if (!accessToken) {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
       setIsLoading(false);
+      setIsAuthenticated(false);
       return;
     }
 
@@ -49,19 +51,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('user', JSON.stringify(response.data));
         setIsAuthenticated(true);
       } else {
-        throw new Error("Failed to fetch user");
+        // If the token isn't valid (401/403), ensure we don't keep the user "authenticated".
+        setIsAuthenticated(false);
+        setUser(null);
+        localStorage.removeItem('user');
+
+        if (response.error?.status === 401 || response.error?.status === 403) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+        }
       }
     } catch (err: any) {
       console.error('Failed to fetch user:', err);
-      // Optional: don't automatically log out on network error, but if 401, interceptor handles it
-      // Let's assume interceptor handles 401. If we reach here with an error, we might just keep the cached user.
+      setIsAuthenticated(false);
+      setUser(null);
+      localStorage.removeItem('user');
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken]);
+  }, []);
 
   useEffect(() => {
-    fetchCurrentUser();
+    void fetchCurrentUser();
   }, [fetchCurrentUser]);
 
   const login = async (data: LoginRequest) => {
@@ -90,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authApi.verifyOtp(data);
       if (response.success && response.data) {
+        // response.data is AuthTokens now because of the fix in auth.api.ts
         const { accessToken: newAccess, refreshToken: newRefresh } = response.data;
         
         localStorage.setItem('accessToken', newAccess);

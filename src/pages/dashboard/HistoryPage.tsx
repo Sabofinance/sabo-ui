@@ -25,33 +25,76 @@ const HistoryPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const loadLedger = async () => {
-      const response = await ledgerApi.listEntries();
-      if (!response.success || !Array.isArray(response.data)) return;
-
-      const mapped: Transaction[] = response.data.map((entry: Record<string, unknown>, index: number) => ({
-        id: Number(entry.id || index + 1),
-        type: entry.type === 'sell' ? 'sell' : 'buy',
-        currency: (String(entry.currency || 'NGN') as Transaction['currency']),
-        amount: Number(entry.amount || 0),
-        rate: Number(entry.rate || 0),
-        total: Number(entry.total || 0),
-        counterparty: {
-          name: String(entry.counterpartyName || (entry.counterparty as any)?.name || ''),
-          avatar: String(entry.counterpartyAvatar || (entry.counterparty as any)?.avatar || ''),
-          verified: Boolean(entry.verified ?? (entry.counterparty as any)?.verified),
-        },
-        status: (String(entry.status || 'pending') as Transaction['status']),
-        date: String(entry.date || entry.createdAt || ''),
-        reference: String(entry.reference || ''),
-      }));
-      setTransactions(mapped);
+      setLoading(true);
+      setError('');
+      try {
+        const response = await ledgerApi.listEntries();
+        if (response.success && Array.isArray(response.data)) {
+          const mapped: Transaction[] = response.data.map((entry: Record<string, unknown>, index: number) => ({
+            id: Number(entry.id || index + 1),
+            type: (String(entry.type || 'buy').toLowerCase() === 'sell' ? 'sell' : 'buy') as Transaction['type'],
+            currency: (String(entry.currency || 'NGN') as Transaction['currency']),
+            amount: Number(entry.amount || 0),
+            rate: Number(entry.rate || 0),
+            total: Number(entry.total || entry.value || 0),
+            counterparty: {
+              name: String(entry.counterpartyName || (entry.counterparty as any)?.name || 'Unknown Trader'),
+              avatar: String(entry.counterpartyAvatar || (entry.counterparty as any)?.avatar || `https://i.pravatar.cc/150?u=${index}`),
+              verified: Boolean(entry.verified ?? (entry.counterparty as any)?.verified ?? false),
+            },
+            status: (String(entry.status || 'completed').toLowerCase() as Transaction['status']),
+            date: String(entry.date || entry.createdAt || new Date().toISOString()),
+            // Reference must come from API fields; avoid generating random fallbacks.
+            reference: String(entry.reference ?? entry.id ?? ''),
+          }));
+          setTransactions(mapped);
+        } else if (!response.success) {
+          setError(response.error?.message || 'Failed to load transaction history');
+        }
+      } catch (err: any) {
+        setError('An unexpected error occurred while loading your history');
+      } finally {
+        setLoading(false);
+      }
     };
 
     void loadLedger();
   }, []);
+
+  const handleExport = () => {
+    if (transactions.length === 0) return;
+    
+    const headers = ['Date', 'Reference', 'Type', 'Counterparty', 'Currency', 'Amount', 'Rate', 'Total', 'Status'];
+    const csvContent = [
+      headers.join(','),
+      ...transactions.map(tx => [
+        new Date(tx.date).toLocaleDateString(),
+        tx.reference,
+        tx.type.toUpperCase(),
+        tx.counterparty.name,
+        tx.currency,
+        tx.amount,
+        tx.rate,
+        tx.total,
+        tx.status.toUpperCase()
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `sabo_history_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const formatNumber = (num: number): string => {
     return new Intl.NumberFormat('en-NG').format(num);
@@ -130,7 +173,7 @@ const HistoryPage: React.FC = () => {
                 <p className="page-subtitle">View all your past transactions</p>
               </div>
               
-              <button className="export-btn">
+              <button className="export-btn" onClick={handleExport} disabled={transactions.length === 0}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                   <polyline points="7 10 12 15 17 10"/>
@@ -140,8 +183,23 @@ const HistoryPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Summary Cards */}
-            <div className="summary-cards">
+            {loading ? (
+              <div className="loading-state" style={{ padding: '4rem', textAlign: 'center' }}>
+                <p>Loading transaction history...</p>
+              </div>
+            ) : error ? (
+              <div className="error-state" style={{ padding: '4rem', textAlign: 'center', color: '#e74c3c' }}>
+                <p>{error}</p>
+                <button onClick={() => window.location.reload()} style={{ marginTop: '1rem', color: '#C8F032', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Try again</button>
+              </div>
+            ) : transactions.length === 0 ? (
+              <div className="empty-state" style={{ padding: '4rem', textAlign: 'center' }}>
+                <p>No transactions found. Your activity will appear here once you start trading.</p>
+              </div>
+            ) : (
+              <>
+                {/* Summary Cards */}
+                <div className="summary-cards">
               <div className="summary-card">
                 <div className="summary-icon total">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -331,6 +389,8 @@ const HistoryPage: React.FC = () => {
               <button className="page-number">8</button>
               <button className="page-arrow">›</button>
             </div>
+          </>
+        )}
     </main>
   );
 };

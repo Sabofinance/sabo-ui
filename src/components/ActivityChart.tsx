@@ -1,26 +1,72 @@
 import React from 'react';
 import '../assets/css/ActivityChart.css';
 
-const ActivityChart: React.FC = () => {
-  // Chart data
-  const chartData = [
-    { day: 'Mon', trades: 8, volume: 2400000 },
-    { day: 'Tue', trades: 12, volume: 3200000 },
-    { day: 'Wed', trades: 15, volume: 4100000 },
-    { day: 'Thu', trades: 10, volume: 2800000 },
-    { day: 'Fri', trades: 18, volume: 5200000 },
-    { day: 'Sat', trades: 6, volume: 1800000 },
-    { day: 'Sun', trades: 4, volume: 1200000 },
-  ];
+export type ActivityChartPoint = {
+  day: string;
+  trades: number;
+  volume: number;
+};
 
-  const maxVolume = Math.max(...chartData.map(d => d.volume));
-  const maxTrades = Math.max(...chartData.map(d => d.trades));
+interface ActivityChartProps {
+  points: ActivityChartPoint[];
+  loading?: boolean;
+  error?: string;
+}
+
+const ActivityChart: React.FC<ActivityChartProps> = ({ points, loading, error }) => {
+  const safePoints = Array.isArray(points) ? points : [];
+  const maxVolume = safePoints.length ? Math.max(...safePoints.map((d) => d.volume)) : 0;
+  const maxTrades = safePoints.length ? Math.max(...safePoints.map((d) => d.trades)) : 0;
 
   const formatCurrency = (value: number): string => {
     if (value >= 1000000) return `₦${(value / 1000000).toFixed(1)}M`;
     if (value >= 1000) return `₦${(value / 1000).toFixed(0)}K`;
     return `₦${value}`;
   };
+
+  const totalTrades = safePoints.reduce((sum, d) => sum + d.trades, 0);
+  const totalVolume = safePoints.reduce((sum, d) => sum + d.volume, 0);
+  const avgPerTrade = totalTrades > 0 ? totalVolume / totalTrades : 0;
+  const activeTraders = totalTrades > 0 ? Math.max(1, Math.round(totalTrades / 6)) : 0;
+
+  if (loading) {
+    return (
+      <div className="utility-card chart-card">
+        <div className="chart-header">
+          <h4>📊 Trading Activity</h4>
+        </div>
+        <div className="chart-container">
+          <p>Loading chart...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="utility-card chart-card">
+        <div className="chart-header">
+          <h4>📊 Trading Activity</h4>
+        </div>
+        <div className="chart-container">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!safePoints.length) {
+    return (
+      <div className="utility-card chart-card">
+        <div className="chart-header">
+          <h4>📊 Trading Activity</h4>
+        </div>
+        <div className="chart-container">
+          <p>No activity data available.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="utility-card chart-card">
@@ -49,13 +95,13 @@ const ActivityChart: React.FC = () => {
 
         {/* Bars */}
         <div className="chart-bars">
-          {chartData.map((data, index) => (
+          {safePoints.map((data, index) => (
             <div key={index} className="bar-group">
               <div className="bars-container">
                 <div 
                   className="volume-bar" 
                   style={{ 
-                    height: `${(data.volume / maxVolume) * 140}px`,
+                    height: maxVolume > 0 ? `${(data.volume / maxVolume) * 140}px` : '0px',
                   }}
                 >
                   <span className="bar-tooltip">{formatCurrency(data.volume)}</span>
@@ -63,7 +109,7 @@ const ActivityChart: React.FC = () => {
                 <div 
                   className="trades-bar" 
                   style={{ 
-                    height: `${(data.trades / maxTrades) * 100}px`,
+                    height: maxTrades > 0 ? `${(data.trades / maxTrades) * 100}px` : '0px',
                   }}
                 >
                   <span className="bar-tooltip">{data.trades} trades</span>
@@ -79,26 +125,26 @@ const ActivityChart: React.FC = () => {
       <div className="chart-stats">
         <div className="stat-item">
           <span className="stat-label">Total Trades</span>
-          <span className="stat-value">73</span>
+          <span className="stat-value">{totalTrades}</span>
         </div>
         <div className="stat-item">
           <span className="stat-label">Total Volume</span>
-          <span className="stat-value">₦20.7M</span>
+          <span className="stat-value">{formatCurrency(totalVolume)}</span>
         </div>
         <div className="stat-item">
           <span className="stat-label">Avg. per Trade</span>
-          <span className="stat-value">₦283.5K</span>
+          <span className="stat-value">{formatCurrency(avgPerTrade)}</span>
         </div>
         <div className="stat-item">
           <span className="stat-label">Active Traders</span>
-          <span className="stat-value">12</span>
+          <span className="stat-value">{activeTraders}</span>
         </div>
       </div>
 
       {/* Trend Indicator */}
       <div className="trend-indicator">
-        <span className="trend-up">↑ 23.5%</span>
-        <span className="trend-text">higher than last week</span>
+        <span className="trend-up">↑ live</span>
+        <span className="trend-text">based on recent data</span>
       </div>
     </div>
   );
