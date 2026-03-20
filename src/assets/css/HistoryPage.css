@@ -601,3 +601,28 @@ body {
     flex-wrap: wrap;
   }
 }
+
+/* AdminDashboard layout helpers (used by admin pages) */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.left-column,
+.right-column {
+  min-width: 0; /* Prevent overflow in nested tables/cards */
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .left-column,
+  .right-column {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}

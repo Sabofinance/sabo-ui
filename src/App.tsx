@@ -2,10 +2,12 @@ import React, { Suspense, lazy } from 'react';
 import { NotificationProvider } from './context/NotificationContext';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AppLoader from './components/AppLoader';
-import ProtectedRoute from './context/ProtectedRoute';
 import AdminProtectedRoute from './context/AdminProtectedRoute';
+import UserProtectedRoute from './context/UserProtectedRoute';
 import DashboardLayout from './components/DashboardLayout';
 import { useAuth } from './context/AuthContext';
+import TawkToWidget from './components/TawkToWidget';
+import { useAdminAuth } from './context/AdminAuthContext';
 import VerifyOtpPage from './pages/VerifyOtpPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
@@ -44,14 +46,40 @@ const DisputesPage    = lazy(() => import('./pages/dashboard/DisputesPage'));
 const KycPage         = lazy(() => import('./pages/dashboard/KycPage'));
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
 
+const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
+const AdminVerifyOtpPage = lazy(() => import('./pages/admin/AdminVerifyOtpPage'));
+
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const { isAdminAuthenticated, isAdminLoading } = useAdminAuth();
+  if (isLoading) return <AppLoader />;
+  if (!isAuthenticated) return <>{children}</>;
+
+  if (isAdminLoading) return <AppLoader />;
+  if (isAdminAuthenticated) return <Navigate to="/dashboard/admin" replace />;
+
+  const role = String(user?.role || '').toLowerCase();
+  return <Navigate to={role === 'admin' ? '/dashboard/admin' : '/dashboard'} replace />;
+};
+
+const AdminPublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const { isAdminAuthenticated, isAdminLoading } = useAdminAuth();
+
+  if (isLoading || isAdminLoading) return <AppLoader />;
+  if (isAdminAuthenticated) return <Navigate to="/dashboard/admin" replace />;
+  if (isAuthenticated) {
+    const role = String(user?.role || '').toLowerCase();
+    return <Navigate to={role === 'admin' ? '/dashboard/admin' : '/dashboard'} replace />;
+  }
+
+  return <>{children}</>;
 };
 
 function App() {
   return (
     <NotificationProvider>
+      <TawkToWidget />
       <Router>
         <Suspense fallback={<AppLoader />}>
           <Routes>
@@ -66,29 +94,34 @@ function App() {
           <Route path="/verify-otp" element={<PublicRoute><VerifyOtpPage /></PublicRoute>} />
           <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
           <Route path="/reset-password"  element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
+
+          {/* Admin auth routes */}
+          <Route path="/admin/login" element={<AdminPublicRoute><AdminLoginPage /></AdminPublicRoute>} />
+          <Route path="/admin/verify-otp" element={<AdminPublicRoute><AdminVerifyOtpPage /></AdminPublicRoute>} />
+
           <Route path="/p2p"       element={<SabitMarketPage />}  />
           <Route path="/business"  element={<SaboBusinessPage />} />
 
           {/* Dashboard Routes (Protected) */}
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-            <Route index element={<DashboardPage />} />
-            <Route path="active-sabits"   element={<ActiveSabitPage />} />
-            <Route path="my-sabits"       element={<MySabitPage />}     />
-            <Route path="history"         element={<HistoryPage />}     />
-            <Route path="chat"            element={<ChatPage />}        />
-            <Route path="profile"         element={<ProfilePage />}     />
-            <Route path="settings"        element={<SettingsPage />}    />
-            <Route path="transaction/:id" element={<TransactionPage />} />
-            <Route path="wallets"         element={<WalletsPage />} />
-            <Route path="ledger"          element={<LedgerPage />} />
-            <Route path="deposits"        element={<DepositsPage />} />
-            <Route path="deposit"         element={<DepositPage />} />
-            <Route path="withdrawals"     element={<WithdrawalsPage />} />
-            <Route path="beneficiaries"   element={<BeneficiariesPage />} />
-            <Route path="conversions"     element={<ConversionsPage />} />
-            <Route path="trades"          element={<TradesPage />} />
-            <Route path="disputes"        element={<DisputesPage />} />
-            <Route path="kyc"             element={<KycPage />} />
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<UserProtectedRoute><DashboardPage /></UserProtectedRoute>} />
+            <Route path="active-sabits"   element={<UserProtectedRoute><ActiveSabitPage /></UserProtectedRoute>} />
+            <Route path="my-sabits"       element={<UserProtectedRoute><MySabitPage /></UserProtectedRoute>} />
+            <Route path="history"         element={<UserProtectedRoute><HistoryPage /></UserProtectedRoute>} />
+            <Route path="chat"            element={<UserProtectedRoute><ChatPage /></UserProtectedRoute>} />
+            <Route path="profile"         element={<UserProtectedRoute><ProfilePage /></UserProtectedRoute>} />
+            <Route path="settings"        element={<UserProtectedRoute><SettingsPage /></UserProtectedRoute>} />
+            <Route path="transaction/:id" element={<UserProtectedRoute><TransactionPage /></UserProtectedRoute>} />
+            <Route path="wallets"         element={<UserProtectedRoute><WalletsPage /></UserProtectedRoute>} />
+            <Route path="ledger"          element={<UserProtectedRoute><LedgerPage /></UserProtectedRoute>} />
+            <Route path="deposits"        element={<UserProtectedRoute><DepositsPage /></UserProtectedRoute>} />
+            <Route path="deposit"         element={<UserProtectedRoute><DepositPage /></UserProtectedRoute>} />
+            <Route path="withdrawals"     element={<UserProtectedRoute><WithdrawalsPage /></UserProtectedRoute>} />
+            <Route path="beneficiaries"   element={<UserProtectedRoute><BeneficiariesPage /></UserProtectedRoute>} />
+            <Route path="conversions"     element={<UserProtectedRoute><ConversionsPage /></UserProtectedRoute>} />
+            <Route path="trades"          element={<UserProtectedRoute><TradesPage /></UserProtectedRoute>} />
+            <Route path="disputes"        element={<UserProtectedRoute><DisputesPage /></UserProtectedRoute>} />
+            <Route path="kyc"             element={<UserProtectedRoute><KycPage /></UserProtectedRoute>} />
             <Route path="admin"          element={<AdminProtectedRoute><AdminDashboardPage /></AdminProtectedRoute>} />
           </Route>
           </Routes>

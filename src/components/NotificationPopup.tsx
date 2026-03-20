@@ -1,26 +1,15 @@
 import React from 'react';
 import '../assets/css/NotificationPopup.css';
+import { useNotifications } from '../context/NotificationContext';
+import { useToast } from '../context/ToastContext';
 
 interface NotificationPopupProps {
   onClose: () => void;
 }
 
-interface Notification {
-  id: number;
-  type: 'trade' | 'rate' | 'system' | 'offer';
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-  avatar?: string;
-  amount?: string;
-}
-
 const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
-  // This build doesn't include a notifications API endpoint, so we intentionally show an empty state
-  // rather than rendering mocked trade/rate/system notifications.
-  const notifications: Notification[] = [];
-  const unreadCount = 0;
+  const toast = useToast();
+  const { notifications, unreadCount, markAsRead } = useNotifications();
 
   const getIcon = (type: string) => {
     switch(type) {
@@ -44,6 +33,27 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
             <line x1="8" y1="12" x2="16" y2="12"/>
           </svg>
         );
+      case 'success':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        );
+      case 'error':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <line x1="18" y1="6" x2="6" y2="18" strokeLinecap="round" />
+            <line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round" />
+          </svg>
+        );
+      case 'info':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="10" x2="12" y2="16" strokeLinecap="round" />
+            <line x1="12" y1="7" x2="12.01" y2="7" strokeLinecap="round" />
+          </svg>
+        );
       default:
         return (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -55,12 +65,29 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
     }
   };
 
-  const handleMarkAllRead = () => {
-    // No-op until notifications are connected to the backend.
+  const handleMarkAllRead = async () => {
+    const unread = notifications.filter((n) => n.status === 'unread');
+    if (!unread.length) return;
+
+    try {
+      await Promise.all(unread.map((n) => markAsRead(n.id)));
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to mark notifications as read.');
+    }
   };
 
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = async (id: string) => {
+    const item = notifications.find((n) => n.id === id);
     onClose();
+
+    if (!item) return;
+    if (item.status !== 'unread') return;
+
+    try {
+      await markAsRead(item.id);
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to update notification.');
+    }
   };
 
   return (
@@ -99,17 +126,13 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
             notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`list-item ${!notification.read ? 'unread' : ''}`}
-                onClick={() => handleNotificationClick(notification)}
+                className={`list-item ${notification.status === 'unread' ? 'unread' : ''}`}
+                onClick={() => void handleNotificationClick(notification.id)}
               >
                 <div className="item-icon">
-                  {notification.avatar ? (
-                    <img src={notification.avatar} alt="" className="avatar" />
-                  ) : (
-                    <div className={`icon-bg ${notification.type}`}>
-                      {getIcon(notification.type)}
-                    </div>
-                  )}
+                  <div className={`icon-bg ${notification.type}`}>
+                    {getIcon(notification.type)}
+                  </div>
                 </div>
 
                 <div className="item-content">
@@ -117,14 +140,10 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
                     <div className="item-title">
                       <h4>{notification.title}</h4>
                     </div>
-                    <span className="item-time">{notification.time}</span>
+                    <span className="item-time">{notification.createdAt}</span>
                   </div>
 
                   <p className="item-message">{notification.message}</p>
-
-                  {notification.amount && (
-                    <div className="item-amount">{notification.amount}</div>
-                  )}
                 </div>
               </div>
             ))

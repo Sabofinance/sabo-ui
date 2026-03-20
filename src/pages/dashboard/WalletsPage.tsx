@@ -71,15 +71,6 @@ const WalletsPage: React.FC = () => {
     return sum + balance * (Number.isFinite(rate) && rate > 0 ? rate : 0);
   }, 0);
 
-  const getStatusColor = (s: string) => {
-    switch (s.toLowerCase()) {
-      case 'active': return '#2ecc71';
-      case 'frozen': return '#e74c3c';
-      case 'pending': return '#f39c12';
-      default: return '#666';
-    }
-  };
-
   if (loading) return <div className="loading-state" style={{ padding: '4rem', textAlign: 'center' }}>Loading wallets...</div>;
   if (error) return <div className="error-state" style={{ padding: '4rem', textAlign: 'center', color: '#e74c3c' }}>{error}</div>;
 

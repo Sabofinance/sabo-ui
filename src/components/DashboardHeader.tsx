@@ -4,11 +4,13 @@ import NotificationPopup from './NotificationPopup';
 import { useSidebar } from '../context/SidebarContext';
 import '../assets/css/DashboardHeader.css';
 import { useAuth } from '../context/AuthContext';
+import { useAdminAuth } from '../context/AdminAuthContext';
 import { useToast } from '../context/ToastContext';
 
 const DashboardHeader: React.FC = () => {
   const { toggle } = useSidebar();
   const { user, logout } = useAuth();
+  const { adminUser, isAdminAuthenticated, adminLogout } = useAdminAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -35,20 +37,27 @@ const DashboardHeader: React.FC = () => {
     e.preventDefault();
     setProfileOpen(false);
     try {
-      await logout();
-      navigate('/login');
+      if (isAdminAuthenticated) {
+        await adminLogout();
+        navigate('/admin/login');
+      } else {
+        await logout();
+        navigate('/login');
+      }
     } catch (err: any) {
       toast.error(err?.message || 'Failed to log out.');
     }
   };
 
+  const activeUser = isAdminAuthenticated ? adminUser : user;
   const displayName = (
-    user?.name ||
-    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+    (activeUser as any)?.name ||
+    (activeUser as any)?.email ||
+    [(activeUser as any)?.firstName, (activeUser as any)?.lastName].filter(Boolean).join(' ') ||
     'Account'
   );
-  const displayEmail = user?.email || '';
-  const displayRole = user?.role ? String(user.role) : '';
+  const displayEmail = (activeUser as any)?.email || '';
+  const displayRole = (activeUser as any)?.role ? String((activeUser as any)?.role) : '';
 
   return (
     <header className="dashboard-header">

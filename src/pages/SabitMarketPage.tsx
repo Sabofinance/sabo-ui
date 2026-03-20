@@ -124,18 +124,18 @@ const SabitMarketPage = () => {
         const matchesType = filterType === 'all' || item.type === filterType;
         const matchesCurrency = filterCurrency === 'all' || item.currency === filterCurrency;
         return matchesType && matchesCurrency;
-      });
-  }, [listings, filterType, filterCurrency]);        id,
-        name: sellerName,
-        avatar,
-        badge,
-        sell: currency && amount ? `${currency} ${amount}` : '',
-        rate: rate && currency ? `₦${rate}/${currency}` : '—',
-        trades,
-        rating,
-      };
-    });
-  }, [listings]);
+      })
+      .map((item) => ({
+        id: item.id,
+        name: item.sellerName,
+        avatar: item.avatar,
+        badge: item.badge,
+        sell: item.currency && item.amount ? `${item.currency} ${item.amount}` : '',
+        rate: item.rate && item.currency ? `₦${item.rate}/${item.currency}` : '—',
+        trades: item.trades,
+        rating: item.rating,
+      }));
+  }, [listings, filterType, filterCurrency]);
 
   return (
     <div className="smp-page">

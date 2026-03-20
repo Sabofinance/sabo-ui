@@ -1,21 +1,27 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { useAdminAuth } from './AdminAuthContext';
 import AppLoader from '../components/AppLoader';
 
 interface AdminProtectedRouteProps {
   children: React.ReactNode;
+  allowedRoles?: string[];
 }
 
-const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ children }) => {
-  const { user, isAuthenticated, isLoading } = useAuth();
+const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ children, allowedRoles = ['admin', 'super_admin'] }) => {
+  const { isLoading: isUserLoading } = useAuth();
+  const { adminUser, isAdminAuthenticated, isAdminLoading } = useAdminAuth();
 
-  if (isLoading) return <AppLoader />;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (isAdminLoading || isUserLoading) return <AppLoader />;
 
-  const role = String(user?.role || '').toLowerCase();
-  if (role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
+  if (!isAdminAuthenticated) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  const role = String(adminUser?.role || '').toLowerCase();
+  if (!allowedRoles.includes(role)) {
+    return <Navigate to="/dashboard/admin" replace />;
   }
 
   return <>{children}</>;

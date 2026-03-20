@@ -107,6 +107,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // response.data is AuthTokens now because of the fix in auth.api.ts
         const { accessToken: newAccess, refreshToken: newRefresh } = response.data;
         
+        // Scope axios token attachment to user session.
+        localStorage.setItem('sessionType', 'user');
+        // Clear any admin session to avoid cross-contamination.
+        localStorage.removeItem('adminAccessToken');
+        localStorage.removeItem('adminRefreshToken');
+        localStorage.removeItem('adminUser');
+
         localStorage.setItem('accessToken', newAccess);
         localStorage.setItem('refreshToken', newRefresh);
         setAccessToken(newAccess);
@@ -174,6 +181,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      localStorage.setItem('sessionType', 'user');
       setAccessToken(null);
       setRefreshToken(null);
       setUser(null);

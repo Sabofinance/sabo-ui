@@ -1,5 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import notificationsApi from "../lib/api/notifications.api";
+import { useAuth } from "./AuthContext";
+import { useAdminAuth } from "./AdminAuthContext";
 
 export type NotificationType = "success" | "error" | "info";
 
@@ -25,13 +27,20 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const { isAuthenticated, isLoading } = useAuth();
+  const { isAdminAuthenticated, isAdminLoading } = useAdminAuth();
+
   const fetchNotifications = useCallback(async () => {
+    // Avoid hitting protected notification endpoints on public pages / logged-out sessions.
+    if (isLoading || isAdminLoading) return;
+    if (!isAuthenticated && !isAdminAuthenticated) return;
+
     const res = await notificationsApi.list();
     if (res.success && Array.isArray(res.data)) {
       setNotifications(res.data);
       setUnreadCount(res.data.filter((n: NotificationItem) => n.status === "unread").length);
     }
-  }, []);
+  }, [isAuthenticated, isLoading, isAdminAuthenticated, isAdminLoading]);
 
   const markAsRead = useCallback(async (id: string) => {
     await notificationsApi.markRead(id);
@@ -40,7 +49,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, []);
 
   useEffect(() => {
-    fetchNotifications();
+    void fetchNotifications();
   }, [fetchNotifications]);
 
   const value = useMemo(

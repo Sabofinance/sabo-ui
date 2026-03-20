@@ -33,7 +33,7 @@ interface User {
 }
 
 const ProfilePage: React.FC = () => {
-  const { user: authUser, isLoading: isAuthLoading } = useAuth();
+  const { user: authUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'account'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,7 +56,7 @@ const ProfilePage: React.FC = () => {
   });
 
   const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (authUser) {
@@ -66,12 +66,12 @@ const ProfilePage: React.FC = () => {
         displayName: authUser.name || `${authUser.firstName || ''} ${authUser.lastName || ''}`.trim() || 'User',
         email: authUser.email || '',
         phone: authUser.phoneNumber || '',
-        dob: '1985-06-15', // Should be from API if available
-        address: '123 Sabo Road', // Should be from API if available
-        city: 'Yaba', // Should be from API if available
-        country: 'Nigeria', // Should be from API if available
-        postalCode: '101245', // Should be from API if available
-        joined: authUser.createdAt ? new Date(authUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'January 2024',
+        dob: '',
+        address: '',
+        city: '',
+        country: '',
+        postalCode: '',
+        joined: authUser.createdAt ? new Date(authUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '',
         avatar: 'https://i.pravatar.cc/300?u=' + (authUser.id || 'user'),
         kycVerified: Boolean(authUser.isEmailVerified && authUser.isPhoneVerified), // Improved logic
       });

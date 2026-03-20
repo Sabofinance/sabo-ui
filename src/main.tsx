@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { SidebarProvider } from './context/SidebarContext'
 import { AuthProvider } from './context/AuthContext.tsx'
+import { AdminAuthProvider } from './context/AdminAuthContext.tsx'
 import { ToastProvider } from './context/ToastContext'
 import Toaster from './components/Toaster'
 
@@ -11,10 +12,12 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ToastProvider>
       <AuthProvider>
-        <SidebarProvider>
-          <App />
-          <Toaster />
-        </SidebarProvider>
+        <AdminAuthProvider>
+          <SidebarProvider>
+            <App />
+            <Toaster />
+          </SidebarProvider>
+        </AdminAuthProvider>
       </AuthProvider>
     </ToastProvider>
   </StrictMode>,

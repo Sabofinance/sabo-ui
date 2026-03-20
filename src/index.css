@@ -65,6 +65,25 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Tawk.to widget: force floating bottom-right across all pages */
+#tawkchat-minified {
+  position: fixed !important;
+  right: 18px !important;
+  bottom: 18px !important;
+  z-index: 999999 !important;
+}
+#tawkchat-minified-frame {
+  position: fixed !important;
+  right: 18px !important;
+  bottom: 18px !important;
+  z-index: 999999 !important;
+}
+#tawkchat-minified iframe {
+  position: fixed !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+
 /* -----------------------------
    Typography
 ------------------------------ */

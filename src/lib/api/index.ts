@@ -12,4 +12,5 @@ export { default as disputesApi } from "./disputes.api";
 export { default as kycApi } from "./kyc.api";
 export { default as ratesApi } from "./rates.api";
 export { default as adminApi } from "./admin.api";
+export { default as chatApi } from "./chat.api";
 export type { ApiEnvelope } from "./response";

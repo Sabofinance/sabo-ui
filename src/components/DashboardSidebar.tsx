@@ -2,12 +2,15 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useSidebar } from '../context/SidebarContext';
 import { useAuth } from '../context/AuthContext';
+import { useAdminAuth } from '../context/AdminAuthContext';
 import '../assets/css/DashboardSidebar.css';
 
 const DashboardSidebar: React.FC = () => {
   const { isOpen, close } = useSidebar();
   const { user } = useAuth();
-  const isAdmin = String(user?.role || '').toLowerCase() === 'admin';
+  const { adminUser, isAdminAuthenticated } = useAdminAuth();
+  const activeRole = isAdminAuthenticated ? adminUser?.role : user?.role;
+  const isAdmin = String(activeRole || '').toLowerCase() === 'admin';
 
   return (
     <>
@@ -50,7 +53,7 @@ const DashboardSidebar: React.FC = () => {
 
             <li className="nav-item">
               <NavLink
-                to="/dashboard"
+                to={isAdmin ? "/dashboard/admin" : "/dashboard"}
                 end
                 className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                 onClick={close}

@@ -9,18 +9,21 @@ interface DepositModalProps {
 
 const CURRENCY_OPTIONS: Array<'NGN' | 'USD' | 'GBP' | 'CAD'> = ['NGN', 'USD', 'GBP', 'CAD'];
 
+type Currency = NonNullable<DepositModalProps['defaultCurrency']>;
+
 const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 'NGN' }) => {
   const toast = useToast();
 
-  const [currency, setCurrency] = useState<DepositModalProps['defaultCurrency']>(defaultCurrency);
+  const [currency, setCurrency] = useState<Currency>(defaultCurrency as Currency);
   const [amount, setAmount] = useState<string>('');
+  const [foreignFile, setForeignFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const [error, setError] = useState('');
   const [successData, setSuccessData] = useState<any | null>(null);
 
   useEffect(() => {
-    setCurrency(defaultCurrency);
+    setCurrency(defaultCurrency as Currency);
   }, [defaultCurrency]);
 
   const rawAmount = useMemo(() => {
@@ -56,8 +59,22 @@ const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 
     try {
       const res =
         currency === 'NGN'
-          ? await depositsApi.initiateNgnDeposit({ amount: rawAmount })
-          : await depositsApi.initiateForeignDeposit({ currency, amount: rawAmount });
+          ? await depositsApi.ngnInitiate({ amount: rawAmount })
+          : await (async () => {
+              if (!foreignFile) {
+                setError('Please upload proof of payment for foreign deposits.');
+                return null;
+              }
+
+              const formData = new FormData();
+              // Backends typically infer currency from the wallet, but we include it for compatibility.
+              formData.append('currency', String(currency));
+              formData.append('amount', String(rawAmount));
+              formData.append('file', foreignFile);
+              return depositsApi.foreign(formData);
+            })();
+
+      if (!res) return;
 
       if (!res.success) {
         toast.error(res.error?.message || 'Failed to initiate deposit');
@@ -66,6 +83,7 @@ const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 
       }
 
       setSuccessData(res.data);
+      setForeignFile(null);
       toast.success('Deposit initiated. Complete payment to top up your wallet.');
     } catch (err: any) {
       toast.error(err?.message || 'Failed to initiate deposit');
@@ -169,8 +187,8 @@ const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 
             <label className="input-label">Deposit Currency</label>
             <div className="input-box-wrapper" style={{ padding: 0 }}>
               <select
-                value={currency || 'NGN'}
-                onChange={(e) => setCurrency(e.target.value as any)}
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value as Currency)}
                 style={{
                   width: '100%',
                   background: 'transparent',
@@ -206,10 +224,23 @@ const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 
             {error && <div className="error-text" style={{ marginTop: 8 }}>{error}</div>}
           </div>
 
+          {currency !== 'NGN' && (
+            <div className="form-group">
+              <label className="input-label">Proof of Payment</label>
+              <div className="input-box-wrapper">
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => setForeignFile(e.target.files?.[0] || null)}
+                />
+              </div>
+            </div>
+          )}
+
           <button
             type="submit"
             className="btn-submit-sabo"
-            disabled={submitting || rawAmount <= 0}
+            disabled={submitting || rawAmount <= 0 || (currency !== 'NGN' && !foreignFile)}
           >
             {submitting ? 'Initiating...' : 'Initiate Deposit'}
           </button>

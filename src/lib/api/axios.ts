@@ -20,7 +20,10 @@ const api: AxiosInstance = axios.create({
 // Request interceptor to attach accessToken
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const accessToken = localStorage.getItem("accessToken");
+    const sessionType = localStorage.getItem("sessionType") || "user";
+    const tokenKey = sessionType === "admin" ? "adminAccessToken" : "accessToken";
+    const accessToken = localStorage.getItem(tokenKey);
+
     if (accessToken && config.headers) {
       if (typeof config.headers.set === "function") {
         config.headers.set("Authorization", `Bearer ${accessToken}`);
@@ -59,6 +62,12 @@ api.interceptors.response.use(
     };
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      const sessionType = localStorage.getItem("sessionType") || "user";
+      // Avoid guessing admin refresh endpoints; only refresh for user scope.
+      if (sessionType === "admin") {
+        return Promise.reject(error);
+      }
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
