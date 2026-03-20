@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { tradesApi } from '../../lib/api';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { sabitsApi, tradesApi, walletsApi } from '../../lib/api';
 
 import '../../assets/css/TransactionPage.css';
 import '../../assets/css/TransactionModals.css';
@@ -23,79 +23,94 @@ interface ListingData {
   timeLimit: string;
 }
 
-// Mock wallets (same as DashboardPage)
-const mockWallets = [
-  {
-    id: 'ngn',
-    currency: 'NGN',
-    balance: 4950000.0,
-    symbol: '₦',
-    flag: '🇳🇬',
-    cardNumber: '5789 •••• •••• 2847',
-    cardHolder: 'AKINGBADE ADENIYI',
-    expiry: '06/21',
-  },
-  {
-    id: 'gbp',
-    currency: 'GBP',
-    balance: 1250.75,
-    symbol: '£',
-    flag: '🇬🇧',
-    cardNumber: '4412 •••• •••• 9901',
-    cardHolder: 'AKINGBADE ADENIYI',
-    expiry: '12/25',
-  },
-  {
-    id: 'usd',
-    currency: 'USD',
-    balance: 0,
-    symbol: '$',
-    flag: '🇺🇸',
-    cardNumber: '**** •••• •••• 0000',
-    cardHolder: 'AKINGBADE ADENIYI',
-    expiry: '12/26',
-  },
-  {
-    id: 'eur',
-    currency: 'EUR',
-    balance: 0,
-    symbol: '€',
-    flag: '🇪🇺',
-    cardNumber: '**** •••• •••• 0000',
-    cardHolder: 'AKINGBADE ADENIYI',
-    expiry: '12/26',
-  },
-];
+interface WalletView {
+  id: string;
+  currency: string;
+  balance: number;
+  symbol: string;
+  cardNumber: string;
+  cardHolder: string;
+  expiry: string;
+}
 
 const TransactionPage: React.FC = () => {
-  const location = useLocation();
   const navigate = useNavigate();
-  
-  // Safeguard with Demo Data if no state is present
-  const listing: ListingData = location.state?.listing || {
-    seller: { name: "CryptoKing", avatar: "https://i.pravatar.cc/150?u=cryptoking", rating: 5.0, completedTrades: 1420, verified: true },
-    type: 'sell',
-    currency: 'USD',
-    amount: 1000,
-    rate: 1550,
-    available: 500,
-    paymentMethods: ['Direct Bank Transfer'],
-    timeLimit: '15 min'
-  };
+
+  const { id: sabitIdParam } = useParams();
+  const sabitId = sabitIdParam ? String(sabitIdParam) : '';
+
+  const [listing, setListing] = useState<ListingData | null>(null);
+  const [wallets, setWallets] = useState<WalletView[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const [agreed, setAgreed] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const isBuying = listing.type === 'sell'; 
-  const topCurrency = isBuying ? 'NGN' : listing.currency;
-  const bottomCurrency = isBuying ? listing.currency : 'NGN';
-  
-  const amountToDisplay = listing.available;
-  const calculatedTotal = amountToDisplay * listing.rate;
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      setListing(null);
+      const [sabitRes, walletsRes] = await Promise.all([
+        sabitsApi.getById(sabitId),
+        walletsApi.list(),
+      ]);
 
-  // Find the wallet that will be debited (the one the user sends)
-  const debitWallet = mockWallets.find(w => w.currency === topCurrency) || mockWallets[0];
+      if (sabitRes.success && sabitRes.data) {
+        const data = sabitRes.data as any;
+        const mappedListing: ListingData = {
+          id: Number(data.id || data.sabitId || sabitId),
+          seller: {
+            name: String(data.sellerName || data.seller?.name || data.name || ''),
+            avatar: String(data.sellerAvatar || data.seller?.avatar || ''),
+            rating: Number(data.rating || data.seller?.rating || 0),
+            completedTrades: Number(data.completedTrades || data.completed || data.seller?.completedTrades || 0),
+            verified: Boolean(data.verified ?? data.seller?.verified ?? false),
+          },
+          type: (String(data.type || 'sell') === 'buy' ? 'buy' : 'sell') as ListingData['type'],
+          currency: String(data.currency || ''),
+          amount: Number(data.amount || 0),
+          rate: Number(data.rate || 0),
+          available: Number(data.available || data.remaining || 0),
+          paymentMethods: Array.isArray(data.paymentMethods) ? data.paymentMethods : [],
+          timeLimit: String(data.timeLimit || data.time_limit || ''),
+        };
+        setListing(mappedListing);
+      } else {
+        setError(sabitRes.error?.message || 'Failed to load sabit');
+      }
+
+      if (walletsRes.success && Array.isArray(walletsRes.data)) {
+        const mappedWallets: WalletView[] = walletsRes.data.map((w: Record<string, unknown>, idx: number) => {
+          const currency = String(w.currency || 'NGN');
+          return {
+            id: String(w.id || w.currency || idx),
+            currency,
+            balance: Number(w.balance || 0),
+            symbol: String(w.symbol || (currency === 'GBP' ? '£' : currency === 'NGN' ? '₦' : '')),
+            cardNumber: String(w.cardNumber || ''),
+            cardHolder: String(w.cardHolder || ''),
+            expiry: String(w.expiry || ''),
+          };
+        });
+        setWallets(mappedWallets);
+      }
+
+      setLoading(false);
+    };
+    void load();
+  }, [sabitId]);
+
+  const isBuying = listing ? listing.type === 'sell' : false;
+  const topCurrency = isBuying ? 'NGN' : (listing?.currency || 'NGN');
+  const bottomCurrency = isBuying ? (listing?.currency || '') : 'NGN';
+
+  const amountToDisplay = listing?.available || 0;
+  const calculatedTotal = amountToDisplay * (listing?.rate || 0);
+
+  const debitWallet = wallets.find((w) => w.currency === topCurrency) ?? wallets[0] ?? null;
 
   // Type-safe flag fetcher
   const getFlag = (code: string): string => {
@@ -110,11 +125,20 @@ const TransactionPage: React.FC = () => {
 
   const handleConfirmTrade = () => {
     if (!agreed) return;
+    if (!debitWallet) return;
     setShowConfirmModal(true);
   };
 
   const handleConfirmPayment = async () => {
-    const response = await tradesApi.execute(String(listing.id || "new"), {
+    if (!listing) return;
+    if (!debitWallet) return;
+    const createRes = await tradesApi.create({ sabitId: listing.id });
+    if (!createRes.success) return;
+
+    const tradeId = (createRes.data as any)?.id || (createRes.data as any)?.tradeId;
+    if (!tradeId) return;
+
+    const response = await tradesApi.execute(String(tradeId), {
       listingId: listing.id,
       type: listing.type,
       currency: listing.currency,
@@ -131,6 +155,36 @@ const TransactionPage: React.FC = () => {
     setShowSuccessModal(false);
     navigate('/dashboard/active-sabits');
   };
+
+  if (loading) {
+    return (
+      <div className="dashboard-wrapper">
+        <main className="transaction-page">
+          <p>Loading transaction...</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard-wrapper">
+        <main className="transaction-page">
+          <p>{error}</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <div className="dashboard-wrapper">
+        <main className="transaction-page">
+          <p>Transaction not available.</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-wrapper">
@@ -243,7 +297,7 @@ const TransactionPage: React.FC = () => {
                   
                   <button 
                     className="confirm-btn-main"
-                    disabled={!agreed}
+                    disabled={!agreed || !debitWallet}
                     onClick={handleConfirmTrade}
                   >
                     Confirm & Start Trade
@@ -254,7 +308,7 @@ const TransactionPage: React.FC = () => {
           </main>
 
         {/* Confirmation Modal */}
-        {showConfirmModal && (
+        {showConfirmModal && debitWallet && (
           <div className="modal-overlay" onClick={() => setShowConfirmModal(false)}>
             <div className="confirm-modal-content" onClick={e => e.stopPropagation()}>
               <button className="modal-close-icon" onClick={() => setShowConfirmModal(false)}>×</button>

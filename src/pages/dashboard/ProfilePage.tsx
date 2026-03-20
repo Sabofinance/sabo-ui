@@ -55,30 +55,7 @@ const ProfilePage: React.FC = () => {
     kycVerified: true,
   });
 
-  const [wallets, setWallets] = useState<Wallet[]>([
-    {
-      currency: 'NGN',
-      balance: 4950000.0,
-      symbol: '₦',
-      flag: '🇳🇬',
-      accountNumber: '0123456789',
-      accountName: 'Akingbade Adeniyi',
-      bank: 'Sabo Bank',
-      cardNumber: '**** **** **** 3456',
-      expiry: '12/25',
-    },
-    {
-      currency: 'GBP',
-      balance: 1250.75,
-      symbol: '£',
-      flag: '🇬🇧',
-      accountNumber: '9876543210',
-      accountName: 'Akingbade Adeniyi',
-      bank: 'Sabo Bank',
-      cardNumber: '**** **** **** 7890',
-      expiry: '09/24',
-    },
-  ]);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
 
   useEffect(() => {
     const loadWallets = async () => {
@@ -89,11 +66,11 @@ const ProfilePage: React.FC = () => {
         balance: Number(wallet.balance || 0),
         symbol: String(wallet.symbol || '₦'),
         flag: String(wallet.flag || '🏦'),
-        accountNumber: String(wallet.accountNumber || '0000000000'),
+        accountNumber: String(wallet.accountNumber || ''),
         accountName: String(wallet.accountName || user.displayName),
-        bank: String(wallet.bank || 'Sabo Bank'),
-        cardNumber: String(wallet.cardNumber || '**** **** **** 0000'),
-        expiry: String(wallet.expiry || '12/30'),
+        bank: String(wallet.bank || ''),
+        cardNumber: String(wallet.cardNumber || ''),
+        expiry: String(wallet.expiry || ''),
       })));
     };
     void loadWallets();

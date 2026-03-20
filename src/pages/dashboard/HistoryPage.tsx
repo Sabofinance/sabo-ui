@@ -24,88 +24,7 @@ const HistoryPage: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    {
-      id: 1,
-      type: 'sell',
-      currency: 'GBP',
-      amount: 5000,
-      rate: 1650,
-      total: 8250000,
-      counterparty: {
-        name: 'CryptoKing',
-        avatar: 'https://i.pravatar.cc/150?u=5',
-        verified: true
-      },
-      status: 'completed',
-      date: '2024-03-15T10:30:00',
-      reference: 'TXN-2024-001'
-    },
-    {
-      id: 2,
-      type: 'buy',
-      currency: 'NGN',
-      amount: 2500000,
-      rate: 1580,
-      total: 3950000,
-      counterparty: {
-        name: 'FXTrader',
-        avatar: 'https://i.pravatar.cc/150?u=6',
-        verified: true
-      },
-      status: 'completed',
-      date: '2024-03-14T15:45:00',
-      reference: 'TXN-2024-002'
-    },
-    {
-      id: 3,
-      type: 'sell',
-      currency: 'USD',
-      amount: 10000,
-      rate: 1550,
-      total: 15500000,
-      counterparty: {
-        name: 'SabiTrader',
-        avatar: 'https://i.pravatar.cc/150?u=7',
-        verified: true
-      },
-      status: 'completed',
-      date: '2024-03-13T09:15:00',
-      reference: 'TXN-2024-003'
-    },
-    {
-      id: 4,
-      type: 'buy',
-      currency: 'GBP',
-      amount: 3000,
-      rate: 1640,
-      total: 4920000,
-      counterparty: {
-        name: 'NaijaPounds',
-        avatar: 'https://i.pravatar.cc/150?u=8',
-        verified: false
-      },
-      status: 'pending',
-      date: '2024-03-12T11:20:00',
-      reference: 'TXN-2024-004'
-    },
-    {
-      id: 5,
-      type: 'sell',
-      currency: 'EUR',
-      amount: 8000,
-      rate: 1720,
-      total: 13760000,
-      counterparty: {
-        name: 'EuroMaster',
-        avatar: 'https://i.pravatar.cc/150?u=9',
-        verified: true
-      },
-      status: 'completed',
-      date: '2024-03-11T14:30:00',
-      reference: 'TXN-2024-005'
-    }
-  ]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
     const loadLedger = async () => {
@@ -120,13 +39,13 @@ const HistoryPage: React.FC = () => {
         rate: Number(entry.rate || 0),
         total: Number(entry.total || 0),
         counterparty: {
-          name: String(entry.counterpartyName || 'Trader'),
-          avatar: String(entry.counterpartyAvatar || `https://i.pravatar.cc/150?u=ledger-${index}`),
-          verified: Boolean(entry.verified ?? true),
+          name: String(entry.counterpartyName || (entry.counterparty as any)?.name || ''),
+          avatar: String(entry.counterpartyAvatar || (entry.counterparty as any)?.avatar || ''),
+          verified: Boolean(entry.verified ?? (entry.counterparty as any)?.verified),
         },
         status: (String(entry.status || 'pending') as Transaction['status']),
-        date: String(entry.date || new Date().toISOString()),
-        reference: String(entry.reference || `TXN-${Date.now()}-${index}`),
+        date: String(entry.date || entry.createdAt || ''),
+        reference: String(entry.reference || ''),
       }));
       setTransactions(mapped);
     };
