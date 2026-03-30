@@ -17,13 +17,13 @@ const ForgotPasswordPage: React.FC = () => {
     setSuccessMessage("");
     try {
       const response = await authApi.forgotPassword(data);
-      if (response.success) {
-        setSuccessMessage("A password reset link has been sent to your email address.");
-      } else {
-        setGeneralError(response.error?.message || "Failed to send reset link.");
-      }
+      // Per backend behavior: always show the same confirmation regardless of whether email exists.
+      void response;
+      setSuccessMessage("If an account exists for this email, you’ll receive a password reset link shortly.");
     } catch (error: any) {
-      setGeneralError(error.response?.data?.error?.message || error.message || "An error occurred.");
+      // Even on errors, avoid revealing whether the email exists.
+      void error;
+      setSuccessMessage("If an account exists for this email, you’ll receive a password reset link shortly.");
     }
   };
 

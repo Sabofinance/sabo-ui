@@ -7,7 +7,8 @@ import axios, {
 import type { ApiResponse, AuthTokens } from "../../modules/auth/types/type";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:3001";
+  (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL)?.replace(/\/$/, "") ||
+  "https://sf-api-xzlj.onrender.com";
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -65,6 +66,13 @@ api.interceptors.response.use(
       const sessionType = localStorage.getItem("sessionType") || "user";
       // Avoid guessing admin refresh endpoints; only refresh for user scope.
       if (sessionType === "admin") {
+        localStorage.removeItem("adminAccessToken");
+        localStorage.removeItem("adminRefreshToken");
+        localStorage.removeItem("adminUser");
+        // Hard redirect so we don't depend on hooks.
+        if (typeof window !== "undefined" && window.location.pathname !== "/admin/login") {
+          window.location.assign("/admin/login");
+        }
         return Promise.reject(error);
       }
 
@@ -92,7 +100,12 @@ api.interceptors.response.use(
 
       if (!refreshToken) {
         isRefreshing = false;
-        // Optional: Redirect to login or clear state
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
+        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+          window.location.assign("/login");
+        }
         return Promise.reject(error);
       }
 
@@ -126,7 +139,10 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        // Optional: Redirect to login
+        localStorage.removeItem("user");
+        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+          window.location.assign("/login");
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

@@ -2,7 +2,7 @@ import { apiRequest } from "./request";
 
 export const ledgerApi = {
   listEntries: (params?: Record<string, unknown>) => apiRequest.get("/ledger", params),
-  getEntryById: (entryId: string) => apiRequest.get(`/ledger/${entryId}`),
+  listByWalletId: (walletId: string, params?: Record<string, unknown>) => apiRequest.get(`/ledger/${walletId}`, params),
   getSummary: (params?: Record<string, unknown>) => apiRequest.get("/ledger/summary", params),
 };
 

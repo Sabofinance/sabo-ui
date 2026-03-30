@@ -20,20 +20,32 @@ interface Transaction {
 }
 
 const HistoryPage: React.FC = () => {
-  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [from, setFrom] = useState<string>('');
+  const [to, setTo] = useState<string>('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [currencyFilter, setCurrencyFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
+
+  const [page, setPage] = useState<number>(1);
+  const [limit] = useState<number>(20);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [hasNext, setHasNext] = useState(false);
 
   useEffect(() => {
     const loadLedger = async () => {
       setLoading(true);
       setError('');
       try {
-        const response = await ledgerApi.listEntries();
+        const params: Record<string, unknown> = { page, limit };
+        if (from) params.from = new Date(from).toISOString();
+        if (to) params.to = new Date(to).toISOString();
+        if (typeFilter !== 'all') params.type = typeFilter;
+        if (currencyFilter !== 'all') params.currency = currencyFilter;
+
+        const response = await ledgerApi.listEntries(params);
         if (response.success && Array.isArray(response.data)) {
           const mapped: Transaction[] = response.data.map((entry: Record<string, unknown>, index: number) => ({
             id: Number(entry.id || index + 1),
@@ -53,6 +65,7 @@ const HistoryPage: React.FC = () => {
             reference: String(entry.reference ?? entry.id ?? ''),
           }));
           setTransactions(mapped);
+          setHasNext(mapped.length === limit);
         } else if (!response.success) {
           setError(response.error?.message || 'Failed to load transaction history');
         }
@@ -64,7 +77,7 @@ const HistoryPage: React.FC = () => {
     };
 
     void loadLedger();
-  }, []);
+  }, [from, to, typeFilter, currencyFilter, page, limit]);
 
   const handleExport = () => {
     if (transactions.length === 0) return;
@@ -135,18 +148,6 @@ const HistoryPage: React.FC = () => {
   };
 
   const filteredTransactions = transactions.filter(tx => {
-    if (typeFilter !== 'all' && tx.type !== typeFilter) return false;
-    
-    if (dateFilter !== 'all') {
-      const txDate = new Date(tx.date);
-      const now = new Date();
-      const daysDiff = Math.floor((now.getTime() - txDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (dateFilter === 'today' && daysDiff > 1) return false;
-      if (dateFilter === 'week' && daysDiff > 7) return false;
-      if (dateFilter === 'month' && daysDiff > 30) return false;
-    }
-    
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       return (
@@ -258,29 +259,50 @@ const HistoryPage: React.FC = () => {
             {/* Filters */}
             <div className="filters-section">
               <div className="filter-group">
-                <label>Date Range</label>
+                <label>From</label>
+                <input
+                  className="filter-select"
+                  type="date"
+                  value={from}
+                  onChange={(e) => { setFrom(e.target.value); setPage(1); }}
+                />
+              </div>
+
+              <div className="filter-group">
+                <label>To</label>
+                <input
+                  className="filter-select"
+                  type="date"
+                  value={to}
+                  onChange={(e) => { setTo(e.target.value); setPage(1); }}
+                />
+              </div>
+
+              <div className="filter-group">
+                <label>Type</label>
                 <select 
                   className="filter-select"
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
+                  value={typeFilter}
+                  onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
                 >
-                  <option value="all">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
+                  <option value="all">All Types</option>
+                  <option value="buy">Buy</option>
+                  <option value="sell">Sell</option>
                 </select>
               </div>
 
               <div className="filter-group">
-                <label>Transaction Type</label>
-                <select 
+                <label>Currency</label>
+                <select
                   className="filter-select"
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
+                  value={currencyFilter}
+                  onChange={(e) => { setCurrencyFilter(e.target.value); setPage(1); }}
                 >
-                  <option value="all">All Types</option>
-                  <option value="buy">Buy Orders</option>
-                  <option value="sell">Sell Orders</option>
+                  <option value="all">All</option>
+                  <option value="NGN">NGN</option>
+                  <option value="GBP">GBP</option>
+                  <option value="USD">USD</option>
+                  <option value="CAD">CAD</option>
                 </select>
               </div>
 
@@ -381,13 +403,9 @@ const HistoryPage: React.FC = () => {
 
             {/* Pagination */}
             <div className="pagination">
-              <button className="page-arrow">‹</button>
-              <button className="page-number active">1</button>
-              <button className="page-number">2</button>
-              <button className="page-number">3</button>
-              <span className="page-dots">...</span>
-              <button className="page-number">8</button>
-              <button className="page-arrow">›</button>
+              <button className="page-arrow" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹</button>
+              <button className="page-number active">{page}</button>
+              <button className="page-arrow" disabled={!hasNext} onClick={() => setPage((p) => p + 1)}>›</button>
             </div>
           </>
         )}

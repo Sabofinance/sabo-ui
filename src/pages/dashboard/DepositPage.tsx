@@ -1,25 +1,47 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { depositsApi } from "../../lib/api";
 import "../../assets/css/HistoryPage.css";
+import { useNavigate } from "react-router-dom";
 
 const DepositPage: React.FC = () => {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<"ngn" | "foreign">("ngn");
   const [ngnAmount, setNgnAmount] = useState("");
   const [foreignAmount, setForeignAmount] = useState("");
+  const [foreignCurrency, setForeignCurrency] = useState<"GBP" | "USD" | "CAD">("GBP");
   const [foreignFile, setForeignFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [uploadPct, setUploadPct] = useState<number>(0);
+
+  const ngnRaw = useMemo(() => Number(String(ngnAmount).replace(/[^0-9.]/g, "")) || 0, [ngnAmount]);
+  const foreignRaw = useMemo(() => Number(String(foreignAmount).replace(/[^0-9.]/g, "")) || 0, [foreignAmount]);
 
   const handleNgnDeposit = async () => {
     setLoading(true);
     setMessage("");
-    const res = await depositsApi.ngnInitiate({ amount: ngnAmount });
+    const res = await depositsApi.ngnInitiate({ amount: String(ngnRaw) });
     setLoading(false);
     if (res.success) {
-      setMessage("Deposit initiated successfully.");
+      const d: any = res.data || {};
+      const paymentUrl =
+        d?.paymentUrl ||
+        d?.payment_url ||
+        d?.payment_link ||
+        d?.redirectUrl ||
+        d?.redirect_url ||
+        d?.url ||
+        null;
+
+      if (paymentUrl) {
+        window.location.assign(String(paymentUrl));
+        return;
+      }
+      // Fallback: show a pending info screen even if link isn't present.
+      navigate("/dashboard/deposit-pending");
       setNgnAmount("");
     } else {
-      setMessage("Failed to initiate NGN deposit.");
+      setMessage(res.error?.message || "Failed to initiate NGN deposit.");
     }
   };
 
@@ -28,19 +50,32 @@ const DepositPage: React.FC = () => {
       setMessage("Please upload a file.");
       return;
     }
+    if (!foreignFile.type.startsWith("image/")) {
+      setMessage("Proof of payment must be an image.");
+      return;
+    }
     setLoading(true);
     setMessage("");
+    setUploadPct(0);
     const formData = new FormData();
-    formData.append("amount", foreignAmount);
-    formData.append("file", foreignFile);
-    const res = await depositsApi.foreign(formData);
+    formData.append("currency", foreignCurrency);
+    formData.append("amount", String(foreignRaw));
+    formData.append("proof", foreignFile);
+    const res = await depositsApi.foreign(formData, {
+      onUploadProgress: (evt) => {
+        if (!evt.total) return;
+        const pct = Math.round((evt.loaded / evt.total) * 100);
+        setUploadPct(Math.max(0, Math.min(100, pct)));
+      },
+    });
     setLoading(false);
     if (res.success) {
-      setMessage("Foreign deposit submitted successfully.");
+      setMessage("Foreign deposit submitted successfully. It is pending admin review.");
       setForeignAmount("");
       setForeignFile(null);
+      setUploadPct(0);
     } else {
-      setMessage("Failed to submit foreign deposit.");
+      setMessage(res.error?.message || "Failed to submit foreign deposit.");
     }
   };
 
@@ -68,13 +103,26 @@ const DepositPage: React.FC = () => {
       ) : (
         <div className="filters-section" style={{ maxWidth: 400 }}>
           <div className="filter-group">
+            <label>Currency</label>
+            <select className="filter-select" value={foreignCurrency} onChange={(e) => setForeignCurrency(e.target.value as any)}>
+              <option value="GBP">GBP</option>
+              <option value="USD">USD</option>
+              <option value="CAD">CAD</option>
+            </select>
+          </div>
+          <div className="filter-group">
             <label>Amount (Foreign Currency)</label>
             <input className="filter-select" value={foreignAmount} onChange={e => setForeignAmount(e.target.value)} placeholder="Enter amount" />
           </div>
           <div className="filter-group">
             <label>Upload Proof of Payment</label>
-            <input type="file" onChange={e => setForeignFile(e.target.files?.[0] || null)} />
+            <input type="file" accept="image/*" onChange={e => setForeignFile(e.target.files?.[0] || null)} />
           </div>
+          {loading && uploadPct > 0 && (
+            <div style={{ marginTop: 8, color: "#6b7280", fontSize: 13 }}>
+              Uploading proof: {uploadPct}%
+            </div>
+          )}
           <button className="export-btn" onClick={handleForeignDeposit} disabled={loading} style={{ width: 200 }}>
             {loading ? "Processing..." : "Submit"}
           </button>

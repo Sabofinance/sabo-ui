@@ -13,7 +13,8 @@ interface AuthContextType {
   login: (data: LoginRequest) => Promise<void>;
   verifyOtp: (data: OtpRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
-  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+  logout: (opts?: { silent?: boolean }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,8 +49,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authApi.getCurrentUser();
       if (response.success && response.data) {
-        setUser(response.data);
-        localStorage.setItem('user', JSON.stringify(response.data));
+        const nextUser = response.data as User;
+        setUser(nextUser);
+        localStorage.setItem('user', JSON.stringify(nextUser));
         setIsAuthenticated(true);
       } else {
         // If the token isn't valid (401/403), ensure we don't keep the user "authenticated".
@@ -60,6 +62,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (response.error?.status === 401 || response.error?.status === 403) {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
+          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+            window.location.assign('/login');
+          }
         }
       }
     } catch (err: any) {
@@ -68,6 +73,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(false);
       setUser(null);
       localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.assign('/login');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -86,14 +96,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sessionStorage.setItem('pendingEmail', data.email);
         toast.success('Login successful. Please check your email for an OTP.');
       } else {
-        const errorMessage = response.error?.message || "Login failed due to an unknown error.";
+        const code = String(response.error?.code || "");
+        const errorMessage =
+          code === "INVALID_CREDENTIALS"
+            ? "Invalid email or password."
+            : code === "ACCOUNT_SUSPENDED"
+              ? "Your account is suspended. Please contact support."
+              : response.error?.message || "Login failed. Please try again.";
         toast.error(errorMessage);
-        throw new Error(errorMessage);
+        const err: any = new Error(errorMessage);
+        err.code = code || undefined;
+        throw err;
       }
     } catch (err: any) {
       const msg = err.message || "An unexpected error occurred.";
       setError(msg);
-      throw new Error(msg);
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -125,8 +143,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Fetch user immediately to populate state
         const userRes = await authApi.getCurrentUser();
         if (userRes.success && userRes.data) {
-          setUser(userRes.data);
-          localStorage.setItem('user', JSON.stringify(userRes.data));
+          const nextUser = userRes.data as User;
+          setUser(nextUser);
+          localStorage.setItem('user', JSON.stringify(nextUser));
           setIsAuthenticated(true);
         }
       } else {
@@ -151,24 +170,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // The user is created, but not logged in. No tokens are issued here.
         // The API returns the created user object, which we don't need to store at this stage.
       } else {
+        const code = String(response.error?.code || "");
         const errorMessage = response.error?.message || "Registration failed. Please try again.";
         toast.error(errorMessage);
-        throw new Error(errorMessage);
+        const err: any = new Error(errorMessage);
+        err.code = code || undefined;
+        throw err;
       }
     } catch (err: any) {
       const msg = err.message || "An error occurred during registration.";
       setError(msg);
-      throw new Error(msg);
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = async () => {
+  const logout = async (opts?: { silent?: boolean }) => {
     try {
       await authApi.logoutUser();
     } catch (err) {
-      toast.error('Failed to log out cleanly. Please try again.');
+      if (!opts?.silent) toast.error('Failed to log out cleanly. Please try again.');
     } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -193,6 +215,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         verifyOtp,
         register,
+        refreshUser: fetchCurrentUser,
         logout,
       }}
     >

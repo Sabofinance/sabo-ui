@@ -2,9 +2,16 @@ import React, { useState } from 'react';
 import type { ChangeEvent } from 'react';
 import '../../assets/css/SettingsPage.css';
 import authApi from '../../lib/api/auth.api';
+import { accountApi } from '../../lib/api/account.api';
+import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const SettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'security' | 'notifications' | 'appearance'>('security');
+  const navigate = useNavigate();
+  const { refreshUser, logout } = useAuth();
+
+  const [activeTab, setActiveTab] = useState<'security' | 'notifications' | 'appearance' | 'account'>('security');
 
   // Security states
   const [twoFactor, setTwoFactor] = useState(false);
@@ -24,6 +31,22 @@ const SettingsPage: React.FC = () => {
   const [accentColor, setAccentColor] = useState('#C8F032');
   const [passwordMessage, setPasswordMessage] = useState('');
 
+  // Email change flow (2-step)
+  const [emailChangeStep, setEmailChangeStep] = useState<1 | 2>(1);
+  const [pendingNewEmail, setPendingNewEmail] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [emailPassword, setEmailPassword] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
+  const [emailChanging, setEmailChanging] = useState(false);
+  const [emailChangeError, setEmailChangeError] = useState('');
+
+  // Account deletion flow (2-step)
+  const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteOtp, setDeleteOtp] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
@@ -41,6 +64,99 @@ const SettingsPage: React.FC = () => {
       newPassword: passwordData.new,
     });
     setPasswordMessage(response.success ? 'Password updated successfully.' : (response.error?.message || 'Failed to update password.'));
+  };
+
+  const startEmailChange = async () => {
+    setEmailChangeError('');
+    if (!newEmail || !emailPassword) {
+      setEmailChangeError('Please enter the new email and your current password.');
+      return;
+    }
+
+    setEmailChanging(true);
+    try {
+      await accountApi.initiateEmailChange(newEmail, emailPassword);
+      setPendingNewEmail(newEmail);
+      setEmailOtp('');
+      setEmailChangeStep(2);
+      toast.success('OTP sent to your new email.');
+    } catch (err: any) {
+      setEmailChangeError(err?.message || 'Failed to initiate email change.');
+    } finally {
+      setEmailChanging(false);
+    }
+  };
+
+  const confirmEmailChange = async () => {
+    setEmailChangeError('');
+    if (!pendingNewEmail) {
+      setEmailChangeError('Missing email context. Please restart the flow.');
+      return;
+    }
+    if (!emailOtp || emailOtp.replace(/\D/g, '').length !== 6) {
+      setEmailChangeError('Please enter the 6-digit OTP.');
+      return;
+    }
+
+    setEmailChanging(true);
+    try {
+      await accountApi.confirmEmailChange(pendingNewEmail, emailOtp);
+      toast.success('Email updated successfully.');
+      await refreshUser();
+      setEmailChangeStep(1);
+      setPendingNewEmail('');
+      setNewEmail('');
+      setEmailPassword('');
+      setEmailOtp('');
+    } catch (err: any) {
+      setEmailChangeError(err?.message || 'Failed to confirm email change.');
+    } finally {
+      setEmailChanging(false);
+    }
+  };
+
+  const startAccountDeletion = async () => {
+    setDeleteError('');
+    if (!deletePassword) {
+      setDeleteError('Please enter your password to start deletion.');
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await accountApi.initiateAccountDeletion(deletePassword);
+      setDeleteOtp('');
+      setDeleteStep(2);
+      toast.success('OTP sent to your email.');
+    } catch (err: any) {
+      setDeleteError(err?.message || 'Failed to initiate account deletion.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const confirmAccountDeletion = async () => {
+    setDeleteError('');
+    if (!deletePassword) {
+      setDeleteError('Missing password. Please restart.');
+      return;
+    }
+    if (!deleteOtp || deleteOtp.replace(/\D/g, '').length !== 6) {
+      setDeleteError('Please enter the 6-digit OTP.');
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await accountApi.confirmAccountDeletion(deletePassword, deleteOtp);
+      toast.success('Account deleted successfully.');
+      await logout({ silent: true });
+      navigate('/account-deleted');
+    } catch (err: any) {
+      setDeleteError(err?.message || 'Failed to confirm account deletion.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -70,6 +186,12 @@ const SettingsPage: React.FC = () => {
                 onClick={() => setActiveTab('appearance')}
               >
                 Appearance
+              </button>
+              <button
+                className={`tab-button ${activeTab === 'account' ? 'active' : ''}`}
+                onClick={() => setActiveTab('account')}
+              >
+                Account
               </button>
             </div>
 
@@ -240,6 +362,159 @@ const SettingsPage: React.FC = () => {
                         onChange={(e) => setAccentColor(e.target.value)}
                       />
                     </div>
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'account' && (
+                <>
+                  <h3 className="settings-card-title">Account Settings</h3>
+
+                  <div className="section-subtitle" style={{ marginTop: 10 }}>Email Change</div>
+                  <div className="settings-item" style={{ border: 'none', padding: 0 }}>
+                    <div style={{ width: '100%', paddingTop: 6 }}>
+                      {emailChangeStep === 1 && (
+                        <div>
+                          <div className="form-group">
+                            <label>New Email</label>
+                            <input
+                              type="email"
+                              value={newEmail}
+                              onChange={(e) => setNewEmail(e.target.value)}
+                              placeholder="new@example.com"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Current Password</label>
+                            <input
+                              type="password"
+                              value={emailPassword}
+                              onChange={(e) => setEmailPassword(e.target.value)}
+                              placeholder="Enter your password"
+                            />
+                          </div>
+                          {emailChangeError && (
+                            <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 16, background: '#fee2e2', border: '1px solid #fecaca', color: '#991b1b', fontWeight: 600 }}>
+                              {emailChangeError}
+                            </div>
+                          )}
+                          <button className="btn-primary" type="button" onClick={() => void startEmailChange()} disabled={emailChanging}>
+                            {emailChanging ? 'Sending OTP...' : 'Continue'}
+                          </button>
+                        </div>
+                      )}
+
+                      {emailChangeStep === 2 && (
+                        <div>
+                          <div style={{ color: '#6b7280', fontSize: 14, marginBottom: 10 }}>
+                            Enter the OTP sent to <strong>{pendingNewEmail}</strong>.
+                          </div>
+                          <div className="form-group">
+                            <label>OTP</label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={emailOtp}
+                              onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                              placeholder="Enter 6-digit OTP"
+                            />
+                          </div>
+                          {emailChangeError && (
+                            <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 16, background: '#fee2e2', border: '1px solid #fecaca', color: '#991b1b', fontWeight: 600 }}>
+                              {emailChangeError}
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              className="action-btn"
+                              disabled={emailChanging}
+                              onClick={() => {
+                                setEmailChangeStep(1);
+                                setPendingNewEmail('');
+                                setEmailOtp('');
+                                setEmailChangeError('');
+                              }}
+                            >
+                              Back
+                            </button>
+                            <button className="btn-primary" type="button" onClick={() => void confirmEmailChange()} disabled={emailChanging}>
+                              {emailChanging ? 'Confirming...' : 'Confirm Email'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="section-subtitle" style={{ marginTop: 26 }}>Danger Zone</div>
+                  <div style={{ paddingTop: 6 }}>
+                    {deleteStep === 1 && (
+                      <div>
+                        <div style={{ fontWeight: 900, color: '#dc2626', marginBottom: 10 }}>Delete account</div>
+                        <div style={{ color: '#6b7280', fontSize: 13, marginBottom: 14, lineHeight: 1.5 }}>
+                          This will permanently delete your account. Funds and balances may be impacted.
+                        </div>
+                        <div className="form-group">
+                          <label>Confirm with Password</label>
+                          <input
+                            type="password"
+                            value={deletePassword}
+                            onChange={(e) => setDeletePassword(e.target.value)}
+                            placeholder="Enter your password"
+                          />
+                        </div>
+                        {deleteError && (
+                          <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 16, background: '#fee2e2', border: '1px solid #fecaca', color: '#991b1b', fontWeight: 600 }}>
+                            {deleteError}
+                          </div>
+                        )}
+                        <button className="btn-primary" type="button" onClick={() => void startAccountDeletion()} disabled={deleting}>
+                          {deleting ? 'Sending OTP...' : 'Start deletion'}
+                        </button>
+                      </div>
+                    )}
+
+                    {deleteStep === 2 && (
+                      <div>
+                        <div style={{ fontWeight: 900, color: '#dc2626', marginBottom: 10 }}>Confirm OTP</div>
+                        <div style={{ color: '#6b7280', fontSize: 13, marginBottom: 14 }}>
+                          Enter the OTP sent to your email to confirm deletion.
+                        </div>
+                        <div className="form-group">
+                          <label>OTP</label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={deleteOtp}
+                            onChange={(e) => setDeleteOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            placeholder="Enter 6-digit OTP"
+                          />
+                        </div>
+                        {deleteError && (
+                          <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 16, background: '#fee2e2', border: '1px solid #fecaca', color: '#991b1b', fontWeight: 600 }}>
+                            {deleteError}
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            className="action-btn"
+                            disabled={deleting}
+                            onClick={() => {
+                              setDeleteStep(1);
+                              setDeleteOtp('');
+                              setDeleteError('');
+                            }}
+                          >
+                            Back
+                          </button>
+                          <button className="btn-primary" type="button" onClick={() => void confirmAccountDeletion()} disabled={deleting}>
+                            {deleting ? 'Deleting...' : 'Confirm deletion'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               )}

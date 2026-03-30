@@ -15,7 +15,7 @@ const SignupPage: React.FC = () => {
   const navigate = useNavigate();
   const { register: registerAuth } = useAuth();
   
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<SignupFormInputs>();
+  const { register, handleSubmit, watch, setError, formState: { errors, isSubmitting } } = useForm<SignupFormInputs>();
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -25,6 +25,9 @@ const SignupPage: React.FC = () => {
   const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
 
   const password = watch("password");
+
+  const passwordPolicy =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
   const onSubmit = async (data: SignupFormInputs) => {
     setGeneralError("");
@@ -38,6 +41,15 @@ const SignupPage: React.FC = () => {
       // Registration successful
       navigate("/login");
     } catch (error: any) {
+      const code = String(error?.code || "");
+      if (code === "EMAIL_TAKEN") {
+        setError("email", { type: "server", message: "This email is already in use." });
+        return;
+      }
+      if (code === "PHONE_TAKEN") {
+        setError("phone", { type: "server", message: "This phone number is already in use." });
+        return;
+      }
       setGeneralError(error.message || "An error occurred during registration.");
     }
   };
@@ -110,7 +122,11 @@ const SignupPage: React.FC = () => {
                       id="password"
                       {...register("password", { 
                         required: "Password is required",
-                        minLength: { value: 6, message: "Password must be at least 6 characters" }
+                        minLength: { value: 8, message: "Password must be at least 8 characters" },
+                        validate: (v) =>
+                          passwordPolicy.test(v || "")
+                            ? true
+                            : "Password must include uppercase, lowercase, number, and special character."
                       })}
                       className={`form-input ${errors.password ? "error" : ""}`}
                       placeholder="Create a password"

@@ -2,14 +2,20 @@ export interface User {
   id: string;
   email: string;
   name?: string;
+  username?: string;
+  phone?: string;
+  phoneNumber?: string;
+  kyc_status?: "unverified" | "pending" | "verified" | "rejected" | string;
+  role: "user" | "admin" | "super_admin" | string;
+  transaction_pin_set?: boolean;
+
+  // Legacy/optional fields used across the current UI.
   firstName?: string;
   lastName?: string;
-  phoneNumber?: string;
-  role: string;
-  isEmailVerified: boolean;
-  isPhoneVerified: boolean;
-  createdAt: string;
-  updatedAt: string;
+  isEmailVerified?: boolean;
+  isPhoneVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AuthTokens {

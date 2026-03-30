@@ -2,101 +2,76 @@ import React, { useEffect, useState } from 'react';
 import { depositsApi } from '../../lib/api';
 import '../../assets/css/HistoryPage.css';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const DepositsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [deposits, setDeposits] = useState<Record<string, unknown>[]>([]);
-  const [processingId, setProcessingId] = useState<string>('');
- 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const load = async () => {
+      setLoading(true);
+      setError('');
       const response = await depositsApi.list();
       if (response.success && Array.isArray(response.data)) {
         setDeposits(response.data);
       } else {
         const msg = response.error?.message || 'Failed to load deposits';
+        setError(msg);
         toast.error(msg);
       }
+      setLoading(false);
     };
     void load();
   }, []);
 
-  const reload = async () => {
-    const response = await depositsApi.list();
-    if (response.success && Array.isArray(response.data)) {
-      setDeposits(response.data);
-    } else {
-      const msg = response.error?.message || 'Failed to load deposits';
-      toast.error(msg);
-    }
-  };
-
-  const canActOn = (status: unknown) => {
-    const s = String(status || '').toLowerCase();
-    return s === 'pending' || s === 'submitted' || s === 'review';
-  };
-
-  const handleApprove = async (depositId: string) => {
-    setProcessingId(depositId);
-    const res = await depositsApi.approve(depositId);
-    setProcessingId('');
-    if (!res.success) {
-      const msg = res.error?.message || 'Failed to approve deposit';
-      toast.error(msg);
-      return;
-    }
-    await reload();
-  };
-
-  const handleReject = async (depositId: string) => {
-    setProcessingId(depositId);
-    const res = await depositsApi.reject(depositId);
-    setProcessingId('');
-    if (!res.success) {
-      const msg = res.error?.message || 'Failed to reject deposit';
-      toast.error(msg);
-      return;
-    }
-    await reload();
-  };
-
   return (
     <main className="history-page">
-      <div className="page-header"><h1 className="page-title">Deposits</h1></div>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Deposits</h1>
+          <p className="page-subtitle">View your deposit history</p>
+        </div>
+        <button className="export-btn" style={{ background: '#C8F032', color: '#0A1E28' }} onClick={() => navigate('/dashboard/deposit')}>
+          Make a deposit
+        </button>
+      </div>
       <div className="history-table-container">
         <table className="history-table">
-          <thead><tr><th>ID</th><th>Amount</th><th>Currency</th><th>Status</th><th>Action</th></tr></thead>
+          <thead><tr><th>ID</th><th>Currency</th><th>Amount</th><th>Provider</th><th>Status</th><th>Date</th></tr></thead>
           <tbody>
-            {deposits.map((deposit, index) => (
-              <tr key={String(deposit.id || index)}>
-                <td>{String(deposit.id || index)}</td>
-                <td>{String(deposit.amount || 0)}</td>
-                <td>{String(deposit.currency || '-')}</td>
-                <td>{String(deposit.status || '-')}</td>
-                <td>
-                  {canActOn(deposit.status) ? (
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        className="page-number"
-                        disabled={processingId === String(deposit.id || index)}
-                        onClick={() => void handleApprove(String(deposit.id || index))}
-                      >
-                        Approve
-                      </button>
-                      <button
-                        className="page-number"
-                        disabled={processingId === String(deposit.id || index)}
-                        onClick={() => void handleReject(String(deposit.id || index))}
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  ) : (
-                    <span style={{ color: '#64748B' }}>—</span>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {loading ? (
+              <tr><td colSpan={6} style={{ padding: 16, color: '#6b7280' }}>Loading deposits...</td></tr>
+            ) : error ? (
+              <tr><td colSpan={6} style={{ padding: 16, color: '#e74c3c' }}>{error}</td></tr>
+            ) : deposits.length === 0 ? (
+              <tr><td colSpan={6} style={{ padding: 16, color: '#6b7280' }}>No deposits yet.</td></tr>
+            ) : (
+              deposits.map((deposit, index) => {
+                const id = String((deposit as any).id || (deposit as any)._id || index);
+                const currency = String((deposit as any).currency || '-');
+                const amount = Number((deposit as any).amount || 0);
+                const provider = String((deposit as any).provider || (deposit as any).gateway || '-');
+                const status = String((deposit as any).status || '-');
+                const dateRaw = String((deposit as any).createdAt || (deposit as any).date || '');
+                return (
+                  <tr
+                    key={id}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => navigate(`/dashboard/deposits/${id}`)}
+                  >
+                    <td>{id}</td>
+                    <td>{currency}</td>
+                    <td>{new Intl.NumberFormat('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)}</td>
+                    <td>{provider}</td>
+                    <td>{status}</td>
+                    <td>{dateRaw ? new Date(dateRaw).toLocaleString() : '-'}</td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { ratesApi, walletsApi } from '../../lib/api';
+import { useNavigate } from 'react-router-dom';
 import '../../assets/css/HistoryPage.css';
 
 type WalletItem = Record<string, unknown>;
 
 const WalletsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [wallets, setWallets] = useState<WalletItem[]>([]);
   const [selectedWalletId, setSelectedWalletId] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -152,7 +154,8 @@ const WalletsPage: React.FC = () => {
           <thead>
             <tr>
               <th>Currency</th>
-              <th>Balance</th>
+              <th>Available</th>
+              <th>Locked</th>
               <th>Account Number</th>
               <th>Status</th>
             </tr>
@@ -171,7 +174,20 @@ const WalletsPage: React.FC = () => {
                     {String(wallet.currency || '')}
                   </div>
                 </td>
-                <td><strong>{new Intl.NumberFormat().format(Number(wallet.balance || 0))}</strong></td>
+                <td>
+                  <strong>
+                    {new Intl.NumberFormat('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
+                      Number((wallet as any).available_balance ?? (wallet as any).availableBalance ?? (wallet as any).available ?? (wallet as any).balance ?? 0),
+                    )}
+                  </strong>
+                </td>
+                <td>
+                  <strong>
+                    {new Intl.NumberFormat('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
+                      Number((wallet as any).locked_balance ?? (wallet as any).lockedBalance ?? (wallet as any).locked ?? 0),
+                    )}
+                  </strong>
+                </td>
                 <td>{String(wallet.accountNumber || '---')}</td>
                 <td>
                   <span className={`status-badge ${(wallet.status || 'active').toString().toLowerCase()}`}>
@@ -206,6 +222,15 @@ const WalletsPage: React.FC = () => {
                   <p style={{ color: '#666', fontSize: '12px', margin: 0 }}>Status</p>
                   <p style={{ fontWeight: '600', margin: '5px 0 0 0', color: '#2ecc71' }}>{String(selected.status || 'Active')}</p>
                 </div>
+              </div>
+              <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  className="export-btn"
+                  style={{ background: '#C8F032', color: '#0A1E28' }}
+                  onClick={() => navigate(`/dashboard/wallets/${String(selected.currency || '').toUpperCase()}`)}
+                >
+                  View wallet history
+                </button>
               </div>
             </div>
           </div>

@@ -1,8 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import type { ChangeEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../assets/css/ProfilePage.css';
+import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import { walletsApi } from '../../lib/api';
+import { accountApi } from '../../lib/api/account.api';
 
 interface Wallet {
   currency: string;
@@ -33,11 +36,17 @@ interface User {
 }
 
 const ProfilePage: React.FC = () => {
-  const { user: authUser } = useAuth();
+  const { user: authUser, refreshUser } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'profile' | 'account'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [visibleAccounts, setVisibleAccounts] = useState<{ [key: string]: boolean }>({});
+
+  const [usernameEditing, setUsernameEditing] = useState(false);
+  const [usernameValue, setUsernameValue] = useState<string>('');
+  const [usernameError, setUsernameError] = useState<string>('');
+  const [usernameSaving, setUsernameSaving] = useState<boolean>(false);
 
   const [user, setUser] = useState<User>({
     firstName: '',
@@ -58,6 +67,11 @@ const ProfilePage: React.FC = () => {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [, setIsLoading] = useState(true);
 
+  const pinSet = Boolean(authUser?.transaction_pin_set);
+  const USERNAME_REGEX = /^[A-Za-z0-9_]+$/;
+  const USERNAME_MIN = 3;
+  const USERNAME_MAX = 30;
+
   useEffect(() => {
     if (authUser) {
       setUser({
@@ -76,6 +90,12 @@ const ProfilePage: React.FC = () => {
         kycVerified: Boolean(authUser.isEmailVerified && authUser.isPhoneVerified), // Improved logic
       });
     }
+  }, [authUser]);
+
+  useEffect(() => {
+    if (!authUser) return;
+    const next = authUser.username || authUser.name || `${authUser.firstName || ''} ${authUser.lastName || ''}`.trim();
+    setUsernameValue(next);
   }, [authUser]);
 
   useEffect(() => {
@@ -142,6 +162,30 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="dashboard-wrapper">
       <main className="profile-page">
+            {!pinSet && (
+              <div
+                style={{
+                  marginBottom: 18,
+                  padding: "14px 16px",
+                  borderRadius: 18,
+                  background: "#fff7e6",
+                  border: "1px solid #fde68a",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 900, marginBottom: 4 }}>Transaction PIN required</div>
+                  <div style={{ color: "#6b7280", fontSize: 13 }}>Set your PIN to place bids and initiate trades.</div>
+                </div>
+                <button className="btn-primary" style={{ width: "auto" }} onClick={() => navigate("/dashboard/transaction-pin")}>
+                  Set PIN
+                </button>
+              </div>
+            )}
             <div className="page-header">
               <h1 className="page-title">Profile</h1>
               <p className="page-subtitle">Manage your personal information and view your cards</p>
@@ -379,6 +423,98 @@ const ProfilePage: React.FC = () => {
                         />
                       </div>
                     </div>
+                  </div>
+
+                  {/* Username Section (backend: PUT /account/username) */}
+                  <div className="form-section" style={{ marginTop: 22 }}>
+                    <h3 className="section-title">Username</h3>
+                    {!usernameEditing ? (
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                        <div style={{ fontWeight: 900, fontSize: 16 }}>{usernameValue || "—"}</div>
+                        <button className="btn-primary" style={{ width: "auto" }} onClick={() => { setUsernameEditing(true); setUsernameError(''); }}>
+                          Edit username
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="form-group">
+                          <label style={{ display: "block", marginBottom: 6, fontWeight: 600, color: "#6b7280" }}>Choose a username</label>
+                          <input
+                            type="text"
+                            value={usernameValue}
+                            onChange={(e) => {
+                              setUsernameValue(e.target.value);
+                              setUsernameError('');
+                            }}
+                            style={{ width: "100%", padding: "12px 16px", borderRadius: 16, border: "1px solid #D1D5DB" }}
+                            placeholder="Enter username"
+                          />
+                          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, color: "#6b7280", fontSize: 12 }}>
+                            <span>Allowed: letters, numbers, underscores</span>
+                            <span>{usernameValue.length}/{USERNAME_MAX}</span>
+                          </div>
+                        </div>
+
+                        {usernameError && (
+                          <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 16, background: "#fee2e2", border: "1px solid #fecaca", color: "#991b1b", fontWeight: 600 }}>
+                            {usernameError}
+                          </div>
+                        )}
+
+                        <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
+                          <button
+                            className="btn-primary"
+                            type="button"
+                            disabled={usernameSaving}
+                            onClick={() => {
+                              setUsernameEditing(false);
+                              setUsernameError('');
+                              const next = authUser?.username || authUser?.name || usernameValue;
+                              setUsernameValue(next || '');
+                            }}
+                            style={{ background: "#fff", border: "1px solid #D1D5DB", color: "#0A1E28", boxShadow: "none" }}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            className="btn-primary"
+                            style={{ width: "auto" }}
+                            type="button"
+                            disabled={usernameSaving}
+                            onClick={async () => {
+                              const next = usernameValue.trim();
+                              if (next.length < USERNAME_MIN || next.length > USERNAME_MAX) {
+                                setUsernameError(`Username must be between ${USERNAME_MIN} and ${USERNAME_MAX} characters.`);
+                                return;
+                              }
+                              if (!USERNAME_REGEX.test(next)) {
+                                setUsernameError('Username can only contain letters, numbers, and underscores (no spaces).');
+                                return;
+                              }
+
+                              setUsernameSaving(true);
+                              try {
+                                await accountApi.updateUsername(next);
+                                toast.success('Username updated.');
+                                await refreshUser();
+                                setUsernameEditing(false);
+                              } catch (err: any) {
+                                const code = String(err?.code || '');
+                                if (code === 'USERNAME_TAKEN') {
+                                  setUsernameError('That username is already taken.');
+                                  return;
+                                }
+                                setUsernameError(err?.message || 'Failed to update username.');
+                              } finally {
+                                setUsernameSaving(false);
+                              }
+                            }}
+                          >
+                            {usernameSaving ? 'Saving...' : 'Save'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {isEditing && (

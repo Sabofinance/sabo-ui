@@ -1,21 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
 import { Header } from "../components/Header";
 import { useAuth } from "../context/AuthContext";
-import authApi from "../lib/api/auth.api";
-import type { OtpRequest } from "../modules/auth/types/type";
 import "../assets/css/AuthPage.css";
 import loginImage from "../assets/images/3d-illustration-login.png";
 
 const VerifyOtpPage: React.FC = () => {
   const navigate = useNavigate();
   const { verifyOtp } = useAuth();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<OtpRequest>();
   const [generalError, setGeneralError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [email, setEmail] = useState("");
-  const [resending, setResending] = useState(false);
+
+  const [digits, setDigits] = useState<string[]>(() => Array.from({ length: 6 }, () => ""));
+  const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
+
+  const [secondsLeft, setSecondsLeft] = useState(60);
+  const [submitting, setSubmitting] = useState(false);
+
+  const otp = useMemo(() => digits.join(""), [digits]);
 
   useEffect(() => {
     const pendingEmail = sessionStorage.getItem('pendingEmail');
@@ -26,29 +28,71 @@ const VerifyOtpPage: React.FC = () => {
     }
   }, [navigate]);
 
-  const onSubmit = async (data: OtpRequest) => {
+  useEffect(() => {
+    setSecondsLeft(60);
+    const id = window.setInterval(() => {
+      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setGeneralError("");
-    setSuccessMessage("");
     try {
-      await verifyOtp({ email, otp: data.otp });
+      if (otp.length !== 6) {
+        setGeneralError("Please enter the 6-digit code.");
+        return;
+      }
+      setSubmitting(true);
+      await verifyOtp({ email, otp });
       navigate('/dashboard');
     } catch (error: any) {
       setGeneralError(error.message || "Invalid OTP. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleResendOtp = async () => {
-    if (!email) return;
-    setGeneralError("");
-    setSuccessMessage("");
-    setResending(true);
-    const response = await authApi.resendOtp({ email });
-    if (!response.success) {
-      setGeneralError(response.error?.message || "Unable to resend OTP.");
-    } else {
-      setSuccessMessage("A new OTP has been sent to your email.");
+  const focusIndex = (i: number) => {
+    const el = inputsRef.current[i];
+    if (el) el.focus();
+  };
+
+  const setDigit = (i: number, v: string) => {
+    const next = v.replace(/\D/g, "").slice(-1);
+    setDigits((prev) => {
+      const copy = [...prev];
+      copy[i] = next;
+      return copy;
+    });
+    if (next && i < 5) focusIndex(i + 1);
+  };
+
+  const onKeyDown = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !digits[i] && i > 0) {
+      focusIndex(i - 1);
+      setDigits((prev) => {
+        const copy = [...prev];
+        copy[i - 1] = "";
+        return copy;
+      });
     }
-    setResending(false);
+    if (e.key === "ArrowLeft" && i > 0) focusIndex(i - 1);
+    if (e.key === "ArrowRight" && i < 5) focusIndex(i + 1);
+  };
+
+  const onPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const text = e.clipboardData.getData("text") || "";
+    const nums = text.replace(/\D/g, "").slice(0, 6).split("");
+    if (!nums.length) return;
+    e.preventDefault();
+    setDigits((prev) => {
+      const copy = [...prev];
+      for (let i = 0; i < 6; i++) copy[i] = nums[i] ?? "";
+      return copy;
+    });
+    focusIndex(Math.min(nums.length, 6) - 1);
   };
 
   return (
@@ -68,40 +112,58 @@ const VerifyOtpPage: React.FC = () => {
               </p>
 
               {generalError && <div className="general-error">{generalError}</div>}
-              {successMessage && <div className="success-message">{successMessage}</div>}
 
-              <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+              <form onSubmit={onSubmit} className="auth-form">
                 <div className="form-group">
-                  <label htmlFor="otp" className="form-label">
+                  <label className="form-label">
                     OTP Code
                   </label>
-                  <input
-                    type="text"
-                    id="otp"
-                    {...register("otp", { 
-                      required: "OTP is required",
-                      minLength: { value: 4, message: "OTP is usually 4-6 digits" }
-                    })}
-                    className={`form-input ${errors.otp ? "error" : ""}`}
-                    placeholder="Enter your OTP code"
-                  />
-                  {errors.otp && <span className="error-text">{errors.otp.message}</span>}
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 10 }}>
+                    {digits.map((d, i) => (
+                      <input
+                        key={i}
+                        ref={(el) => {
+                          inputsRef.current[i] = el;
+                        }}
+                        value={d}
+                        onChange={(e) => setDigit(i, e.target.value)}
+                        onKeyDown={(e) => onKeyDown(i, e)}
+                        onPaste={onPaste}
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        aria-label={`OTP digit ${i + 1}`}
+                        style={{
+                          width: 44,
+                          height: 52,
+                          textAlign: "center",
+                          fontSize: 18,
+                          fontWeight: 700,
+                          borderRadius: 10,
+                          border: "1px solid #E2E8F0",
+                          outline: "none",
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 10, textAlign: "center", color: "#64748B", fontSize: 13 }}>
+                    {secondsLeft > 0 ? (
+                      <>You can request a new OTP in {secondsLeft}s</>
+                    ) : (
+                      <>Didn’t get a code? Go back to login to request a new OTP.</>
+                    )}
+                  </div>
                 </div>
 
                 <button 
                   type="submit" 
                   className="auth-btn" 
-                  disabled={isSubmitting}
+                  disabled={submitting || otp.length !== 6}
                 >
-                  {isSubmitting ? "Verifying..." : "Verify OTP"}
+                  {submitting ? "Verifying..." : "Verify OTP"}
                 </button>
               </form>
 
               <p className="auth-switch">
-                <button type="button" className="auth-link" onClick={handleResendOtp} disabled={resending}>
-                  {resending ? "Resending..." : "Resend OTP"}
-                </button>
-                {" · "}
                 <Link to="/login" className="auth-link">Back to Login</Link>
               </p>
             </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SellModal from '../../components/SellModal';
 import DepositModal from '../../components/DepositModal';
@@ -520,8 +520,37 @@ const DashboardPage: React.FC = () => {
   const [recentError, setRecentError] = useState('');
   const [tradingStats, setTradingStats] = useState<{ label: string; pct: number; type: 'buy' | 'sell' }[]>([]);
   const [rateHistoryValues, setRateHistoryValues] = useState<number[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
+  const extractRate = (ratesData: unknown, base: string, quote: string): number | null => {
+    // Best-effort extraction since API documentation doesn't specify the /rates payload shape in detail.
+    const b = base.toUpperCase();
+    const q = quote.toUpperCase();
+    if (Array.isArray(ratesData)) {
+      for (const r of ratesData) {
+        const rec = r as Record<string, unknown>;
+        const from = String(rec.from ?? rec.base ?? rec.currency_from ?? rec.currencyFrom ?? '').toUpperCase();
+        const to = String(rec.to ?? rec.quote ?? rec.currency_to ?? rec.currencyTo ?? '').toUpperCase();
+        if ((from === b && to === q) || (String(rec.pair || '').toUpperCase() === `${b}/${q}`)) {
+          const v = Number(rec.rate ?? rec.value ?? rec.exchange_rate ?? rec.exchangeRate ?? 0);
+          return Number.isFinite(v) && v > 0 ? v : null;
+        }
+      }
+    }
+    if (ratesData && typeof ratesData === 'object') {
+      const obj = ratesData as Record<string, unknown>;
+      const direct = obj[`${b}_${q}`] ?? obj[`${b}/${q}`] ?? obj[`${q}_${b}`];
+      if (direct && typeof direct === 'object') {
+        const v = Number((direct as any).rate ?? (direct as any).value ?? 0);
+        return Number.isFinite(v) && v > 0 ? v : null;
+      }
+      const v = Number(obj.rate ?? obj.value ?? 0);
+      return Number.isFinite(v) && v > 0 ? v : null;
+    }
+    return null;
+  };
+
+  const loadDashboard = useCallback(async () => {
     const dayMs = 86400000;
     const load = async () => {
       setLoading(true); setError('');
@@ -529,7 +558,7 @@ const DashboardPage: React.FC = () => {
         const [walletRes, listingRes, ratesRes] = await Promise.all([
           walletsApi.list(),
           sabitsApi.list({ status: 'active', limit: 6 }),
-          ratesApi.getByPair('NGN', 'GBP'),
+          ratesApi.list(),
         ]);
 
         if (walletRes.success && Array.isArray(walletRes.data)) {
@@ -569,9 +598,9 @@ const DashboardPage: React.FC = () => {
           })));
         }
 
-        if (ratesRes.success && ratesRes.data && typeof ratesRes.data === 'object') {
-          const typed = ratesRes.data as Record<string, unknown>;
-          setRate(Number(typed.rate || typed.value || 0));
+        if (ratesRes.success) {
+          const v = extractRate(ratesRes.data, 'NGN', 'GBP');
+          setRate(v);
         }
 
         setActivityLoading(true); setRecentLoading(true);
@@ -579,7 +608,7 @@ const DashboardPage: React.FC = () => {
 
         const [ledgerRes, rateHistoryRes, depositsRes, withdrawalsRes, conversionsRes] = await Promise.all([
           ledgerApi.listEntries({ limit: 50 }),
-          ratesApi.list({ base: 'NGN', quote: 'GBP', range: '7d' }),
+          ratesApi.list(),
           depositsApi.list({ limit: 50 }),
           withdrawalsApi.list({ limit: 50 }),
           conversionsApi.list({ limit: 50 }),
@@ -604,7 +633,7 @@ const DashboardPage: React.FC = () => {
               date: String(entry.date || entry.createdAt || new Date().toISOString()), status,
             };
           });
-          setRecentTransactions(allMapped.slice(0, 3));
+          setRecentTransactions(allMapped.slice(0, 5));
 
           const buckets = make7Buckets(dayMs);
           for (const tx of allMapped) {
@@ -676,13 +705,15 @@ const DashboardPage: React.FC = () => {
           setConversionPoints(buildEmpty7('conv') as ConversionTrendPoint[]);
         }
 
-        /* rate history */
+        /* rate history (best-effort; if backend returns a list, plot last 10) */
         if (rateHistoryRes.success && Array.isArray(rateHistoryRes.data)) {
           const values = rateHistoryRes.data
             .map((x: Record<string, unknown>) => ({ v: Number(x.rate ?? x.value ?? x.exchangeRate ?? 0), date: String(x.date || x.createdAt || '') }))
             .filter(x => Number.isFinite(x.v) && x.v > 0);
           values.sort((a, b) => a.date.localeCompare(b.date));
           setRateHistoryValues(values.map(x => x.v).slice(-10));
+        } else {
+          setRateHistoryValues([]);
         }
 
       } catch (err: any) {
@@ -693,7 +724,11 @@ const DashboardPage: React.FC = () => {
       }
     };
     void load();
-  }, []);
+  }, [walletCurrencies]);
+
+  useEffect(() => {
+    void loadDashboard();
+  }, [loadDashboard]);
 
   useEffect(() => { if (error) toast.error(error); }, [error, toast]);
 
@@ -702,6 +737,7 @@ const DashboardPage: React.FC = () => {
   const prevWallet = () => setActiveWalletIndex(i => wallets.length ? (i - 1 + wallets.length) % wallets.length : 0);
 
   const displayName = user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Account';
+  const pinSet = Boolean(user?.transaction_pin_set);
   const displayRate = useMemo(() => rate ?? null, [rate]);
   const greeting = useMemo(() => {
     const h = new Date().getHours();
@@ -723,12 +759,58 @@ const DashboardPage: React.FC = () => {
       <div className="dp-root" style={{ opacity: loading ? 0.9 : 1, transition: 'opacity 0.3s' }}>
         <div className="dp-page">
 
+          {!pinSet && (
+            <div
+              style={{
+                marginBottom: 18,
+                padding: "14px 16px",
+                borderRadius: 18,
+                background: "#fff7e6",
+                border: "1px solid #fde68a",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 900, marginBottom: 4 }}>Transaction PIN required</div>
+                <div style={{ color: "#6b7280", fontSize: 13 }}>
+                  Set your PIN to place bids and initiate trades.
+                </div>
+              </div>
+              <button
+                className="btn-primary"
+                style={{ width: "auto", marginTop: 0 }}
+                onClick={() => navigate("/dashboard/transaction-pin")}
+              >
+                Set PIN
+              </button>
+            </div>
+          )}
+
           {/* Welcome row */}
           <div className="dp-welcome dp-rise">
             <div>
               <h1>{greeting}{displayName ? `, ${displayName}` : ''}! 👋</h1>
               <p>Get a summary of your weekly online transactions here.</p>
             </div>
+            <button
+              className="dp-table-action"
+              style={{ height: 42, background: "var(--surface)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
+              onClick={async () => {
+                if (refreshing) return;
+                setRefreshing(true);
+                try {
+                  await loadDashboard();
+                } finally {
+                  setRefreshing(false);
+                }
+              }}
+            >
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </button>
             {displayRate !== null && (
               <div className="dp-rate-pill">
                 <div style={{ display: 'flex' }}>

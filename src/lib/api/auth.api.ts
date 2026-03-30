@@ -83,6 +83,17 @@ export const authApi = {
     }
   },
 
+  verifyEmail: async (token: string): Promise<ApiEnvelope<null>> => {
+    try {
+      const response = await api.get<ApiEnvelope<null>>("/auth/verify-email", {
+        params: { token },
+      });
+      return normalizeSuccess<null>(response.data?.data ?? null);
+    } catch (error) {
+      return normalizeError(error);
+    }
+  },
+
   resendOtp: async (payload: { email: string }): Promise<ApiEnvelope<null>> => {
     try {
       const response = await api.post<ApiEnvelope<null>>("/auth/resend-otp", payload);

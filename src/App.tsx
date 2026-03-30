@@ -11,6 +11,7 @@ import { useAdminAuth } from './context/AdminAuthContext';
 import VerifyOtpPage from './pages/VerifyOtpPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -22,6 +23,7 @@ const FaqPage         = lazy(() => import('./pages/FaqPage').then(m => ({ defaul
 const ContactPage     = lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
 const LoginPage       = lazy(() => import('./pages/LoginPage'));
 const SignupPage      = lazy(() => import('./pages/SignupPage'));
+const AccountDeletedPage = lazy(() => import('./pages/AccountDeletedPage'));
 
 /* ── New Public Pages ── */
 const SabitMarketPage = lazy(() => import('./pages/SabitMarketPage'));
@@ -37,10 +39,14 @@ const ProfilePage     = lazy(() => import('./pages/dashboard/ProfilePage'));
 const SettingsPage    = lazy(() => import('./pages/dashboard/SettingsPage'));
 const TransactionPage = lazy(() => import('./pages/dashboard/TransactionPage'));
 const WalletsPage     = lazy(() => import('./pages/dashboard/WalletsPage'));
+const WalletDetailPage = lazy(() => import('./pages/dashboard/WalletDetailPage'));
 const LedgerPage      = lazy(() => import('./pages/dashboard/LedgerPage'));
 const DepositsPage    = lazy(() => import('./pages/dashboard/DepositsPage'));
+const DepositDetailPage = lazy(() => import('./pages/dashboard/DepositDetailPage'));
 const DepositPage     = lazy(() => import('./pages/dashboard/DepositPage'));
+const DepositPendingPage = lazy(() => import('./pages/dashboard/DepositPendingPage'));
 const WithdrawalsPage = lazy(() => import('./pages/dashboard/WithdrawalsPage'));
+const WithdrawalDetailPage = lazy(() => import('./pages/dashboard/WithdrawalDetailPage'));
 const BeneficiariesPage = lazy(() => import('./pages/dashboard/BeneficiariesPage'));
 const ConversionsPage = lazy(() => import('./pages/dashboard/ConversionsPage'));
 const TradesPage      = lazy(() => import('./pages/dashboard/TradesPage'));
@@ -53,6 +59,7 @@ const AdminKycPage = lazy(() => import('./pages/admin/AdminKycPage'));
 const AdminDepositsPage = lazy(() => import('./pages/admin/AdminDepositsPage'));
 const AdminAdminsPage = lazy(() => import('./pages/admin/AdminAdminsPage'));
 const AdminLogsPage = lazy(() => import('./pages/admin/AdminLogsPage'));
+const TransactionPinPage = lazy(() => import('./pages/dashboard/TransactionPinPage'));
 
 const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
 const AdminVerifyOtpPage = lazy(() => import('./pages/admin/AdminVerifyOtpPage'));
@@ -111,8 +118,10 @@ function App() {
           <Route path="/login"     element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/signup"    element={<PublicRoute><SignupPage /></PublicRoute>} />
           <Route path="/verify-otp" element={<PublicRoute><VerifyOtpPage /></PublicRoute>} />
+          <Route path="/verify-email" element={<PublicRoute><VerifyEmailPage /></PublicRoute>} />
           <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
           <Route path="/reset-password"  element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
+          <Route path="/account-deleted" element={<PublicRoute><AccountDeletedPage /></PublicRoute>} />
 
           {/* Admin auth routes */}
           <Route path="/admin/login" element={<AdminPublicRoute><AdminLoginPage /></AdminPublicRoute>} />
@@ -130,12 +139,17 @@ function App() {
             <Route path="chat"            element={<UserProtectedRoute><ChatPage /></UserProtectedRoute>} />
             <Route path="profile"         element={<UserProtectedRoute><ProfilePage /></UserProtectedRoute>} />
             <Route path="settings"        element={<UserProtectedRoute><SettingsPage /></UserProtectedRoute>} />
+            <Route path="transaction-pin" element={<UserProtectedRoute><TransactionPinPage /></UserProtectedRoute>} />
             <Route path="transaction/:id" element={<UserProtectedRoute><TransactionPage /></UserProtectedRoute>} />
             <Route path="wallets"         element={<UserProtectedRoute><WalletsPage /></UserProtectedRoute>} />
+            <Route path="wallets/:currency" element={<UserProtectedRoute><WalletDetailPage /></UserProtectedRoute>} />
             <Route path="ledger"          element={<UserProtectedRoute><LedgerPage /></UserProtectedRoute>} />
             <Route path="deposits"        element={<UserProtectedRoute><DepositsPage /></UserProtectedRoute>} />
+            <Route path="deposits/:id"    element={<UserProtectedRoute><DepositDetailPage /></UserProtectedRoute>} />
             <Route path="deposit"         element={<UserProtectedRoute><DepositPage /></UserProtectedRoute>} />
+            <Route path="deposit-pending" element={<UserProtectedRoute><DepositPendingPage /></UserProtectedRoute>} />
             <Route path="withdrawals"     element={<UserProtectedRoute><WithdrawalsPage /></UserProtectedRoute>} />
+            <Route path="withdrawals/:id" element={<UserProtectedRoute><WithdrawalDetailPage /></UserProtectedRoute>} />
             <Route path="beneficiaries"   element={<UserProtectedRoute><BeneficiariesPage /></UserProtectedRoute>} />
             <Route path="conversions"     element={<UserProtectedRoute><ConversionsPage /></UserProtectedRoute>} />
             <Route path="trades"          element={<UserProtectedRoute><TradesPage /></UserProtectedRoute>} />

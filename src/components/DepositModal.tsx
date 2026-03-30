@@ -18,6 +18,7 @@ const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 
   const [amount, setAmount] = useState<string>('');
   const [foreignFile, setForeignFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadPct, setUploadPct] = useState(0);
 
   const [error, setError] = useState('');
   const [successData, setSuccessData] = useState<any | null>(null);
@@ -49,6 +50,7 @@ const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setUploadPct(0);
 
     if (rawAmount <= 0) {
       setError('Enter a valid amount.');
@@ -65,13 +67,23 @@ const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 
                 setError('Please upload proof of payment for foreign deposits.');
                 return null;
               }
+              if (!foreignFile.type.startsWith('image/')) {
+                setError('Proof of payment must be an image.');
+                return null;
+              }
 
               const formData = new FormData();
               // Backends typically infer currency from the wallet, but we include it for compatibility.
               formData.append('currency', String(currency));
               formData.append('amount', String(rawAmount));
-              formData.append('file', foreignFile);
-              return depositsApi.foreign(formData);
+              formData.append('proof', foreignFile);
+              return depositsApi.foreign(formData, {
+                onUploadProgress: (evt) => {
+                  if (!evt.total) return;
+                  const pct = Math.round((evt.loaded / evt.total) * 100);
+                  setUploadPct(Math.max(0, Math.min(100, pct)));
+                },
+              });
             })();
 
       if (!res) return;
@@ -84,6 +96,7 @@ const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 
 
       setSuccessData(res.data);
       setForeignFile(null);
+      setUploadPct(0);
       toast.success('Deposit initiated. Complete payment to top up your wallet.');
     } catch (err: any) {
       toast.error(err?.message || 'Failed to initiate deposit');
@@ -230,10 +243,15 @@ const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 
               <div className="input-box-wrapper">
                 <input
                   type="file"
-                  accept="image/*,application/pdf"
+                  accept="image/*"
                   onChange={(e) => setForeignFile(e.target.files?.[0] || null)}
                 />
               </div>
+              {submitting && uploadPct > 0 && (
+                <div style={{ marginTop: 8, color: '#64748B', fontWeight: 700, fontSize: 12 }}>
+                  Uploading: {uploadPct}%
+                </div>
+              )}
             </div>
           )}
 
