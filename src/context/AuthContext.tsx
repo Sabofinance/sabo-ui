@@ -85,12 +85,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await authApi.loginUser(data);
       if (response.success) {
         sessionStorage.setItem('pendingEmail', data.email);
-        // Do NOT set tokens here as per 2FA flow
+        toast.success('Login successful. Please check your email for an OTP.');
       } else {
-        throw new Error(response.error?.message || "Login failed");
+        const errorMessage = response.error?.message || "Login failed due to an unknown error.";
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
     } catch (err: any) {
-      const msg = err.response?.data?.error?.message || err.message || "An error occurred";
+      const msg = err.message || "An unexpected error occurred.";
       setError(msg);
       throw new Error(msg);
     } finally {
@@ -145,26 +147,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     try {
       const response = await authApi.registerUser(data);
-      if (response.success) {
-        // According to instructions: stores tokens + user, redirects.
-        // Wait, does register return tokens? Usually register returns User, then user must login.
-        // If it returns tokens, we handle it. Let's assume it doesn't return tokens and we need to login or it does.
-        // The prompt says: `register(data) -> calls registerUser, stores tokens + user, redirects`
-        // Let's modify the registerUser response handling to expect tokens if possible, or just store the user.
-        // Our type `ApiResponse<User>` means it just returns User. Let's check the API in real life.
-        // Since I don't have the backend, I will just set the user in state for now, but to "store tokens", we might need `AuthTokens`.
-        // Let's just store the user.
-        if (response.data) {
-          setUser(response.data);
-          localStorage.setItem('user', JSON.stringify(response.data));
-          // If the backend returns tokens on register, we would set them.
-          // Since our type doesn't have it, I'll just set isAuthenticated to true for now if that's the intent.
-        }
+      if (response.success && response.data) {
+        toast.success('Registration successful! Please log in to continue.');
+        // The user is created, but not logged in. No tokens are issued here.
+        // The API returns the created user object, which we don't need to store at this stage.
       } else {
-        throw new Error(response.error?.message || "Registration failed");
+        const errorMessage = response.error?.message || "Registration failed. Please try again.";
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
     } catch (err: any) {
-      const msg = err.response?.data?.error?.message || err.message || "An error occurred";
+      const msg = err.message || "An error occurred during registration.";
       setError(msg);
       throw new Error(msg);
     } finally {
