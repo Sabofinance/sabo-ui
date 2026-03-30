@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useToast } from '../../context/ToastContext';
+import { toast } from 'react-toastify';
 import { adminApi } from '../../lib/api';
 
 type UserRecord = Record<string, unknown>;
@@ -17,7 +17,7 @@ const extractArray = (value: unknown): unknown[] => {
 };
 
 const AdminUsersPage: React.FC = () => {
-  const toast = useToast();
+ 
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState('');

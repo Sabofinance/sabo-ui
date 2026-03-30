@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { withdrawalsApi } from '../../lib/api';
 import '../../assets/css/HistoryPage.css';
-import { useToast } from '../../context/ToastContext';
+import { toast } from 'react-toastify';
 
 const WithdrawalsPage: React.FC = () => {
   const [withdrawals, setWithdrawals] = useState<Record<string, unknown>[]>([]);
   const [processingId, setProcessingId] = useState<string>('');
-  const toast = useToast();
+ 
 
   useEffect(() => {
     const load = async () => {

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useToast } from '../../context/ToastContext';
+import { toast } from 'react-toastify';
 import { adminApi } from '../../lib/api';
 import { useNotifications } from '../../context/NotificationContext';
 
@@ -299,7 +299,6 @@ const SparkLine: React.FC<{ points: { day: string; value: number }[]; color: str
    MAIN COMPONENT
 ════════════════════════════════════════════════════════════ */
 const AdminDashboardPage: React.FC = () => {
-  const toast = useToast();
   const { fetchNotifications } = useNotifications();
 
   const [loading, setLoading] = useState(true);

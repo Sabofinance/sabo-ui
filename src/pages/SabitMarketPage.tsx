@@ -4,7 +4,7 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import '../assets/css/SabitMarketPage.css';
 import { ratesApi, sabitsApi } from '../lib/api';
-import { useToast } from '../context/ToastContext';
+import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 
 const HOW_IT_WORKS = [
@@ -49,7 +49,6 @@ const SabitMarketPage = () => {
   const [pairRates, setPairRates] = useState<Record<string, string>>({});
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const toast = useToast();
 
   // Filtering states
   const [filterType, setFilterType] = useState<'all' | 'buy' | 'sell'>('all');
@@ -89,7 +88,7 @@ const SabitMarketPage = () => {
       }
     };
     void load();
-  }, [toast]);
+  }, []);
 
   const formattedListings = useMemo(() => {
     return listings

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useToast } from '../../context/ToastContext';
+import { toast } from 'react-toastify';
 import { adminApi } from '../../lib/api';
 
 type DepositRecord = Record<string, unknown>;
@@ -16,7 +16,6 @@ const extractArray = (value: unknown): unknown[] => {
 };
 
 const AdminDepositsPage: React.FC = () => {
-  const toast = useToast();
   const [deposits, setDeposits] = useState<DepositRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState('');

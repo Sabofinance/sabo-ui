@@ -11,6 +11,8 @@ import { useAdminAuth } from './context/AdminAuthContext';
 import VerifyOtpPage from './pages/VerifyOtpPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 /* ── Public Pages ── */
 const HomePage        = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
@@ -86,6 +88,17 @@ function App() {
   return (
     <NotificationProvider>
       <TawkToWidget />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <Router>
         <Suspense fallback={<AppLoader />}>
           <Routes>

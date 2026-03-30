@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useToast } from '../../context/ToastContext';
+import { toast } from 'react-toastify';
 import { adminApi } from '../../lib/api';
 
 type AdminRec = Record<string, unknown>;
 
 const AdminAdminsPage: React.FC = () => {
-  const toast = useToast();
+ 
   const [admins, setAdmins] = useState<AdminRec[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState('');

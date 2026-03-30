@@ -5,13 +5,13 @@ import { useSidebar } from '../context/SidebarContext';
 import '../assets/css/DashboardHeader.css';
 import { useAuth } from '../context/AuthContext';
 import { useAdminAuth } from '../context/AdminAuthContext';
-import { useToast } from '../context/ToastContext';
+import { toast } from 'react-toastify';
 
 const DashboardHeader: React.FC = () => {
   const { toggle } = useSidebar();
   const { user, logout } = useAuth();
   const { adminUser, isAdminAuthenticated, adminLogout } = useAdminAuth();
-  const toast = useToast();
+ 
   const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);

@@ -1,14 +1,14 @@
 import React from 'react';
 import '../assets/css/NotificationPopup.css';
 import { useNotifications } from '../context/NotificationContext';
-import { useToast } from '../context/ToastContext';
+import { toast } from 'react-toastify';
 
 interface NotificationPopupProps {
   onClose: () => void;
 }
 
 const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
-  const toast = useToast();
+ 
   const { notifications, unreadCount, markAsRead } = useNotifications();
 
   const getIcon = (type: string) => {

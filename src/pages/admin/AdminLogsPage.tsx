@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useToast } from '../../context/ToastContext';
+import { toast } from 'react-toastify';
 import { adminApi } from '../../lib/api';
 
 type LogRecord = Record<string, unknown>;
 
 const AdminLogsPage: React.FC = () => {
-  const toast = useToast();
+ 
   const [logs, setLogs] = useState<LogRecord[]>([]);
   const [loading, setLoading] = useState(false);
 

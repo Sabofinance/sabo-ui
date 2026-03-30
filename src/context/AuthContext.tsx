@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import authApi from '../lib/api/auth.api';
 import type { User, LoginRequest, RegisterRequest, OtpRequest } from '../modules/auth/types/type';
-import { useToast } from './ToastContext';
 
 interface AuthContextType {
   user: User | null;
@@ -27,7 +27,6 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const toast = useToast();
   const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;

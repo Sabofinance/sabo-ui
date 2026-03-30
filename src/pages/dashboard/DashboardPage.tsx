@@ -10,7 +10,7 @@ import ConversionsTrendBarChart, { type ConversionTrendPoint } from '../../compo
 import TransactionHistory, { type TransactionItem } from '../../components/TransactionHistory';
 import { conversionsApi, depositsApi, ledgerApi, ratesApi, sabitsApi, withdrawalsApi, walletsApi } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../context/ToastContext';
+import { toast } from 'react-toastify';
 
 /* ─── Types ──────────────────────────────────────────────── */
 type WalletView = {
@@ -482,7 +482,7 @@ const WalletHero: React.FC<{
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const toast = useToast();
+ 
   const [activeWalletIndex, setActiveWalletIndex] = useState(0);
 
   const walletCurrencies = useMemo(() => [

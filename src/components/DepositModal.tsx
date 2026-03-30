@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { depositsApi } from '../lib/api';
-import { useToast } from '../context/ToastContext';
+import { toast } from 'react-toastify';
 
 interface DepositModalProps {
   onClose: () => void;
@@ -12,7 +12,7 @@ const CURRENCY_OPTIONS: Array<'NGN' | 'USD' | 'GBP' | 'CAD'> = ['NGN', 'USD', 'G
 type Currency = NonNullable<DepositModalProps['defaultCurrency']>;
 
 const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 'NGN' }) => {
-  const toast = useToast();
+ 
 
   const [currency, setCurrency] = useState<Currency>(defaultCurrency as Currency);
   const [amount, setAmount] = useState<string>('');

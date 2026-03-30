@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import '../assets/css/CurrencyConverter.css';
 import { conversionsApi } from '../lib/api';
-import { useToast } from '../context/ToastContext';
+import { toast } from 'react-toastify';
 
 interface Currency {
   code: string;
@@ -88,7 +88,7 @@ const CurrencyConverter: React.FC = () => {
   const [sendCurrency,  setSendCurrency]  = useState<Currency>(CURRENCIES[0]); // GBP
   const [recvCurrency,  setRecvCurrency]  = useState<Currency>(CURRENCIES[3]); // NGN
 
-  const toast = useToast();
+ 
   const amount = Math.max(0, parseFloat(rawAmount) || 0);
 
   const [quoteLoading, setQuoteLoading] = useState(false);

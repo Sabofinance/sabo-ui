@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { adminAuthApi } from "../lib/api/admin-auth.api";
 import type { AuthTokens } from "../modules/auth/types/type";
-import { useToast } from "./ToastContext";
+import { toast } from "react-toastify";
 
 export type AdminRole = "admin" | "super_admin";
 
@@ -69,7 +69,7 @@ export const useAdminAuth = () => {
 };
 
 export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const toast = useToast();
+ 
   const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
     try {
       const raw = localStorage.getItem(ADMIN_USER_KEY);

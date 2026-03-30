@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { kycApi } from '../../lib/api';
-import { useToast } from '../../context/ToastContext';
+import { toast } from 'react-toastify';
 import { useNotifications } from '../../context/NotificationContext';
 import '../../assets/css/HistoryPage.css';
 
@@ -10,7 +10,7 @@ const KycPage: React.FC = () => {
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const toast = useToast();
+ 
   const { fetchNotifications } = useNotifications();
 
   useEffect(() => {
@@ -36,7 +36,7 @@ const KycPage: React.FC = () => {
     const response = await kycApi.upload(formData);
     setLoading(false);
     if (response.success) {
-      toast.info('Your KYC documents have been successfully uploaded and are now pending review.', 'KYC Submitted');
+      toast.info('Your KYC documents have been successfully uploaded and are now pending review.');
       setStatus('pending');
       fetchNotifications();
     } else {

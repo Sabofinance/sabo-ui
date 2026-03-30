@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useToast } from "../../context/ToastContext";
+import { toast } from "react-toastify";
 import { adminApi } from "../../lib/api";
 
 /* ─── Types ─────────────────────────────────────────────── */
@@ -274,25 +274,24 @@ const SectionCard: React.FC<{
   </div>
 );
 
-const Icon = (d: string, size = 16) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d={d} />
-  </svg>
-);
+// const Icon = (d: string, size = 16) => (
+//   <svg
+//     width={size}
+//     height={size}
+//     viewBox="0 0 24 24"
+//     fill="none"
+//     stroke="currentColor"
+//     strokeWidth="1.8"
+//     strokeLinecap="round"
+//     strokeLinejoin="round"
+//   >
+//     <path d={d} />
+//   </svg>
+// );
 
 /* ─── Page ───────────────────────────────────────────────── */
 const AdminUserDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const toast = useToast();
   const [user, setUser] = useState<UserRecord | null>(null);
   const [loading, setLoading] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
@@ -312,7 +311,7 @@ const AdminUserDetailsPage: React.FC = () => {
       setLoading(false);
     };
     void fetchUser();
-  }, [id, toast]);
+  }, [id]);
 
   /* ── Loading / error states ── */
   if (!id)
