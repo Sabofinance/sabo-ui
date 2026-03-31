@@ -13,29 +13,29 @@ const AdminAcceptInvitePage: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!token) {
-      setError('Invalid invite link. Missing token.');
-      setLoading(false);
-      return;
-    }
+    const accept = async () => {
+      if (!token) {
+        setError('Invalid invite link. Missing token.');
+        setLoading(false);
+        return;
+      }
 
-    // const accept = async () => {
-    //   try {
-    //     const res = await adminApi.acceptInvite(token);
-    //     if (res.success) {
-    //       toast.success('Invite accepted! You can now log in.');
-    //       navigate('/admin/login');
-    //     } else {
-    //       setError(res.error?.message || 'Failed to accept invite.');
-    //     }
-    //   } catch (err: any) {
-    //     setError(err?.message || 'An unexpected error occurred.');
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
+      try {
+        const res = await adminApi.acceptInvite(token);
+        if (res.success) {
+          toast.success('Invite accepted! You can now log in.');
+          navigate('/admin/login');
+        } else {
+          setError(res.error?.message || 'Failed to accept invite.');
+        }
+      } catch (err: any) {
+        setError(err?.message || 'An unexpected error occurred.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // void accept();
+    void accept();
   }, [token, navigate]);
 
   return (

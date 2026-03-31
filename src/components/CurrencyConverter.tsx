@@ -233,7 +233,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
     if (!canExecute) return;
     setExecuting(true);
     try {
-      const res = await conversionsApi.create({
+      const res = await conversionsApi.execute({
         from: sendCurrency.code,
         to: recvCurrency.code,
         amount,

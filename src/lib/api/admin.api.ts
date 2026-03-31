@@ -38,6 +38,7 @@ export const adminApi = {
   // Super admin only
   listAdmins: (params?: Record<string, unknown>) => apiRequest.get("/admin/admins", params),
   createInvite: (email: string) => apiRequest.post("/admin/invites", { email }),
+  acceptInvite: (token: string) => apiRequest.get("/admin/invites/accept", { token }),
   removeAdmin: (id: string) => apiRequest.post(`/admin/admins/${id}/remove`),
   upgradeAdmin: (id: string) => apiRequest.post(`/admin/admins/${id}/upgrade`),
   

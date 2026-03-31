@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import '../../assets/css/MySabitPage.css';
 import { sabitsApi } from '../../lib/api';
 import ReceivedBidsModal from '../../components/ReceivedBidsModal';
-import { useAuth } from '../../context/AuthContext';
 
 interface MySabitListing {
   id: number;
@@ -22,7 +21,6 @@ interface MySabitListing {
 
 const MySabitPage: React.FC = () => {
   const navigate = useNavigate();
-  const { refreshUser } = useAuth(); // Assuming refreshUser is needed, if not remove the whole line if no other members are used
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'cancelled'>('active');
   const [myListings, setMyListings] = useState<MySabitListing[]>([]);
   const [loading, setLoading] = useState(false);

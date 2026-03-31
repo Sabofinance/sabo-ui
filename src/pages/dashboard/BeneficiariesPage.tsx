@@ -9,6 +9,8 @@ const BeneficiariesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [beneficiaries, setBeneficiaries] = useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const [currency, setCurrency] = useState<'NGN' | 'GBP' | 'USD' | 'CAD'>('NGN');
   const [bankName, setBankName] = useState('');
@@ -18,13 +20,36 @@ const BeneficiariesPage: React.FC = () => {
   const [iban, setIban] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const loadBeneficiaries = async () => {
-    const response = await beneficiariesApi.list();
-    if (response.success && Array.isArray(response.data)) setBeneficiaries(response.data);
-    else if (!response.success) toast.error(response.error?.message || 'Failed to load beneficiaries');
+  const loadBeneficiaries = async (showLoading = false) => {
+    if (showLoading) {
+      setLoading(true);
+      setError('');
+    }
+    try {
+      const response = await beneficiariesApi.list();
+      if (response.success && Array.isArray(response.data)) {
+        setBeneficiaries(response.data);
+      } else if (!response.success) {
+        const msg = response.error?.message || 'Failed to load beneficiaries';
+        if (showLoading) {
+          setError(msg);
+        } else {
+          toast.error(msg);
+        }
+      }
+    } catch (err: any) {
+      const msg = 'An unexpected error occurred while loading beneficiaries';
+      if (showLoading) {
+        setError(msg);
+      } else {
+        toast.error(msg);
+      }
+    } finally {
+      if (showLoading) setLoading(false);
+    }
   };
 
-  useEffect(() => { void loadBeneficiaries(); }, []);
+  useEffect(() => { void loadBeneficiaries(true); }, []);
 
   const handleAdd = async () => {
     const kycStatus = String((user as any)?.kyc_status || '').toLowerCase();
@@ -62,7 +87,7 @@ const BeneficiariesPage: React.FC = () => {
     setAccountNumber('');
     setSortCode('');
     setIban('');
-    await loadBeneficiaries();
+    await loadBeneficiaries(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -72,7 +97,7 @@ const BeneficiariesPage: React.FC = () => {
     const res = await beneficiariesApi.remove(id);
     if (!res.success) toast.error(res.error?.message || 'Failed to delete beneficiary');
     else toast.success('Beneficiary deleted.');
-    await loadBeneficiaries();
+    await loadBeneficiaries(false);
   };
 
   const byCurrency = useMemo(() => {
@@ -96,6 +121,18 @@ const BeneficiariesPage: React.FC = () => {
           Back to withdrawals
         </button>
       </div>
+      {error && (
+        <div style={{ padding: '16px', margin: '16px 0', background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 8, color: '#991b1b' }}>
+          {error}
+        </div>
+      )}
+      {loading && (
+        <div style={{ padding: '40px 16px', textAlign: 'center', color: '#64748B' }}>
+          Loading beneficiaries...
+        </div>
+      )}
+      {!loading && (
+      <>
       <div className="filters-section">
         <div className="filter-group">
           <label>Currency</label>
@@ -145,6 +182,8 @@ const BeneficiariesPage: React.FC = () => {
           </tbody>
         </table>
       </div>
+      </>
+      )}
     </main>
   );
 };

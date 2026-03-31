@@ -65,7 +65,8 @@ const ProfilePage: React.FC = () => {
   });
 
   const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [, setIsLoading] = useState(true);
+  const [walletLoading, setWalletLoading] = useState(true);
+  const [walletError, setWalletError] = useState('');
 
   const pinSet = Boolean(authUser?.transaction_pin_set);
   const USERNAME_REGEX = /^[A-Za-z0-9_]+$/;
@@ -100,22 +101,30 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     const loadWallets = async () => {
-      setIsLoading(true);
-      const response = await walletsApi.list();
-      if (response.success && Array.isArray(response.data)) {
-        setWallets(response.data.map((wallet: Record<string, unknown>) => ({
-          currency: String(wallet.currency || 'NGN'),
-          balance: Number(wallet.balance || 0),
-          symbol: String(wallet.symbol || '₦'),
-          flag: String(wallet.flag || '🏦'),
-          accountNumber: String(wallet.accountNumber || ''),
-          accountName: String(wallet.accountName || user.displayName),
-          bank: String(wallet.bank || ''),
-          cardNumber: String(wallet.cardNumber || ''),
-          expiry: String(wallet.expiry || ''),
-        })));
+      setWalletLoading(true);
+      setWalletError('');
+      try {
+        const response = await walletsApi.list();
+        if (response.success && Array.isArray(response.data)) {
+          setWallets(response.data.map((wallet: Record<string, unknown>) => ({
+            currency: String(wallet.currency || 'NGN'),
+            balance: Number(wallet.balance || 0),
+            symbol: String(wallet.symbol || '₦'),
+            flag: String(wallet.flag || '🏦'),
+            accountNumber: String(wallet.accountNumber || ''),
+            accountName: String(wallet.accountName || user.displayName),
+            bank: String(wallet.bank || ''),
+            cardNumber: String(wallet.cardNumber || ''),
+            expiry: String(wallet.expiry || ''),
+          })));
+        } else if (!response.success) {
+          setWalletError(response.error?.message || 'Failed to load wallets');
+        }
+      } catch (err: any) {
+        setWalletError('An unexpected error occurred while loading wallets');
+      } finally {
+        setWalletLoading(false);
       }
-      setIsLoading(false);
     };
     if (authUser) {
       void loadWallets();
@@ -530,6 +539,22 @@ const ProfilePage: React.FC = () => {
             {activeTab === 'account' && (
               <div className="account-cards-section">
                 <h3 className="section-title">Your Cards</h3>
+                {walletLoading && (
+                  <div style={{ padding: '40px 16px', textAlign: 'center', color: '#64748B' }}>
+                    Loading your wallets...
+                  </div>
+                )}
+                {walletError && (
+                  <div style={{ padding: '16px', margin: '16px 0', background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 8, color: '#991b1b' }}>
+                    {walletError}
+                  </div>
+                )}
+                {!walletLoading && !walletError && wallets.length === 0 && (
+                  <div style={{ padding: '40px 16px', textAlign: 'center', color: '#64748B' }}>
+                    No wallets found.
+                  </div>
+                )}
+                {!walletLoading && !walletError && wallets.length > 0 && (
                 <div className="atm-cards-container">
                   {wallets.map((wallet) => (
                     <div key={wallet.currency} className={`atm-card ${wallet.currency.toLowerCase()}`}>
@@ -582,6 +607,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             )}
       </main>

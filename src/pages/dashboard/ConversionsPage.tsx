@@ -16,39 +16,6 @@ const C = {
   error: "#e05252",
 };
 
-const CURRENCY_SYMBOL: Record<string, string> = {
-  NGN: "₦",
-  USD: "$",
-  GBP: "£",
-  CAD: "CA$",
-  EUR: "€",
-};
-
-const fmt = (n: number) =>
-  Number(n).toLocaleString("en-NG", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-
-const SkeletonRow = ({ index }: { index: number }) => (
-  <tr>
-    {[80, 56, 56, 100].map((w, i) => (
-      <td key={i} style={{ padding: "16px 20px" }}>
-        <div
-          style={{
-            height: 12,
-            width: w,
-            borderRadius: 6,
-            background:
-              "linear-gradient(90deg,#e8f0ef 25%,#d4e4e2 50%,#e8f0ef 75%)",
-            backgroundSize: "200% 100%",
-            animation: `convShimmer 1.4s ${index * 60 + i * 30}ms infinite`,
-          }}
-        />
-      </td>
-    ))}
-  </tr>
-);
 
 const ConversionsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -394,6 +361,27 @@ const ConversionsPage: React.FC = () => {
             }}
           >
             <CurrencyConverter onSuccess={() => void loadConversions()} />
+          </div>
+
+          <div style={{ maxWidth: 860, margin: "0 auto", marginTop: 16 }}>
+            {loading && <p>Loading your conversions...</p>}
+            {error && <p style={{ color: "#dc2626" }}>{error}</p>}
+            {!loading && !error && conversions.length === 0 && (
+              <p>No conversions yet. Create one using the converter above.</p>
+            )}
+            {!loading && conversions.length > 0 && (
+              <pre
+                style={{
+                  background: "#121212",
+                  color: "#f7f7f7",
+                  borderRadius: 10,
+                  padding: 12,
+                  overflowX: "auto",
+                }}
+              >
+                {JSON.stringify(conversions, null, 2)}
+              </pre>
+            )}
           </div>
         </main>
       </div>

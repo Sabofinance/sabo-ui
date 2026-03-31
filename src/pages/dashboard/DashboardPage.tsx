@@ -7,6 +7,9 @@ import LedgerVolumeAreaChart from "../../components/LedgerVolumeAreaChart";
 import DepositsWithdrawalsBarChart, {
   type DepositsWithdrawalsPoint,
 } from "../../components/DepositsWithdrawalsBarChart";
+import ConversionsTrendBarChart, {
+  type ConversionTrendPoint,
+} from "../../components/ConversionsTrendBarChart";
 import WalletBalancesBarChart, {
   type WalletBarPoint,
 } from "../../components/WalletBalancesBarChart";
@@ -944,6 +947,9 @@ const DashboardPage: React.FC = () => {
   const [depositWithdrawalLoading, setDepositWithdrawalLoading] =
     useState(false);
   const [depositWithdrawalError, setDepositWithdrawalError] = useState("");
+  const [conversionPoints, setConversionPoints] = useState<ConversionTrendPoint[]>(
+    () => buildEmpty7("conv") as ConversionTrendPoint[],
+  );
   const [recentTransactions, setRecentTransactions] = useState<
     TransactionItem[]
   >([]);
@@ -1273,12 +1279,15 @@ const DashboardPage: React.FC = () => {
             if (Number.isFinite(amt) && amt > 0)
               (b as any).value = ((b as any).value || 0) + amt;
           }
-       
-        } else {
-          setConversionError(
-            conversionsRes.error?.message || "Failed to load conversions",
+
+          setConversionPoints(
+            convBuckets.map((b) => ({
+              day: b.label,
+              value: Number((b as any).value || 0),
+            })),
           );
-        
+        } else {
+          // Conversion fetch failed, but chart will show empty data
         }
 
         if (rateHistoryRes.success) {
@@ -1938,11 +1947,7 @@ const DashboardPage: React.FC = () => {
                 />
               </div>
               <div className="dp-card dp-rise dp-d5">
-                {/* <ConversionsTrendBarChart
-                  points={conversionPoints}
-                  loading={conversionLoading}
-                  error={conversionError}
-                /> */}
+                <ConversionsTrendBarChart points={conversionPoints} />
               </div>
             </div>
           </div>
