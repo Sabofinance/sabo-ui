@@ -1,10 +1,29 @@
 import type { AxiosError } from "axios";
 
+export interface ApiError {
+  status?: number;
+  message: string;
+  code?: string;
+  details?: any;
+  [key: string]: any;
+}
+
 export interface ApiEnvelope<T = unknown> {
   success: boolean;
   data: T | null;
-  error: any;
+  error: ApiError | null;
 }
+
+export const extractArray = (value: unknown): any[] => {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== 'object') return [];
+  const obj = value as Record<string, unknown>;
+  const keys = ['users', 'items', 'results', 'rows', 'records', 'list', 'data', 'transactions', 'submissions', 'deposits', 'withdrawals', 'conversions', 'disputes', 'bids', 'beneficiaries', 'wallets'];
+  for (const key of keys) {
+    if (Array.isArray(obj[key])) return obj[key] as any[];
+  }
+  return [];
+};
 
 export const normalizeSuccess = <T>(data: T | null): ApiEnvelope<T> => ({
   success: true,

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { beneficiariesApi, walletsApi, withdrawalsApi } from '../../lib/api';
+import { extractArray } from '../../lib/api/response';
 import '../../assets/css/HistoryPage.css';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
@@ -31,14 +32,14 @@ const WithdrawalsPage: React.FC = () => {
         walletsApi.list(),
       ]);
 
-      if (wRes.success && Array.isArray(wRes.data)) setWithdrawals(wRes.data);
-      else if (!wRes.success) toast.error(wRes.error?.message || 'Failed to load withdrawals');
+      if (wRes.success) setWithdrawals(extractArray(wRes.data));
+      else toast.error(wRes.error?.message || 'Failed to load withdrawals');
 
-      if (bRes.success && Array.isArray(bRes.data)) setBeneficiaries(bRes.data);
-      else if (!bRes.success) toast.error(bRes.error?.message || 'Failed to load beneficiaries');
+      if (bRes.success) setBeneficiaries(extractArray(bRes.data));
+      else toast.error(bRes.error?.message || 'Failed to load beneficiaries');
 
-      if (walletsRes.success && Array.isArray(walletsRes.data)) setWallets(walletsRes.data);
-      else if (!walletsRes.success) toast.error(walletsRes.error?.message || 'Failed to load wallets');
+      if (walletsRes.success) setWallets(extractArray(walletsRes.data));
+      else toast.error(walletsRes.error?.message || 'Failed to load wallets');
 
       setLoading(false);
     };
@@ -47,8 +48,8 @@ const WithdrawalsPage: React.FC = () => {
 
   const reload = async () => {
     const response = await withdrawalsApi.list();
-    if (response.success && Array.isArray(response.data)) {
-      setWithdrawals(response.data);
+    if (response.success) {
+      setWithdrawals(extractArray(response.data));
     } else {
       const msg = response.error?.message || 'Failed to load withdrawals';
       toast.error(msg);
@@ -57,6 +58,7 @@ const WithdrawalsPage: React.FC = () => {
 
   const kycStatus = String((user as any)?.kyc_status || '').toLowerCase();
   const isVerified = kycStatus === 'verified';
+  const pinSet = Boolean((user as any)?.transaction_pin_set);
 
   const filteredBeneficiaries = useMemo(() => {
     return beneficiaries.filter((b) => String((b as any).currency || '').toUpperCase() === currency);
@@ -78,6 +80,11 @@ const WithdrawalsPage: React.FC = () => {
     setError('');
     if (!isVerified) {
       setError('Withdrawals require verified KYC.');
+      return;
+    }
+    if (!pinSet) {
+      toast.error('Transaction PIN required to request withdrawals.');
+      navigate('/dashboard/transaction-pin');
       return;
     }
     if (!beneficiaryId) {

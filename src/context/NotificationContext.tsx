@@ -19,6 +19,7 @@ interface NotificationContextValue {
   unreadCount: number;
   fetchNotifications: () => Promise<void>;
   markAsRead: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextValue | undefined>(undefined);
@@ -35,7 +36,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (isLoading || isAdminLoading) return;
     if (!isAuthenticated && !isAdminAuthenticated) return;
 
-    const res = await notificationsApi.list();
+    const res = await notificationsApi.list({ limit: 20 });
     if (res.success && Array.isArray(res.data)) {
       setNotifications(res.data);
       setUnreadCount(res.data.filter((n: NotificationItem) => n.status === "unread").length);
@@ -48,13 +49,26 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setUnreadCount((prev) => Math.max(0, prev - 1));
   }, []);
 
+  const markAllAsRead = useCallback(async () => {
+    const unreadIds = notifications.filter((n) => n.status === "unread").map((n) => n.id);
+    if (!unreadIds.length) return;
+    await notificationsApi.markAllRead();
+    setNotifications((prev) => prev.map((n) => (n.status === "unread" ? { ...n, status: "read" } : n)));
+    setUnreadCount(0);
+  }, [notifications]);
+
   useEffect(() => {
     void fetchNotifications();
+    // Poll every 30 seconds to keep the notification badge accurate.
+    const interval = window.setInterval(() => {
+      void fetchNotifications();
+    }, 30000);
+    return () => window.clearInterval(interval);
   }, [fetchNotifications]);
 
   const value = useMemo(
-    () => ({ notifications, unreadCount, fetchNotifications, markAsRead }),
-    [notifications, unreadCount, fetchNotifications, markAsRead]
+    () => ({ notifications, unreadCount, fetchNotifications, markAsRead, markAllAsRead }),
+    [notifications, unreadCount, fetchNotifications, markAsRead, markAllAsRead]
   );
 
   return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;

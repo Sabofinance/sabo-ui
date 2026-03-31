@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { sabitsApi, tradesApi, walletsApi } from '../../lib/api';
+import { sabitsApi, tradesApi, walletsApi, ratingsApi } from '../../lib/api';
+import { toast } from 'react-toastify';
+import PinDotsInput from '../../components/PinDotsInput';
 
 import '../../assets/css/TransactionPage.css';
 import '../../assets/css/TransactionModals.css';
@@ -48,6 +50,15 @@ const TransactionPage: React.FC = () => {
   const [agreed, setAgreed] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [tradeId, setTradeId] = useState<string>('');
+  const [pin, setPin] = useState('');
+  const [showPinModal, setShowPinModal] = useState(false);
+
+  // Part 13: rating submission UI (after trade completion).
+  const [ratingScore, setRatingScore] = useState<number>(0);
+  const [ratingComment, setRatingComment] = useState<string>('');
+  const [ratingSubmitting, setRatingSubmitting] = useState<boolean>(false);
+  const [ratingSubmitted, setRatingSubmitted] = useState<boolean>(false);
 
   useEffect(() => {
     const load = async () => {
@@ -60,7 +71,7 @@ const TransactionPage: React.FC = () => {
       ]);
 
       if (sabitRes.success && sabitRes.data) {
-        const data = sabitRes.data as any;
+        const data = sabitRes.data as Record<string, any>;
         const mappedListing: ListingData = {
           id: Number(data.id || data.sabitId || sabitId),
           seller: {
@@ -132,45 +143,35 @@ const TransactionPage: React.FC = () => {
 
   const handleConfirmPayment = async () => {
     if (!listing || !debitWallet || processing) return;
+    setShowConfirmModal(false);
+    setShowPinModal(true);
+  };
+
+  const handleExecuteTrade = async () => {
+    if (!listing || !debitWallet || processing || pin.length < 6) return;
     
     setProcessing(true);
     setError('');
     
     try {
-      const createRes = await tradesApi.create({ sabitId: listing.id });
-      if (!createRes.success) {
-        setError(createRes.error?.message || 'Failed to initiate trade. Please try again.');
-        setShowConfirmModal(false);
-        setProcessing(false);
-        return;
-      }
-
-      const tradeId = (createRes.data as any)?.id || (createRes.data as any)?.tradeId;
-      if (!tradeId) {
-        setError('Trade initialization failed. No trade ID returned.');
-        setShowConfirmModal(false);
-        setProcessing(false);
-        return;
-      }
-
-      const response = await tradesApi.execute(String(tradeId), {
-        listingId: listing.id,
-        type: listing.type,
-        currency: listing.currency,
-        amount: amountToDisplay,
-        rate: listing.rate,
+      const response = await tradesApi.initiate({
+        sabit_id: String(listing.id),
+        amount: String(amountToDisplay),
+        pin: pin,
       });
 
-      setShowConfirmModal(false);
-      
       if (response.success) {
-        setShowSuccessModal(true);
+        const tId = (response.data as any)?.id || (response.data as any)?.tradeId;
+        setTradeId(String(tId));
+        setShowPinModal(false);
+        navigate(`/dashboard/trade/${tId}`);
       } else {
-        setError(response.error?.message || 'Trade execution failed. Please contact support.');
+        setError(response.error?.message || 'Trade initiation failed. Please contact support.');
+        setShowPinModal(false);
       }
     } catch (err: any) {
       setError('An unexpected error occurred during the transaction.');
-      setShowConfirmModal(false);
+      setShowPinModal(false);
     } finally {
       setProcessing(false);
     }
@@ -179,6 +180,33 @@ const TransactionPage: React.FC = () => {
   const handleCloseSuccess = () => {
     setShowSuccessModal(false);
     navigate('/dashboard/active-sabits');
+  };
+
+  const submitRating = async () => {
+    if (!tradeId) {
+      toast.error('Trade reference missing. Please refresh and try again.');
+      return;
+    }
+    if (!ratingScore) {
+      toast.error('Select a rating first.');
+      return;
+    }
+    setRatingSubmitting(true);
+    try {
+      const res = await ratingsApi.create({
+        trade_id: tradeId,
+        score: ratingScore,
+        comment: ratingComment.trim() || undefined,
+      });
+      if (!res.success) {
+        toast.error(res.error?.message || 'Failed to submit rating.');
+        return;
+      }
+      setRatingSubmitted(true);
+      toast.success('Thanks for your feedback!');
+    } finally {
+      setRatingSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -387,6 +415,35 @@ const TransactionPage: React.FC = () => {
           </div>
         )}
 
+        {/* PIN Modal */}
+        {showPinModal && (
+          <div className="modal-overlay" onClick={() => setShowPinModal(false)}>
+            <div className="confirm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 400 }}>
+              <button className="modal-close-icon" onClick={() => setShowPinModal(false)}>×</button>
+              <h2 style={{ marginBottom: 10 }}>Enter PIN</h2>
+              <p style={{ color: '#64748B', marginBottom: 24 }}>Enter your 6-digit transaction PIN to authorize this trade.</p>
+              
+              <PinDotsInput 
+                value={pin}
+                onChange={setPin}
+                disabled={processing}
+                autoFocus
+              />
+
+              <div className="modal-actions" style={{ marginTop: 30 }}>
+                <button className="cancel-btn" onClick={() => setShowPinModal(false)}>Cancel</button>
+                <button 
+                  className="confirm-btn" 
+                  onClick={handleExecuteTrade}
+                  disabled={processing || pin.length < 6}
+                >
+                  {processing ? 'Processing...' : 'Authorize Trade'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Success Modal (uses same style as SellSuccessModal) */}
         {showSuccessModal && (
           <div className="modal-overlay" onClick={handleCloseSuccess}>
@@ -402,11 +459,61 @@ const TransactionPage: React.FC = () => {
                 You have successfully {isBuying ? 'bought' : 'sold'} <strong>{amountToDisplay} {listing.currency}</strong><br />
                 and the funds have been transferred.
               </p>
-              <div className="success-actions">
-                <button className="btn-market" onClick={handleCloseSuccess}>
-                  BACK TO MARKETPLACE
-                </button>
-              </div>
+
+              {!ratingSubmitted ? (
+                <div style={{ marginTop: 10 }}>
+                  <div style={{ fontWeight: 900, marginBottom: 10 }}>Rate your counterparty</div>
+                  <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 12 }}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setRatingScore(n)}
+                        className="page-number"
+                        style={{
+                          minWidth: 44,
+                          background: ratingScore >= n ? '#C8F032' : 'rgba(100,116,139,0.12)',
+                          borderColor: ratingScore >= n ? '#C8F032' : 'rgba(148,163,184,0.4)',
+                          color: ratingScore >= n ? '#0A1E28' : '#334155',
+                          fontWeight: 900,
+                        }}
+                      >
+                        {n}★
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={ratingComment}
+                    onChange={(e) => setRatingComment(e.target.value)}
+                    placeholder="Optional comment"
+                    style={{
+                      width: '100%',
+                      minHeight: 90,
+                      borderRadius: 12,
+                      border: '1px solid #E2E8F0',
+                      padding: 12,
+                      resize: 'vertical',
+                      marginBottom: 12,
+                    }}
+                  />
+                  <div className="success-actions">
+                    <button
+                      className="btn-market"
+                      onClick={() => void submitRating()}
+                      disabled={ratingSubmitting}
+                      style={{ opacity: ratingSubmitting ? 0.7 : 1 }}
+                    >
+                      {ratingSubmitting ? 'Submitting...' : 'Submit Rating'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="success-actions">
+                  <button className="btn-market" onClick={handleCloseSuccess}>
+                    BACK TO MARKETPLACE
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

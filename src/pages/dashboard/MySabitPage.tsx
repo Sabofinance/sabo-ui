@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/css/MySabitPage.css';
 import { sabitsApi } from '../../lib/api';
+import ReceivedBidsModal from '../../components/ReceivedBidsModal';
+import { useAuth } from '../../context/AuthContext';
 
 interface MySabitListing {
   id: number;
@@ -20,10 +22,13 @@ interface MySabitListing {
 
 const MySabitPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'cancelled'>('active');
   const [myListings, setMyListings] = useState<MySabitListing[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [receivedModalOpen, setReceivedModalOpen] = useState(false);
+  const [receivedSabitId, setReceivedSabitId] = useState<number | null>(null);
 
   const loadListings = async () => {
     setLoading(true);
@@ -128,6 +133,12 @@ const MySabitPage: React.FC = () => {
   const handleEdit = (id: number) => {
     void id;
     navigate('/dashboard/active-sabits');
+  };
+
+  const handleOpenReceivedBids = (listingId: number) => {
+    // Only active SELL listings can receive bids in this UI.
+    setReceivedSabitId(listingId);
+    setReceivedModalOpen(true);
   };
 
   const handleDelete = (id: number) => {
@@ -265,6 +276,15 @@ const MySabitPage: React.FC = () => {
                             >
                               EDIT
                             </button>
+                          {listing.type === 'sell' && (
+                            <button
+                              className="action-btn delete"
+                              onClick={() => handleOpenReceivedBids(listing.id)}
+                              style={{ background: "rgba(14, 165, 233, 0.12)", borderColor: "rgba(14, 165, 233, 0.35)", color: "#0369a1" }}
+                            >
+                              RECEIVED BIDS
+                            </button>
+                          )}
                             <button 
                               className="action-btn delete" 
                               onClick={() => handleDelete(listing.id)}
@@ -293,6 +313,16 @@ const MySabitPage: React.FC = () => {
               )}
             </div>
       </main>
+
+      {receivedModalOpen && receivedSabitId != null && (
+        <ReceivedBidsModal
+          sabitId={receivedSabitId}
+          onClose={() => {
+            setReceivedModalOpen(false);
+            setReceivedSabitId(null);
+          }}
+        />
+      )}
     </div>
   );
 };

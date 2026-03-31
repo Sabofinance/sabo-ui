@@ -9,6 +9,7 @@ interface Transaction {
   amount: number;
   rate: number;
   total: number;
+  reference: string;
   counterparty: string;
   avatar: string;
   date: string;
@@ -38,18 +39,34 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays <= 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const t = date.getTime();
+    if (!Number.isFinite(t)) return "-";
+    return date.toLocaleString('en-NG', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   const formatNumber = (num: number): string => {
-    return new Intl.NumberFormat('en-NG').format(num);
+    return new Intl.NumberFormat('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+  };
+
+  const getCurrencySymbol = (c: string): string => {
+    switch (c.toUpperCase()) {
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'USD':
+        return '$';
+      case 'CAD':
+        return 'CA$';
+      default:
+        return '';
+    }
   };
 
   const handleViewAll = () => {
@@ -111,7 +128,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                   </span>
                 </div>
                 <div className="transaction-details">
-                  <span className="currency-pair">{tx.currency}/NGN</span>
+                  <span className="currency-pair">{tx.currency}</span>
                   <span className="transaction-rate">₦{formatNumber(tx.rate)}</span>
                 </div>
               </div>
@@ -120,12 +137,13 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
             <div className="transaction-right">
               <div className="transaction-amounts">
                 <span className="amount-primary">
-                  {tx.type === 'buy' ? '+' : '-'}{tx.currency} {formatNumber(tx.amount)}
+                  {tx.type === 'buy' ? '+' : '-'}{getCurrencySymbol(tx.currency)}{formatNumber(tx.amount)}
                 </span>
                 <span className="amount-secondary">₦{formatNumber(tx.total)}</span>
               </div>
               <div className="transaction-meta">
                 <span className="transaction-date">{formatDate(tx.date)}</span>
+                <span className="transaction-reference">Ref: {tx.reference}</span>
                 <span className={`status-badge ${tx.status}`}>{tx.status}</span>
               </div>
             </div>

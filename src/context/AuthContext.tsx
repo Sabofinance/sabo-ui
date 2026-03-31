@@ -12,6 +12,7 @@ interface AuthContextType {
   error: string | null;
   login: (data: LoginRequest) => Promise<void>;
   verifyOtp: (data: OtpRequest) => Promise<void>;
+  resendOtp: (data: { email: string }) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   refreshUser: () => Promise<void>;
   logout: (opts?: { silent?: boolean }) => Promise<void>;
@@ -160,6 +161,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const resendOtp = async (data: { email: string }) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await authApi.resendOtp(data);
+      if (!response.success) {
+        throw new Error(response.error?.message || "Failed to resend OTP");
+      }
+      toast.success("OTP resent. Please check your email.");
+    } catch (err: any) {
+      const msg = err?.message || "Failed to resend OTP.";
+      setError(msg);
+      throw new Error(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const register = async (data: RegisterRequest) => {
     setIsLoading(true);
     setError(null);
@@ -214,6 +233,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         error,
         login,
         verifyOtp,
+        resendOtp,
         register,
         refreshUser: fetchCurrentUser,
         logout,

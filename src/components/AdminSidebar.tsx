@@ -50,6 +50,18 @@ const Icons = {
       <rect x="11" y="13.5" width="6" height="3" rx="1" />
     </Icon>
   ),
+  Disputes: () => (
+    <Icon>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </Icon>
+  ),
+  Transactions: () => (
+    <Icon>
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </Icon>
+  ),
   Admins: () => (
     <Icon>
       <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
@@ -121,6 +133,8 @@ const AdminSidebar: React.FC = () => {
           {navLink("/dashboard/admin/users", "Users", Icons.Users)}
           {navLink("/dashboard/admin/kyc", "KYC", Icons.KYC)}
           {navLink("/dashboard/admin/deposits", "Deposits", Icons.Deposits)}
+          {navLink("/dashboard/admin/disputes", "Disputes", Icons.Disputes)}
+          {navLink("/dashboard/admin/transactions", "Transactions", Icons.Transactions)}
           {isSuperAdmin &&
             navLink("/dashboard/admin/admins", "Admins", Icons.Admins)}
           {isSuperAdmin && navLink("/dashboard/admin/logs", "Logs", Icons.Logs)}

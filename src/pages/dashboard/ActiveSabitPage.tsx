@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/css/ActiveSabitPage.css';
 import { sabitsApi } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-toastify';
+import BidModal from '../../components/BidModal';
 
 interface SabitListing {
   id: number;
@@ -23,11 +26,19 @@ interface SabitListing {
 
 const ActiveSabitPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedCurrency, setSelectedCurrency] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [listings, setListings] = useState<SabitListing[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const kycStatus = String((user as any)?.kyc_status || '').toLowerCase();
+  const isVerified = kycStatus === 'verified';
+  const isPending = kycStatus.includes('pending');
+  const pinSet = Boolean((user as any)?.transaction_pin_set);
+
+  const [bidModalOpen, setBidModalOpen] = useState(false);
+  const [bidListing, setBidListing] = useState<SabitListing | null>(null);
 
   const formatNumber = (num: number): string => {
     return new Intl.NumberFormat('en-NG').format(num);
@@ -50,7 +61,30 @@ const ActiveSabitPage: React.FC = () => {
   }), [listings, selectedCurrency, selectedType]);
 
   const handleTradeClick = (listing: SabitListing) => {
+    if (!isVerified) {
+      navigate('/dashboard/kyc');
+      return;
+    }
+    if (!pinSet) {
+      toast.error('Transaction PIN required to start trades.');
+      navigate('/dashboard/transaction-pin');
+      return;
+    }
     navigate(`/dashboard/transaction/${listing.id}`);
+  };
+
+  const handleMakeOffer = (listing: SabitListing) => {
+    if (!isVerified) {
+      navigate('/dashboard/kyc');
+      return;
+    }
+    if (!pinSet) {
+      toast.error('Transaction PIN required to place bids.');
+      navigate('/dashboard/transaction-pin');
+      return;
+    }
+    setBidListing(listing);
+    setBidModalOpen(true);
   };
 
   useEffect(() => {
@@ -115,6 +149,18 @@ const ActiveSabitPage: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {!isVerified && (
+              <div style={{ padding: 16, borderRadius: 14, border: '1px solid #fde68a', background: '#fffbeb', marginBottom: 16 }}>
+                <div style={{ fontWeight: 900, marginBottom: 4 }}>KYC required</div>
+                <div style={{ color: '#6b7280', fontSize: 13, lineHeight: 1.5 }}>
+                  {isPending ? 'KYC is pending review. Trading unlocks once verified.' : 'Complete your KYC to start trading.'}
+                </div>
+                <button className="export-btn" style={{ marginTop: 12 }} onClick={() => navigate('/dashboard/kyc')}>
+                  Complete KYC
+                </button>
+              </div>
+            )}
 
             {/* Filters */}
             <div className="filters-section">
@@ -254,12 +300,25 @@ const ActiveSabitPage: React.FC = () => {
                         </svg>
                         <span>{listing.timeLimit}</span>
                       </div>
-                      <button 
-                        className={`trade-btn ${listing.type}`}
-                        onClick={() => handleTradeClick(listing)}
-                      >
-                        {listing.type === 'sell' ? 'Buy' : 'Sell'}
-                      </button>
+                      <div style={{ display: "flex", gap: 10 }}>
+                        <button
+                          className={`trade-btn ${listing.type}`}
+                          onClick={() => handleTradeClick(listing)}
+                          disabled={!isVerified}
+                        >
+                          {listing.type === 'sell' ? 'Buy' : 'Sell'}
+                        </button>
+                        {listing.type === 'sell' && (
+                          <button
+                            className="trade-btn"
+                            onClick={() => handleMakeOffer(listing)}
+                            disabled={!isVerified}
+                            style={{ background: "#fef3c7", border: "1px solid rgba(199, 154, 0, 0.35)" }}
+                          >
+                            Make Offer
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -276,6 +335,21 @@ const ActiveSabitPage: React.FC = () => {
                 <h3>No listings found</h3>
                 <p>Try adjusting your filters</p>
               </div>
+            )}
+
+            {bidModalOpen && bidListing && (
+              <BidModal
+                listing={{
+                  id: bidListing.id,
+                  rate_ngn: bidListing.rate,
+                  available: bidListing.available,
+                  currency: bidListing.currency,
+                }}
+                onClose={() => {
+                  setBidModalOpen(false);
+                  setBidListing(null);
+                }}
+              />
             )}
       </main>
     </div>

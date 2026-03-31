@@ -25,16 +25,17 @@ const DepositPage: React.FC = () => {
     if (res.success) {
       const d: any = res.data || {};
       const paymentUrl =
+        d?.deposit?.payment_link ||
+        d?.deposit?.payment_url ||
+        d?.deposit?.url ||
         d?.paymentUrl ||
         d?.payment_url ||
         d?.payment_link ||
-        d?.redirectUrl ||
-        d?.redirect_url ||
         d?.url ||
         null;
 
       if (paymentUrl) {
-        window.location.assign(String(paymentUrl));
+        window.location.href = String(paymentUrl);
         return;
       }
       // Fallback: show a pending info screen even if link isn't present.
@@ -70,10 +71,12 @@ const DepositPage: React.FC = () => {
     });
     setLoading(false);
     if (res.success) {
-      setMessage("Foreign deposit submitted successfully. It is pending admin review.");
       setForeignAmount("");
       setForeignFile(null);
       setUploadPct(0);
+      // Show a dedicated pending/admin-review state.
+      navigate("/dashboard/deposit-pending?depositType=foreign");
+      return;
     } else {
       setMessage(res.error?.message || "Failed to submit foreign deposit.");
     }

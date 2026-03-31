@@ -1,19 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { adminApi } from '../../lib/api';
+import { extractArray } from '../../lib/api/response';
 
 type DepositRecord = Record<string, unknown>;
-
-const extractArray = (value: unknown): unknown[] => {
-  if (Array.isArray(value)) return value;
-  if (!value || typeof value !== 'object') return [];
-  const obj = value as Record<string, unknown>;
-  const keys = ['deposits', 'items', 'results', 'rows', 'records', 'list', 'data', 'users', 'transactions', 'submissions', 'disputes'];
-  for (const key of keys) {
-    if (Array.isArray(obj[key])) return obj[key] as unknown[];
-  }
-  return [];
-};
 
 const AdminDepositsPage: React.FC = () => {
   const [deposits, setDeposits] = useState<DepositRecord[]>([]);
@@ -37,7 +27,7 @@ const AdminDepositsPage: React.FC = () => {
 
   const onAction = async (id: string, approve: boolean) => {
     setActionLoading(id);
-    const res = approve ? await adminApi.approveDeposit(id) : await adminApi.rejectDeposit(id, 'Manual reject');
+    const res = approve ? await adminApi.approveDeposit(id) : await adminApi.rejectDeposit(id);
     if (!res.success) toast.error(res.error?.message || 'Action failed');
     else toast.success(approve ? 'Deposit approved' : 'Deposit rejected');
     setActionLoading('');

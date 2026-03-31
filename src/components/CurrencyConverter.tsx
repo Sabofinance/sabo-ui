@@ -83,7 +83,11 @@ const CurrencyDropdown: React.FC<DropdownProps> = ({ selected, onSelect, exclude
 };
 
 /* ── Main converter ── */
-const CurrencyConverter: React.FC = () => {
+interface CurrencyConverterProps {
+  onSuccess?: () => void;
+}
+
+const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
   const [rawAmount,     setRawAmount]     = useState('30');
   const [sendCurrency,  setSendCurrency]  = useState<Currency>(CURRENCIES[0]); // GBP
   const [recvCurrency,  setRecvCurrency]  = useState<Currency>(CURRENCIES[3]); // NGN
@@ -92,6 +96,7 @@ const CurrencyConverter: React.FC = () => {
   const amount = Math.max(0, parseFloat(rawAmount) || 0);
 
   const [quoteLoading, setQuoteLoading] = useState(false);
+  const [executing, setExecuting] = useState(false);
   const [quoteError, setQuoteError] = useState<string>('');
   const [receivedAmount, setReceivedAmount] = useState<number | null>(null);
   const [ratePerUnit, setRatePerUnit] = useState<number | null>(null);
@@ -190,6 +195,31 @@ const CurrencyConverter: React.FC = () => {
     if (c.code === sendCurrency.code) setSendCurrency(recvCurrency);
   };
 
+  const handleExecute = async () => {
+    if (!sendCurrency.code || !recvCurrency.code || amount <= 0 || executing) return;
+    
+    setExecuting(true);
+    try {
+      const res = await conversionsApi.create({
+        from: sendCurrency.code,
+        to: recvCurrency.code,
+        amount,
+      });
+
+      if (res.success) {
+        toast.success('Conversion successful!');
+        setRawAmount('');
+        if (onSuccess) onSuccess();
+      } else {
+        toast.error(res.error?.message || 'Conversion failed');
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'An unexpected error occurred');
+    } finally {
+      setExecuting(false);
+    }
+  };
+
   return (
     <div className="cc-card">
 
@@ -281,6 +311,29 @@ const CurrencyConverter: React.FC = () => {
           {sendCurrency.symbol} {fmt(totalAmount)}
         </span>
       </div>
+
+      {/* EXECUTE BUTTON */}
+      <button 
+        className="cc-execute-btn" 
+        onClick={handleExecute} 
+        disabled={quoteLoading || executing || amount <= 0 || receivedAmount === null}
+        style={{
+          width: '100%',
+          marginTop: '24px',
+          padding: '18px',
+          borderRadius: '16px',
+          background: '#C8F032',
+          border: 'none',
+          color: '#0A1E28',
+          fontWeight: 800,
+          fontSize: '16px',
+          cursor: 'pointer',
+          transition: 'all 0.2s',
+          opacity: (quoteLoading || executing || amount <= 0 || receivedAmount === null) ? 0.6 : 1
+        }}
+      >
+        {executing ? 'Processing...' : `Convert to ${recvCurrency.code}`}
+      </button>
 
     </div>
   );

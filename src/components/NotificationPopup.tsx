@@ -2,14 +2,15 @@ import React from 'react';
 import '../assets/css/NotificationPopup.css';
 import { useNotifications } from '../context/NotificationContext';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 interface NotificationPopupProps {
   onClose: () => void;
 }
 
 const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
- 
-  const { notifications, unreadCount, markAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const navigate = useNavigate();
 
   const getIcon = (type: string) => {
     switch(type) {
@@ -66,11 +67,8 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
   };
 
   const handleMarkAllRead = async () => {
-    const unread = notifications.filter((n) => n.status === 'unread');
-    if (!unread.length) return;
-
     try {
-      await Promise.all(unread.map((n) => markAsRead(n.id)));
+      await markAllAsRead();
     } catch (e: any) {
       toast.error(e?.message || 'Failed to mark notifications as read.');
     }
@@ -81,13 +79,21 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
     onClose();
 
     if (!item) return;
-    if (item.status !== 'unread') return;
 
-    try {
-      await markAsRead(item.id);
-    } catch (e: any) {
-      toast.error(e?.message || 'Failed to update notification.');
+    if (item.status === 'unread') {
+      try {
+        await markAsRead(item.id);
+      } catch (e: any) {
+        toast.error(e?.message || 'Failed to update notification.');
+      }
     }
+
+    // Deep-linking
+    const dataId = (item as any).dataId || (item as any).trade_id || item.id;
+    if ((item.type as string) === 'trade') navigate(`/dashboard/trade/${dataId}`);
+    else if ((item.type as string) === 'deposit') navigate(`/dashboard/deposits/${dataId}`);
+    else if ((item.type as string) === 'withdrawal') navigate(`/dashboard/withdrawals/${dataId}`);
+    else if ((item.type as string) === 'bid') navigate(`/dashboard/trades`);
   };
 
   return (
@@ -111,6 +117,9 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
         </div>
 
         <div className="panel-actions">
+          <button className="mark-read-btn" onClick={() => { onClose(); navigate('/dashboard/notifications'); }}>
+            View all notifications
+          </button>
           <button className="mark-read-btn" onClick={handleMarkAllRead} disabled={notifications.length === 0}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round"/>

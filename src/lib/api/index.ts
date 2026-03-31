@@ -8,6 +8,8 @@ export { default as beneficiariesApi } from "./beneficiaries.api";
 export { default as conversionsApi } from "./conversions.api";
 export { default as sabitsApi } from "./sabits.api";
 export { default as tradesApi } from "./trades.api";
+export { default as bidsApi } from "./bids.api";
+export { default as ratingsApi } from "./ratings.api";
 export { default as disputesApi } from "./disputes.api";
 export { default as kycApi } from "./kyc.api";
 export { default as ratesApi } from "./rates.api";

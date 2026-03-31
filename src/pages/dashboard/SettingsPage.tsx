@@ -47,6 +47,12 @@ const SettingsPage: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
+  // Username change
+  const { user } = useAuth();
+  const [newUsername, setNewUsername] = useState(user?.username || '');
+  const [updatingUsername, setUpdatingUsername] = useState(false);
+  const [usernameError, setUsernameError] = useState('');
+
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
@@ -156,6 +162,28 @@ const SettingsPage: React.FC = () => {
       setDeleteError(err?.message || 'Failed to confirm account deletion.');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const updateUsername = async () => {
+    setUsernameError('');
+    if (!newUsername.trim()) {
+      setUsernameError('Username cannot be empty.');
+      return;
+    }
+    setUpdatingUsername(true);
+    try {
+      const res = await accountApi.updateUsername(newUsername);
+      if (res && res.username) {
+        toast.success('Username updated successfully.');
+        await refreshUser();
+      } else {
+        setUsernameError('Failed to update username.');
+      }
+    } catch (err: any) {
+      setUsernameError(err?.message || 'Failed to update username.');
+    } finally {
+      setUpdatingUsername(false);
     }
   };
 
@@ -370,7 +398,26 @@ const SettingsPage: React.FC = () => {
                 <>
                   <h3 className="settings-card-title">Account Settings</h3>
 
-                  <div className="section-subtitle" style={{ marginTop: 10 }}>Email Change</div>
+                  <div className="section-subtitle" style={{ marginTop: 10 }}>Update Username</div>
+                  <div className="form-group">
+                    <label>New Username</label>
+                    <input
+                      type="text"
+                      value={newUsername}
+                      onChange={(e) => setNewUsername(e.target.value)}
+                      placeholder="Enter new username"
+                    />
+                  </div>
+                  {usernameError && (
+                    <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 16, background: '#fee2e2', border: '1px solid #fecaca', color: '#991b1b', fontWeight: 600 }}>
+                      {usernameError}
+                    </div>
+                  )}
+                  <button className="btn-primary" type="button" onClick={() => void updateUsername()} disabled={updatingUsername}>
+                    {updatingUsername ? 'Updating...' : 'Update Username'}
+                  </button>
+
+                  <div className="section-subtitle" style={{ marginTop: 26 }}>Email Change</div>
                   <div className="settings-item" style={{ border: 'none', padding: 0 }}>
                     <div style={{ width: '100%', paddingTop: 6 }}>
                       {emailChangeStep === 1 && (

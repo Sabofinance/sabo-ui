@@ -50,19 +50,29 @@ const WithdrawalDetailPage = lazy(() => import('./pages/dashboard/WithdrawalDeta
 const BeneficiariesPage = lazy(() => import('./pages/dashboard/BeneficiariesPage'));
 const ConversionsPage = lazy(() => import('./pages/dashboard/ConversionsPage'));
 const TradesPage      = lazy(() => import('./pages/dashboard/TradesPage'));
+const TradeDetailPage = lazy(() => import('./pages/dashboard/TradeDetailPage'));
 const DisputesPage    = lazy(() => import('./pages/dashboard/DisputesPage'));
+const NotificationsPage = lazy(() => import('./pages/dashboard/NotificationsPage'));
 const KycPage         = lazy(() => import('./pages/dashboard/KycPage'));
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminUserDetailsPage = lazy(() => import('./pages/admin/AdminUserDetailsPage'));
 const AdminKycPage = lazy(() => import('./pages/admin/AdminKycPage'));
 const AdminDepositsPage = lazy(() => import('./pages/admin/AdminDepositsPage'));
+const AdminDisputesPage = lazy(() => import("./pages/admin/AdminDisputesPage"));
+const AdminTransactionsPage = lazy(
+  () => import("./pages/admin/AdminTransactionsPage"),
+);
 const AdminAdminsPage = lazy(() => import('./pages/admin/AdminAdminsPage'));
 const AdminLogsPage = lazy(() => import('./pages/admin/AdminLogsPage'));
+const AdminProfilePage = lazy(() => import('./pages/admin/AdminProfilePage'));
 const TransactionPinPage = lazy(() => import('./pages/dashboard/TransactionPinPage'));
 
 const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
 const AdminVerifyOtpPage = lazy(() => import('./pages/admin/AdminVerifyOtpPage'));
+const AdminAcceptInvitePage = lazy(
+  () => import("./pages/admin/AdminAcceptInvitePage"),
+);
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -126,6 +136,7 @@ function App() {
           {/* Admin auth routes */}
           <Route path="/admin/login" element={<AdminPublicRoute><AdminLoginPage /></AdminPublicRoute>} />
           <Route path="/admin/verify-otp" element={<AdminPublicRoute><AdminVerifyOtpPage /></AdminPublicRoute>} />
+          <Route path="/admin/accept-invite" element={<AdminPublicRoute><AdminAcceptInvitePage /></AdminPublicRoute>} />
 
           <Route path="/p2p"       element={<SabitMarketPage />}  />
           <Route path="/business"  element={<SaboBusinessPage />} />
@@ -153,13 +164,18 @@ function App() {
             <Route path="beneficiaries"   element={<UserProtectedRoute><BeneficiariesPage /></UserProtectedRoute>} />
             <Route path="conversions"     element={<UserProtectedRoute><ConversionsPage /></UserProtectedRoute>} />
             <Route path="trades"          element={<UserProtectedRoute><TradesPage /></UserProtectedRoute>} />
+            <Route path="trade/:id"       element={<UserProtectedRoute><TradeDetailPage /></UserProtectedRoute>} />
             <Route path="disputes"        element={<UserProtectedRoute><DisputesPage /></UserProtectedRoute>} />
+            <Route path="notifications"   element={<UserProtectedRoute><NotificationsPage /></UserProtectedRoute>} />
             <Route path="kyc"             element={<UserProtectedRoute><KycPage /></UserProtectedRoute>} />
             <Route path="admin" element={<AdminProtectedRoute><AdminDashboardPage /></AdminProtectedRoute>} />
             <Route path="admin/users" element={<AdminProtectedRoute><AdminUsersPage /></AdminProtectedRoute>} />
             <Route path="admin/users/:id" element={<AdminProtectedRoute><AdminUserDetailsPage /></AdminProtectedRoute>} />
             <Route path="admin/kyc" element={<AdminProtectedRoute><AdminKycPage /></AdminProtectedRoute>} />
             <Route path="admin/deposits" element={<AdminProtectedRoute><AdminDepositsPage /></AdminProtectedRoute>} />
+            <Route path="admin/disputes" element={<AdminProtectedRoute><AdminDisputesPage /></AdminProtectedRoute>} />
+            <Route path="admin/transactions" element={<AdminProtectedRoute><AdminTransactionsPage /></AdminProtectedRoute>} />
+            <Route path="admin/profile" element={<AdminProtectedRoute><AdminProfilePage /></AdminProtectedRoute>} />
             <Route path="admin/admins" element={<AdminProtectedRoute allowedRoles={["super_admin"]}><AdminAdminsPage /></AdminProtectedRoute>} />
             <Route path="admin/logs" element={<AdminProtectedRoute allowedRoles={["super_admin"]}><AdminLogsPage /></AdminProtectedRoute>} />
           </Route>

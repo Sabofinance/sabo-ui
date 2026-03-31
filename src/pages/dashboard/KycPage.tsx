@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { kycApi } from '../../lib/api';
 import { toast } from 'react-toastify';
 import { useNotifications } from '../../context/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
 import '../../assets/css/HistoryPage.css';
 
 const KycPage: React.FC = () => {
-  const [status, setStatus] = useState('pending');
+  const { user, refreshUser } = useAuth();
+  const [status, setStatus] = useState(String(user?.kyc_status || 'unverified'));
   const [documentType, setDocumentType] = useState('passport');
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
@@ -39,11 +41,12 @@ const KycPage: React.FC = () => {
       toast.info('Your KYC documents have been successfully uploaded and are now pending review.');
       setStatus('pending');
       fetchNotifications();
+      void refreshUser();
     } else {
       toast.error('Failed to submit KYC. Please try again.');
     }
   };
-
+ 
   const getStatusColor = (s: string) => {
     switch (s.toLowerCase()) {
       case 'verified': return '#2ecc71';

@@ -7,7 +7,7 @@ import loginImage from "../assets/images/3d-illustration-login.png";
 
 const VerifyOtpPage: React.FC = () => {
   const navigate = useNavigate();
-  const { verifyOtp } = useAuth();
+  const { verifyOtp, resendOtp } = useAuth();
   const [generalError, setGeneralError] = useState("");
   const [email, setEmail] = useState("");
 
@@ -16,6 +16,7 @@ const VerifyOtpPage: React.FC = () => {
 
   const [secondsLeft, setSecondsLeft] = useState(60);
   const [submitting, setSubmitting] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const otp = useMemo(() => digits.join(""), [digits]);
 
@@ -51,6 +52,23 @@ const VerifyOtpPage: React.FC = () => {
       setGeneralError(error.message || "Invalid OTP. Please try again.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!email || resending) return;
+    setGeneralError("");
+    setResending(true);
+    try {
+      await resendOtp({ email });
+      setDigits(Array.from({ length: 6 }, () => ""));
+      setSecondsLeft(60);
+      // Focus the first digit for faster UX.
+      window.setTimeout(() => inputsRef.current[0]?.focus(), 0);
+    } catch (err: any) {
+      setGeneralError(err?.message || "Failed to resend OTP.");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -147,9 +165,22 @@ const VerifyOtpPage: React.FC = () => {
                   </div>
                   <div style={{ marginTop: 10, textAlign: "center", color: "#64748B", fontSize: 13 }}>
                     {secondsLeft > 0 ? (
-                      <>You can request a new OTP in {secondsLeft}s</>
+                    <>You can request a new OTP in {secondsLeft}s</>
                     ) : (
-                      <>Didn’t get a code? Go back to login to request a new OTP.</>
+                    <div>
+                      <button
+                        type="button"
+                        className="auth-btn"
+                        style={{ width: "auto", padding: "8px 16px", marginTop: 8 }}
+                        onClick={handleResend}
+                        disabled={resending}
+                      >
+                        {resending ? "Resending..." : "Resend OTP"}
+                      </button>
+                      <div style={{ marginTop: 6 }}>
+                        Didn’t get a code? Resend OTP to {email}.
+                      </div>
+                    </div>
                     )}
                   </div>
                 </div>

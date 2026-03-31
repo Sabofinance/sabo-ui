@@ -64,17 +64,11 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       const sessionType = localStorage.getItem("sessionType") || "user";
-      // Avoid guessing admin refresh endpoints; only refresh for user scope.
-      if (sessionType === "admin") {
-        localStorage.removeItem("adminAccessToken");
-        localStorage.removeItem("adminRefreshToken");
-        localStorage.removeItem("adminUser");
-        // Hard redirect so we don't depend on hooks.
-        if (typeof window !== "undefined" && window.location.pathname !== "/admin/login") {
-          window.location.assign("/admin/login");
-        }
-        return Promise.reject(error);
-      }
+      const isAdmin = sessionType === "admin";
+      const refreshTokenKey = isAdmin ? "adminRefreshToken" : "refreshToken";
+      const accessTokenKey = isAdmin ? "adminAccessToken" : "accessToken";
+      const userKey = "user";
+      const loginPath = isAdmin ? "/admin/login" : "/login";
 
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -96,15 +90,24 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem("refreshToken");
+      const refreshToken = localStorage.getItem(refreshTokenKey);
 
       if (!refreshToken) {
         isRefreshing = false;
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
-        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-          window.location.assign("/login");
+        if (isAdmin) {
+          localStorage.removeItem("adminAccessToken");
+          localStorage.removeItem("adminRefreshToken");
+          localStorage.removeItem("adminUser");
+          localStorage.setItem("sessionType", "user");
+        } else {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem(userKey);
+        }
+
+        // Hard redirect so we don't depend on hooks.
+        if (typeof window !== "undefined" && window.location.pathname !== loginPath) {
+          window.location.assign(loginPath);
         }
         return Promise.reject(error);
       }
@@ -119,8 +122,8 @@ api.interceptors.response.use(
           const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
             response.data.data.tokens;
 
-          localStorage.setItem("accessToken", newAccessToken);
-          localStorage.setItem("refreshToken", newRefreshToken);
+          localStorage.setItem(accessTokenKey, newAccessToken);
+          localStorage.setItem(refreshTokenKey, newRefreshToken);
 
           if (originalRequest.headers) {
             if (typeof originalRequest.headers.set === "function") {
@@ -137,11 +140,19 @@ api.interceptors.response.use(
         throw new Error("Refresh token failed");
       } catch (refreshError) {
         processQueue(refreshError, null);
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
-        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-          window.location.assign("/login");
+        if (isAdmin) {
+          localStorage.removeItem("adminAccessToken");
+          localStorage.removeItem("adminRefreshToken");
+          localStorage.removeItem("adminUser");
+          localStorage.setItem("sessionType", "user");
+        } else {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem(userKey);
+        }
+
+        if (typeof window !== "undefined" && window.location.pathname !== loginPath) {
+          window.location.assign(loginPath);
         }
         return Promise.reject(refreshError);
       } finally {

@@ -5,6 +5,7 @@ import { useSidebar } from '../context/SidebarContext';
 import '../assets/css/DashboardHeader.css';
 import { useAuth } from '../context/AuthContext';
 import { useAdminAuth } from '../context/AdminAuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { toast } from 'react-toastify';
 
 const DashboardHeader: React.FC = () => {
@@ -31,7 +32,7 @@ const DashboardHeader: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const unreadCount = 0;
+  const { unreadCount } = useNotifications();
 
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();

@@ -32,6 +32,8 @@ const ResetPasswordPage: React.FC = () => {
   const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
 
   const password = watch("password");
+  const passwordPolicy =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
   useEffect(() => {
     if (!token) {
@@ -58,11 +60,8 @@ const ResetPasswordPage: React.FC = () => {
         );
       }
     } catch (error: any) {
-      setGeneralError(
-        error.response?.data?.error?.message ||
-          error.message ||
-          "This reset link is invalid or has expired. Please request a new one.",
-      );
+      // Avoid exposing raw token/backend errors; always guide the user to re-request a link.
+      setGeneralError("This reset link is invalid or has expired. Please request a new one.");
     }
   };
 
@@ -115,9 +114,13 @@ const ResetPasswordPage: React.FC = () => {
                         {...register("password", {
                           required: "Password is required",
                           minLength: {
-                            value: 6,
-                            message: "Password must be at least 6 characters",
+                            value: 8,
+                            message: "Password must be at least 8 characters",
                           },
+                          validate: (v) =>
+                            passwordPolicy.test(v || "")
+                              ? true
+                              : "Password must include uppercase, lowercase, number, and special character.",
                         })}
                         className={`form-input ${errors.password ? "error" : ""}`}
                         placeholder="Create a new password"

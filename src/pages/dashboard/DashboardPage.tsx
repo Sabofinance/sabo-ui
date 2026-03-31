@@ -14,7 +14,7 @@ import { toast } from 'react-toastify';
 
 /* ─── Types ──────────────────────────────────────────────── */
 type WalletView = {
-  id: string; currency: string; balance: number; symbol: string;
+  id: string; currency: string; balance: number; locked: number; symbol: string;
   cardNumber: string; cardHolder: string; expiry: string;
   income: number; outcome: number; limit: number;
 };
@@ -398,10 +398,25 @@ const WalletHero: React.FC<{
         {/* Balance */}
         <div style={{ marginBottom: 4 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 6 }}>
-            Current Balance
+            Available Balance
           </div>
           <div style={{ fontSize: 'clamp(30px,5vw,46px)', fontWeight: 900, letterSpacing: '-1.5px', lineHeight: 1, color: '#fff' }}>
             {w.symbol}{fmt(w.balance)}
+          </div>
+
+          <div style={{ marginTop: 10 }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.6px' }}>
+              Locked Balance{" "}
+              <span
+                title="These funds are committed to active trades and cannot be withdrawn until the trade completes or is cancelled."
+                style={{ cursor: 'help' }}
+              >
+                (?)
+              </span>
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.85)', lineHeight: 1.2 }}>
+              {w.symbol}{fmt(w.locked)}
+            </div>
           </div>
         </div>
 
@@ -494,6 +509,7 @@ const DashboardPage: React.FC = () => {
 
   const initWallets = (): WalletView[] => walletCurrencies.map(c => ({
     id: c.code, currency: c.code, balance: 0, symbol: c.symbol,
+    locked: 0,
     cardNumber: '', cardHolder: '', expiry: '', income: 0, outcome: 0, limit: 0,
   }));
 
@@ -568,7 +584,14 @@ const DashboardPage: React.FC = () => {
             const w = wMap.get(c.code) || {};
             return {
               id: String((w as any).id || c.code || idx),
-              currency: c.code, balance: Number((w as any).balance || 0),
+              currency: c.code,
+              // Backend returns both available and locked balances; keep `balance` as available for existing charts.
+              balance: Number(
+                (w as any).available_balance ?? (w as any).availableBalance ?? (w as any).available ?? (w as any).balance ?? 0,
+              ) || 0,
+              locked: Number(
+                (w as any).locked_balance ?? (w as any).lockedBalance ?? (w as any).locked ?? 0,
+              ) || 0,
               symbol: String((w as any).symbol || c.symbol),
               cardNumber: String((w as any).cardNumber || ''),
               cardHolder: String((w as any).cardHolder || ''),
@@ -630,6 +653,8 @@ const DashboardPage: React.FC = () => {
             return {
               id: Number(entry.id || idx + 1), type, currency: String(entry.currency || ''),
               amount, rate: rateVal, total, counterparty, avatar,
+              // API-provided reference is used for auditability; fallback to `id` only if reference is absent.
+              reference: String(entry.reference ?? entry.ref ?? entry.reference_id ?? entry.id ?? idx + 1),
               date: String(entry.date || entry.createdAt || new Date().toISOString()), status,
             };
           });
@@ -875,7 +900,13 @@ const DashboardPage: React.FC = () => {
                       <div style={{ fontSize: 15, fontWeight: 800, color: isActive ? meta.accent : 'var(--text-primary)', letterSpacing: '-0.3px' }}>
                         {w.symbol}{fmt(w.balance)}
                       </div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontWeight: 500 }}>Balance</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontWeight: 500 }}>Available</div>
+                      <div
+                        style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3, fontWeight: 500 }}
+                        title="These funds are committed to active trades and cannot be withdrawn until the trade completes or is cancelled."
+                      >
+                        Locked: {w.symbol}{fmt(w.locked)}
+                      </div>
                     </div>
                   );
                 })}

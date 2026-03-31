@@ -311,6 +311,7 @@ const AdminDashboardPage: React.FC = () => {
   const [adminTransactions, setAdminTransactions] = useState<AnyRecord[]>([]);
   const [disputes, setDisputes] = useState<AnyRecord[]>([]);
   const [dashboardData, setDashboardData] = useState<AnyRecord | null>(null);
+  const [analyticsImpact, setAnalyticsImpact] = useState<AnyRecord | null>(null);
   const [depositsActionLoadingId, setDepositsActionLoadingId] = useState('');
   const [kycActionLoadingId, setKycActionLoadingId] = useState('');
   const [userActionLoadingId, setUserActionLoadingId] = useState('');
@@ -333,9 +334,14 @@ const AdminDashboardPage: React.FC = () => {
   const listAll = async () => {
     setLoading(true); setError(''); setSelectedUser(null);
     try {
-      const [dashRes, txRes] = await Promise.all([adminApi.getDashboard(), adminApi.listTransactions({ limit: 30 })]);
+      const [dashRes, txRes, impactRes] = await Promise.all([
+        adminApi.getDashboard(), 
+        adminApi.listTransactions({ limit: 30 }),
+        adminApi.getAnalyticsImpact()
+      ]);
       console.log('AdminDashboard getDashboard', dashRes);
       console.log('AdminDashboard listTransactions', txRes);
+      
       if (!dashRes.success) {
         toast.error(dashRes.error?.message || 'Failed to load admin overview');
       } else {
@@ -346,6 +352,10 @@ const AdminDashboardPage: React.FC = () => {
         setAdminTransactions(safeList(txRes.data));
       } else {
         toast.error(txRes.error?.message || 'Failed to load admin transactions');
+      }
+
+      if (impactRes.success) {
+        setAnalyticsImpact(impactRes.data as AnyRecord ?? null);
       }
 
       const usersRes = await adminApi.listUsers();
@@ -603,6 +613,27 @@ const AdminDashboardPage: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {/* Analytics Impact Section */}
+        {analyticsImpact && (
+          <div className="adm-card adm-rise adm-d2" style={{ marginBottom: 24 }}>
+            <div className="adm-card-head">
+              <h3>System Impact & Analytics</h3>
+            </div>
+            <div className="adm-card-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
+              {Object.entries(analyticsImpact).map(([key, val]) => (
+                <div key={key}>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 4 }}>
+                    {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}
+                  </div>
+                  <div style={{ fontSize: 24, fontWeight: 800 }}>
+                    {typeof val === 'number' ? fmt(val) : String(val)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Main grid */}
         <div className="adm-grid">
@@ -916,4 +947,4 @@ const AdminDashboardPage: React.FC = () => {
   );
 };
 
-export default AdminDashboardPage;
+export default AdminDashboardPage; 

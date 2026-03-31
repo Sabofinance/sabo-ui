@@ -39,7 +39,9 @@ const SignupPage: React.FC = () => {
         password: data.password,
       });
       // Registration successful
-      navigate("/login");
+      // Backend sends an OTP; verify it using the shared OTP screen.
+      sessionStorage.setItem("pendingEmail", data.email);
+      navigate("/verify-otp");
     } catch (error: any) {
       const code = String(error?.code || "");
       if (code === "EMAIL_TAKEN") {

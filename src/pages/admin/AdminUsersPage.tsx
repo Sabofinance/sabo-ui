@@ -2,19 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { adminApi } from '../../lib/api';
+import { extractArray } from '../../lib/api/response';
 
 type UserRecord = Record<string, unknown>;
-
-const extractArray = (value: unknown): unknown[] => {
-  if (Array.isArray(value)) return value;
-  if (!value || typeof value !== 'object') return [];
-  const obj = value as Record<string, unknown>;
-  const keys = ['users', 'items', 'results', 'rows', 'records', 'list', 'data', 'transactions', 'submissions', 'deposits', 'disputes'];
-  for (const key of keys) {
-    if (Array.isArray(obj[key])) return obj[key] as unknown[];
-  }
-  return [];
-};
 
 const AdminUsersPage: React.FC = () => {
  

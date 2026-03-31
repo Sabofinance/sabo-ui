@@ -1,0 +1,142 @@
+.notifications-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.notifications-list-container {
+  margin-top: 20px;
+}
+
+.notification-card {
+  display: flex;
+  background: white;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  padding: 20px;
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(10, 30, 40, 0.02);
+}
+
+.notification-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(10, 30, 40, 0.06);
+  border-color: var(--sabo-primary);
+}
+
+.notification-card.unread {
+  background: rgba(200, 240, 50, 0.03);
+  border-color: rgba(200, 240, 50, 0.2);
+}
+
+.type-indicator {
+  width: 4px;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.type-indicator.trade { background: #3A7BFF; }
+.type-indicator.deposit { background: #2ECC71; }
+.type-indicator.withdrawal { background: #F59E0B; }
+.type-indicator.success { background: #10B981; }
+.type-indicator.error { background: #EF4444; }
+
+.notif-body {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 20px;
+}
+
+.notif-main {
+  flex: 1;
+}
+
+.notif-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sabo-dark-navy);
+  margin-bottom: 4px;
+}
+
+.notif-message {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.notif-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-width: 140px;
+}
+
+.notif-date {
+  font-size: 12px;
+  color: #9aa3b3;
+}
+
+.unread-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--sabo-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--sabo-primary);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 24px;
+  border: 1px dashed var(--border-light);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  padding-bottom: 40px;
+}
+
+.load-more-btn {
+  padding: 12px 32px;
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  font-weight: 600;
+  color: var(--sabo-dark-navy);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.load-more-btn:hover {
+  background: var(--bg-light);
+  border-color: var(--sabo-primary);
+}
+
+.skeleton-card {
+  height: 80px;
+  background: #eee;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+  100% { opacity: 0.6; }
+}

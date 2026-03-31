@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { depositsApi } from '../../lib/api';
+import { extractArray } from '../../lib/api/response';
 import '../../assets/css/HistoryPage.css';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -15,8 +16,8 @@ const DepositsPage: React.FC = () => {
       setLoading(true);
       setError('');
       const response = await depositsApi.list();
-      if (response.success && Array.isArray(response.data)) {
-        setDeposits(response.data);
+      if (response.success) {
+        setDeposits(extractArray(response.data));
       } else {
         const msg = response.error?.message || 'Failed to load deposits';
         setError(msg);

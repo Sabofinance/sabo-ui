@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { depositsApi } from '../lib/api';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 interface DepositModalProps {
   onClose: () => void;
@@ -12,6 +13,7 @@ const CURRENCY_OPTIONS: Array<'NGN' | 'USD' | 'GBP' | 'CAD'> = ['NGN', 'USD', 'G
 type Currency = NonNullable<DepositModalProps['defaultCurrency']>;
 
 const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 'NGN' }) => {
+  const navigate = useNavigate();
  
 
   const [currency, setCurrency] = useState<Currency>(defaultCurrency as Currency);
@@ -94,6 +96,17 @@ const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 
         return;
       }
 
+      // Foreign deposits don't have a Flutterwave redirect; they enter admin review.
+      if (currency !== 'NGN') {
+        toast.success('Foreign deposit submitted. Pending admin review.');
+        setSuccessData(null);
+        setForeignFile(null);
+        setUploadPct(0);
+        onClose();
+        navigate('/dashboard/deposit-pending?depositType=foreign');
+        return;
+      }
+
       setSuccessData(res.data);
       setForeignFile(null);
       setUploadPct(0);
@@ -109,6 +122,9 @@ const DepositModal: React.FC<DepositModalProps> = ({ onClose, defaultCurrency = 
   const paymentUrl = useMemo(() => {
     const d = successData || {};
     const url =
+      d?.deposit?.payment_link ||
+      d?.deposit?.payment_url ||
+      d?.deposit?.url ||
       d?.paymentUrl ||
       d?.payment_url ||
       d?.url ||
