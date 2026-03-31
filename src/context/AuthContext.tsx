@@ -50,7 +50,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authApi.getCurrentUser();
       if (response.success && response.data) {
-        const nextUser = response.data as User;
+        // Robustly extract user object if nested under 'user' key
+        const data = response.data as any;
+        const nextUser = (data.user ? data.user : data) as User;
+        
         setUser(nextUser);
         localStorage.setItem('user', JSON.stringify(nextUser));
         setIsAuthenticated(true);

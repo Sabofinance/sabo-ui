@@ -22,7 +22,7 @@ interface MySabitListing {
 
 const MySabitPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { refreshUser } = useAuth(); // Assuming refreshUser is needed, if not remove the whole line if no other members are used
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'cancelled'>('active');
   const [myListings, setMyListings] = useState<MySabitListing[]>([]);
   const [loading, setLoading] = useState(false);

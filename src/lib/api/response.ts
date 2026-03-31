@@ -18,13 +18,12 @@ export const extractArray = (value: unknown): any[] => {
   if (Array.isArray(value)) return value;
   if (!value || typeof value !== 'object') return [];
   const obj = value as Record<string, unknown>;
-  const keys = ['users', 'items', 'results', 'rows', 'records', 'list', 'data', 'transactions', 'submissions', 'deposits', 'withdrawals', 'conversions', 'disputes', 'bids', 'beneficiaries', 'wallets'];
+  const keys = ['wallets', 'entries', 'items', 'transactions', 'data', 'users', 'results', 'rows', 'records', 'list', 'submissions', 'deposits', 'withdrawals', 'conversions', 'disputes', 'bids', 'beneficiaries'];
   for (const key of keys) {
     if (Array.isArray(obj[key])) return obj[key] as any[];
   }
   return [];
 };
-
 export const normalizeSuccess = <T>(data: T | null): ApiEnvelope<T> => ({
   success: true,
   data,

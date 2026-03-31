@@ -1,12 +1,5 @@
 import { apiRequest } from "./request";
 
-type AdminUserData = Record<string, unknown>;
-
-type KycData = Record<string, unknown>;
-type DepositData = Record<string, unknown>;
-type AdminData = Record<string, unknown>;
-type LogData = Record<string, unknown>;
-
 export const adminApi = {
   // Admin dashboard
   getDashboard: () => apiRequest.get("/admin/dashboard"),

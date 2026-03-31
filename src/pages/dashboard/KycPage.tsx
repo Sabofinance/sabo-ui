@@ -19,7 +19,9 @@ const KycPage: React.FC = () => {
     const loadStatus = async () => {
       const response = await kycApi.getStatus();
       if (response.success && response.data && typeof response.data === 'object') {
-        setStatus(String((response.data as Record<string, unknown>).status || 'pending'));
+        const data = response.data as any;
+        const kycStatus = data.user?.kyc_status || data.kyc_status || data.status || 'unverified';
+        setStatus(String(kycStatus));
       }
     };
     void loadStatus();

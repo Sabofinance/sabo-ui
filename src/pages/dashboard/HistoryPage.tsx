@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ledgerApi } from '../../lib/api';
+import { extractArray } from '../../lib/api/response';
 import '../../assets/css/HistoryPage.css';
 
 interface Transaction {
@@ -46,8 +47,9 @@ const HistoryPage: React.FC = () => {
         if (currencyFilter !== 'all') params.currency = currencyFilter;
 
         const response = await ledgerApi.listEntries(params);
-        if (response.success && Array.isArray(response.data)) {
-          const mapped: Transaction[] = response.data.map((entry: Record<string, unknown>, index: number) => ({
+        if (response.success) {
+          const ledgerList = extractArray(response.data);
+          const mapped: Transaction[] = ledgerList.map((entry: Record<string, unknown>, index: number) => ({
             id: Number(entry.id || index + 1),
             type: (String(entry.type || 'buy').toLowerCase() === 'sell' ? 'sell' : 'buy') as Transaction['type'],
             currency: (String(entry.currency || 'NGN') as Transaction['currency']),

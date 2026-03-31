@@ -1,27 +1,28 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { useSidebar } from '../context/SidebarContext';
-import { useAuth } from '../context/AuthContext';
-import { useAdminAuth } from '../context/AdminAuthContext';
-import '../assets/css/DashboardSidebar.css';
+import React from "react";
+import { NavLink } from "react-router-dom";
+import { useSidebar } from "../context/SidebarContext";
+import { useAuth } from "../context/AuthContext";
+import { useAdminAuth } from "../context/AdminAuthContext";
+import "../assets/css/DashboardSidebar.css";
 
 const DashboardSidebar: React.FC = () => {
   const { isOpen, close } = useSidebar();
   const { user } = useAuth();
   const { adminUser, isAdminAuthenticated } = useAdminAuth();
   const activeRole = isAdminAuthenticated ? adminUser?.role : user?.role;
-  const isAdmin = ['admin', 'super_admin'].includes(String(activeRole || '').toLowerCase());
+  const isAdmin = ["admin", "super_admin"].includes(
+    String(activeRole || "").toLowerCase(),
+  );
 
   return (
     <>
       <div
-        className={`sidebar-overlay ${isOpen ? 'active' : ''}`}
+        className={`sidebar-overlay ${isOpen ? "active" : ""}`}
         onClick={close}
         aria-hidden="true"
       />
 
-      <aside className={`dashboard-sidebar ${isOpen ? 'open' : ''}`}>
-
+      <aside className={`dashboard-sidebar ${isOpen ? "open" : ""}`}>
         <button
           className="sidebar-close-btn"
           onClick={close}
@@ -50,12 +51,13 @@ const DashboardSidebar: React.FC = () => {
 
         <nav className="sidebar-nav" aria-label="Main navigation">
           <ul className="nav-list">
-
             <li className="nav-item">
               <NavLink
                 to={isAdmin ? "/dashboard/admin" : "/dashboard"}
                 end
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
                 onClick={close}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -73,7 +75,9 @@ const DashboardSidebar: React.FC = () => {
             <li className="nav-item">
               <NavLink
                 to="/dashboard/active-sabits"
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
                 onClick={close}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -91,7 +95,9 @@ const DashboardSidebar: React.FC = () => {
             <li className="nav-item">
               <NavLink
                 to="/dashboard/my-sabits"
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
                 onClick={close}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -109,7 +115,9 @@ const DashboardSidebar: React.FC = () => {
             <li className="nav-item">
               <NavLink
                 to="/dashboard/history"
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
                 onClick={close}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -123,94 +131,324 @@ const DashboardSidebar: React.FC = () => {
                 <span className="indicator-dot" />
               </NavLink>
             </li>
+
             <li className="nav-item">
-              <NavLink to="/dashboard/wallets" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M3 7h18v12H3V7z" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M17 10h4v7h-4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2z" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M16 14h.01" strokeLinecap="round" strokeLinejoin="round" />
+              <NavLink
+                to="/dashboard/wallets"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+                onClick={close}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M3 7h18v12H3V7z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M17 10h4v7h-4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M16 14h.01"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
-                <span className="link-text">Wallets</span><span className="indicator-dot" />
+                <span className="link-text">Wallets</span>
+                <span className="indicator-dot" />
               </NavLink>
             </li>
+
             <li className="nav-item">
-              <NavLink to="/dashboard/ledger" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M7 3h10l4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M17 3v4h4" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M8 13h8M8 17h8M8 9h5" strokeLinecap="round" strokeLinejoin="round" />
+              <NavLink
+                to="/dashboard/ledger"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+                onClick={close}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M7 3h10l4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M17 3v4h4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M8 13h8M8 17h8M8 9h5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
-                <span className="link-text">Ledger</span><span className="indicator-dot" />
+                <span className="link-text">Ledger</span>
+                <span className="indicator-dot" />
               </NavLink>
             </li>
+
             <li className="nav-item">
-              <NavLink to="/dashboard/deposits" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M12 3v12" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M7 10l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M5 21h14" strokeLinecap="round" strokeLinejoin="round" />
+              <NavLink
+                to="/dashboard/deposits"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+                onClick={close}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M12 3v12"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M7 10l5 5 5-5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M5 21h14"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
-                <span className="link-text">Deposits</span><span className="indicator-dot" />
+                <span className="link-text">Deposits</span>
+                <span className="indicator-dot" />
               </NavLink>
             </li>
+
             <li className="nav-item">
-              <NavLink to="/dashboard/withdrawals" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M12 21V9" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M7 14l5-5 5 5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M5 3h14" strokeLinecap="round" strokeLinejoin="round" />
+              <NavLink
+                to="/dashboard/withdrawals"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+                onClick={close}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M12 21V9"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M7 14l5-5 5 5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M5 3h14"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
-                <span className="link-text">Withdrawals</span><span className="indicator-dot" />
+                <span className="link-text">Withdrawals</span>
+                <span className="indicator-dot" />
               </NavLink>
             </li>
+
             <li className="nav-item">
-              <NavLink to="/dashboard/beneficiaries" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="8.5" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M20 8v6" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M23 11h-6" strokeLinecap="round" strokeLinejoin="round" />
+              <NavLink
+                to="/dashboard/beneficiaries"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+                onClick={close}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle
+                    cx="8.5"
+                    cy="7"
+                    r="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M20 8v6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M23 11h-6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
-                <span className="link-text">Beneficiaries</span><span className="indicator-dot" />
+                <span className="link-text">Beneficiaries</span>
+                <span className="indicator-dot" />
               </NavLink>
             </li>
+
             <li className="nav-item">
-              <NavLink to="/dashboard/conversions" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M7 7h10v10H7V7z" strokeLinecap="round" strokeLinejoin="round" opacity="0.15" />
-                  <path d="M7 7h10v10H7V7z" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M8 12h8" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M12 8v8" strokeLinecap="round" strokeLinejoin="round" />
+              <NavLink
+                to="/dashboard/conversions"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+                onClick={close}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M7 7h10v10H7V7z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity="0.15"
+                  />
+                  <path
+                    d="M7 7h10v10H7V7z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M8 12h8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 8v8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
-                <span className="link-text">Conversions</span><span className="indicator-dot" />
+                <span className="link-text">Conversions</span>
+                <span className="indicator-dot" />
               </NavLink>
             </li>
+
             <li className="nav-item">
-              <NavLink to="/dashboard/trades" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M3 17l6-6 4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M14 7h7v7" strokeLinecap="round" strokeLinejoin="round" />
+              <NavLink
+                to="/dashboard/trades"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+                onClick={close}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M3 17l6-6 4 4 8-8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M14 7h7v7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
-                <span className="link-text">Trades</span><span className="indicator-dot" />
+                <span className="link-text">Trades</span>
+                <span className="indicator-dot" />
               </NavLink>
             </li>
+
             <li className="nav-item">
-              <NavLink to="/dashboard/disputes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M12 16v-4" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M12 8h.01" strokeLinecap="round" strokeLinejoin="round" />
+              <NavLink
+                to="/dashboard/disputes"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+                onClick={close}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 16v-4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 8h.01"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
-                <span className="link-text">Disputes</span><span className="indicator-dot" />
+                <span className="link-text">Disputes</span>
+                <span className="indicator-dot" />
               </NavLink>
             </li>
+
             <li className="nav-item">
-              <NavLink to="/dashboard/kyc" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={close}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M9 12l2 2 4-5" strokeLinecap="round" strokeLinejoin="round" />
+              <NavLink
+                to="/dashboard/kyc"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+                onClick={close}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M9 12l2 2 4-5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
-                <span className="link-text">KYC</span><span className="indicator-dot" />
+                <span className="link-text">KYC</span>
+                <span className="indicator-dot" />
               </NavLink>
             </li>
 
@@ -218,15 +456,35 @@ const DashboardSidebar: React.FC = () => {
               <li className="nav-item">
                 <NavLink
                   to="/dashboard/admin"
-                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                  className={({ isActive }) =>
+                    `nav-link ${isActive ? "active" : ""}`
+                  }
                   onClick={close}
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M4 7h16l-2 14H6L4 7z" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M7 7l5-4 5 4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 11v6" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path
+                      d="M4 7h16l-2 14H6L4 7z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M7 7l5-4 5 4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M12 11v6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
-                  <span className="link-text">Admin</span><span className="indicator-dot" />
+                  <span className="link-text">Admin</span>
+                  <span className="indicator-dot" />
                 </NavLink>
               </li>
             )}
@@ -234,7 +492,9 @@ const DashboardSidebar: React.FC = () => {
             <li className="nav-item">
               <NavLink
                 to="/dashboard/chat"
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
                 onClick={close}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -248,10 +508,8 @@ const DashboardSidebar: React.FC = () => {
                 <span className="indicator-dot" />
               </NavLink>
             </li>
-
           </ul>
         </nav>
-
       </aside>
     </>
   );

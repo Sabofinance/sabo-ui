@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ledgerApi } from '../../lib/api';
+import { extractArray } from '../../lib/api/response';
 import '../../assets/css/HistoryPage.css';
 
 const LedgerPage: React.FC = () => {
@@ -8,7 +9,7 @@ const LedgerPage: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       const response = await ledgerApi.listEntries();
-      if (response.success && Array.isArray(response.data)) setEntries(response.data);
+      if (response.success) setEntries(extractArray(response.data));
     };
     void load();
   }, []);

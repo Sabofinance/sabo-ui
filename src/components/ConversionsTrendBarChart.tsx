@@ -7,46 +7,44 @@ export type ConversionTrendPoint = {
 
 interface ConversionsTrendBarChartProps {
   points: ConversionTrendPoint[];
-  loading?: boolean;
-  error?: string;
 }
 
-const ConversionsTrendBarChart: React.FC<ConversionsTrendBarChartProps> = ({ points, loading, error }) => {
+const ConversionsTrendBarChart: React.FC<ConversionsTrendBarChartProps> = ({ points }) => {
   const safePoints = Array.isArray(points) ? points : [];
   const maxValue = safePoints.length ? Math.max(...safePoints.map((p) => Number(p.value) || 0)) : 0;
 
-  if (loading) {
-    return (
-      <div className="utility-card chart-card">
-        <div className="chart-header">
-          <h4>Conversion Trend</h4>
-        </div>
-        <p>Loading chart...</p>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="utility-card chart-card">
+  //       <div className="chart-header">
+  //         <h4>Conversion Trend</h4>
+  //       </div>
+  //       <p>Loading chart...</p>
+  //     </div>
+  //   );
+  // }
 
-  if (error) {
-    return (
-      <div className="utility-card chart-card">
-        <div className="chart-header">
-          <h4>Conversion Trend</h4>
-        </div>
-        <p style={{ color: '#c62828' }}>{error}</p>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="utility-card chart-card">
+  //       <div className="chart-header">
+  //         <h4>Conversion Trend</h4>
+  //       </div>
+  //       <p style={{ color: '#c62828' }}>{error}</p>
+  //     </div>
+  //   );
+  // }
 
-  if (!safePoints.length) {
-    return (
-      <div className="utility-card chart-card">
-        <div className="chart-header">
-          <h4>Conversion Trend</h4>
-        </div>
-        <p style={{ color: '#64748B' }}>No conversion trend data available.</p>
-      </div>
-    );
-  }
+  // if (!safePoints.length) {
+  //   return (
+  //     <div className="utility-card chart-card">
+  //       <div className="chart-header">
+  //         <h4>Conversion Trend</h4>
+  //       </div>
+  //       <p style={{ color: '#64748B' }}>No conversion trend data available.</p>
+  //     </div>
+  //   );
+  // }
 
   const formatCurrency = (value: number): string => {
     if (value >= 1000000) return `₦${(value / 1000000).toFixed(1)}M`;

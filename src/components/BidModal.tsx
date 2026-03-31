@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import bidsApi from "../lib/api/bids.api";
-import type { ApiEnvelope } from "../lib/api/response";
 import PinDotsInput from "./PinDotsInput";
 
 type Props = {
