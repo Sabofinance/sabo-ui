@@ -18,7 +18,7 @@ export const extractArray = (value: unknown): any[] => {
   if (Array.isArray(value)) return value;
   if (!value || typeof value !== 'object') return [];
   const obj = value as Record<string, unknown>;
-  const keys = ['wallets', 'entries', 'items', 'transactions', 'data', 'users', 'results', 'rows', 'records', 'list', 'submissions', 'deposits', 'withdrawals', 'conversions', 'disputes', 'bids', 'beneficiaries'];
+  const keys = ['wallets', 'entries', 'items', 'transactions', 'data', 'users', 'results', 'rows', 'records', 'list', 'submissions', 'deposits', 'withdrawals', 'conversions', 'disputes', 'bids', 'beneficiaries','sabits'];
   for (const key of keys) {
     if (Array.isArray(obj[key])) return obj[key] as any[];
   }

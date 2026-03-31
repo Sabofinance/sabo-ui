@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/css/ActiveSabitPage.css';
 import { sabitsApi } from '../../lib/api';
+import { extractArray } from '../../lib/api/response';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import BidModal from '../../components/BidModal';
@@ -96,8 +97,9 @@ const ActiveSabitPage: React.FC = () => {
       if (selectedType !== 'all') params.type = selectedType;
 
       const response = await sabitsApi.list(params);
-      if (response.success && Array.isArray(response.data)) {
-        const mapped: SabitListing[] = response.data.map((item: Record<string, unknown>, idx: number) => {
+      if (response.success) {
+        const sabitList = extractArray(response.data);
+        const mapped: SabitListing[] = sabitList.map((item: Record<string, unknown>, idx: number) => {
           const seller = item.seller as any;
           return {
             id: Number(item.id || idx + 1),

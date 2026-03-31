@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/css/MySabitPage.css';
 import { sabitsApi } from '../../lib/api';
+import { extractArray } from '../../lib/api/response';
 import ReceivedBidsModal from '../../components/ReceivedBidsModal';
+import CreateSabitModal from "../../components/CreateSabitModal";
 
 interface MySabitListing {
   id: number;
@@ -27,13 +29,17 @@ const MySabitPage: React.FC = () => {
   const [error, setError] = useState('');
   const [receivedModalOpen, setReceivedModalOpen] = useState(false);
   const [receivedSabitId, setReceivedSabitId] = useState<number | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const loadListings = async () => {
     setLoading(true);
     setError('');
     const response = await sabitsApi.list({ mine: true });
-    if (response.success && Array.isArray(response.data)) {
-      const mapped: MySabitListing[] = response.data.map((item: Record<string, unknown>, idx: number) => {
+    console.log(response)
+    if (response.success) {
+      const sabitList = extractArray(response.data);
+      console.log("sabit listing " , sabitList)
+      const mapped: MySabitListing[] = sabitList.map((item: Record<string, unknown>, idx: number) => {
         const statusRaw = String(item.status || item.state || 'active');
         const status =
           statusRaw === 'completed' ? 'completed' :
@@ -125,7 +131,7 @@ const MySabitPage: React.FC = () => {
   };
 
   const handleCreateListing = () => {
-    navigate('/dashboard');
+    setCreateModalOpen(true);
   };
 
   const handleEdit = (id: number) => {
@@ -318,6 +324,16 @@ const MySabitPage: React.FC = () => {
           onClose={() => {
             setReceivedModalOpen(false);
             setReceivedSabitId(null);
+          }}
+        />
+      )}
+
+      {createModalOpen && (
+        <CreateSabitModal
+          onClose={() => setCreateModalOpen(false)}
+          onSuccess={() => {
+            setCreateModalOpen(false);
+            void loadListings();
           }}
         />
       )}

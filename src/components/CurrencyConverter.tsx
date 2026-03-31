@@ -562,7 +562,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
           </div>
 
           {/* FEE INPUT */}
-          <div style={panelStyle}>
+          {/* <div style={panelStyle}>
             <span style={labelStyle}>Fee (optional)</span>
             <div style={{ position: "relative" }}>
               <span
@@ -591,7 +591,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
                 aria-label="Fee amount"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* RATE + FEE SUMMARY */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
