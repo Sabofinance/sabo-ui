@@ -6,10 +6,14 @@ import { extractArray } from '../../lib/api/response';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import BidModal from '../../components/BidModal';
+import TradeModal from "../../components/TradeModal";
+import ReceivedBidsModal from '../../components/ReceivedBidsModal';
 
 interface SabitListing {
   id: number;
+  userId: string;
   seller: {
+    id: string;
     name: string;
     avatar: string;
     rating: number;
@@ -23,6 +27,7 @@ interface SabitListing {
   available: number;
   paymentMethods: string[];
   timeLimit: string;
+  status: string;
 }
 
 const ActiveSabitPage: React.FC = () => {
@@ -40,6 +45,12 @@ const ActiveSabitPage: React.FC = () => {
 
   const [bidModalOpen, setBidModalOpen] = useState(false);
   const [bidListing, setBidListing] = useState<SabitListing | null>(null);
+
+  const [tradeModalOpen, setTradeModalOpen] = useState(false);
+  const [tradeListing, setTradeListing] = useState<SabitListing | null>(null);
+
+  const [receivedModalOpen, setReceivedModalOpen] = useState(false);
+  const [receivedSabitId, setReceivedSabitId] = useState<number | null>(null);
 
   const formatNumber = (num: number): string => {
     return new Intl.NumberFormat('en-NG').format(num);
@@ -62,6 +73,10 @@ const ActiveSabitPage: React.FC = () => {
   }), [listings, selectedCurrency, selectedType]);
 
   const handleTradeClick = (listing: SabitListing) => {
+    if (listing.userId === user?.id) {
+      toast.info("This is your own listing.");
+      return;
+    }
     if (!isVerified) {
       navigate('/dashboard/kyc');
       return;
@@ -71,10 +86,15 @@ const ActiveSabitPage: React.FC = () => {
       navigate('/dashboard/transaction-pin');
       return;
     }
-    navigate(`/dashboard/transaction/${listing.id}`);
+    setTradeListing(listing);
+    setTradeModalOpen(true);
   };
 
   const handleMakeOffer = (listing: SabitListing) => {
+    if (listing.userId === user?.id) {
+      toast.info("This is your own listing.");
+      return;
+    }
     if (!isVerified) {
       navigate('/dashboard/kyc');
       return;
@@ -86,6 +106,11 @@ const ActiveSabitPage: React.FC = () => {
     }
     setBidListing(listing);
     setBidModalOpen(true);
+  };
+
+  const handleViewBids = (listing: SabitListing) => {
+    setReceivedSabitId(listing.id);
+    setReceivedModalOpen(true);
   };
 
   useEffect(() => {
@@ -100,25 +125,29 @@ const ActiveSabitPage: React.FC = () => {
       if (response.success) {
         const sabitList = extractArray(response.data);
         const mapped: SabitListing[] = sabitList.map((item: Record<string, unknown>, idx: number) => {
-          const seller = item.seller as any;
+          const seller = (item.seller || {}) as any;
+          const userId = String(item.userId || item.user_id || seller?.id || '');
           return {
             id: Number(item.id || idx + 1),
+            userId,
             seller: {
-              name: String(item.sellerName || seller?.name || item.name || ''),
+              id: userId,
+              name: String(item.sellerName || seller?.name || item.name || 'Anonymous Trader'),
               avatar: String(item.sellerAvatar || seller?.avatar || item.avatar || ''),
               rating: Number(item.rating || item.sellerRating || seller?.rating || 0),
               completedTrades: Number(item.completed || item.completedTrades || item.sellerCompletedTrades || seller?.completedTrades || 0),
               verified: Boolean(item.verified ?? seller?.verified ?? false),
             },
-            type: item.type === 'sell' ? 'sell' : 'buy',
+            type: String(item.type || '').toLowerCase() === 'buy' ? 'buy' : 'sell',
             currency: String(item.currency || 'NGN') as SabitListing['currency'],
             amount: Number(item.amount || 0),
-            rate: Number(item.rate || 0),
+            rate: Number(item.rate_ngn || item.rate || 0),
             available: Number(item.available || item.remaining || 0),
             paymentMethods: Array.isArray(item.paymentMethods)
               ? (item.paymentMethods as string[])
               : ((item.paymentMethodsList as string[] | undefined) || []),
-            timeLimit: String(item.timeLimit || item.time_limit || ''),
+            timeLimit: String(item.timeLimit || item.time_limit || '30 mins'),
+            status: String(item.status || item.state || 'active'),
           };
         });
         setListings(mapped);
@@ -302,23 +331,47 @@ const ActiveSabitPage: React.FC = () => {
                         </svg>
                         <span>{listing.timeLimit}</span>
                       </div>
-                      <div style={{ display: "flex", gap: 10 }}>
-                        <button
-                          className={`trade-btn ${listing.type}`}
-                          onClick={() => handleTradeClick(listing)}
-                          disabled={!isVerified}
-                        >
-                          {listing.type === 'sell' ? 'Buy' : 'Sell'}
-                        </button>
-                        {listing.type === 'sell' && (
-                          <button
-                            className="trade-btn"
-                            onClick={() => handleMakeOffer(listing)}
-                            disabled={!isVerified}
-                            style={{ background: "#fef3c7", border: "1px solid rgba(199, 154, 0, 0.35)" }}
-                          >
-                            Make Offer
-                          </button>
+                      <div style={{ display: "flex", gap: 10, width: "100%", marginTop: 14 }}>
+                        {listing.userId === user?.id ? (
+                          <>
+                            <button
+                              className="trade-btn"
+                              style={{ flex: 1, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0" }}
+                              disabled
+                            >
+                              Your Listing
+                            </button>
+                            {listing.type === 'sell' && (
+                              <button
+                                className="trade-btn"
+                                onClick={() => handleViewBids(listing)}
+                                style={{ flex: 1, background: "rgba(14, 165, 233, 0.12)", borderColor: "rgba(14, 165, 233, 0.35)", color: "#0369a1" }}
+                              >
+                                View Bids
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              className={`trade-btn ${listing.type}`}
+                              style={{ flex: 1 }}
+                              onClick={() => handleTradeClick(listing)}
+                              disabled={!isVerified || listing.status !== 'active'}
+                            >
+                              {listing.type === 'sell' ? 'Buy Now' : 'Sell Now'}
+                            </button>
+                            {listing.type === 'sell' && (
+                              <button
+                                className="trade-btn"
+                                style={{ flex: 1, background: "#fef3c7", border: "1px solid rgba(199, 154, 0, 0.35)", color: "#92400e" }}
+                                onClick={() => handleMakeOffer(listing)}
+                                disabled={!isVerified || listing.status !== 'active'}
+                              >
+                                Place Bid
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -350,6 +403,32 @@ const ActiveSabitPage: React.FC = () => {
                 onClose={() => {
                   setBidModalOpen(false);
                   setBidListing(null);
+                }}
+              />
+            )}
+
+            {tradeModalOpen && tradeListing && (
+              <TradeModal
+                listing={{
+                  id: tradeListing.id,
+                  rate: tradeListing.rate,
+                  available: tradeListing.available,
+                  currency: tradeListing.currency,
+                  type: tradeListing.type,
+                }}
+                onClose={() => {
+                  setTradeModalOpen(false);
+                  setTradeListing(null);
+                }}
+              />
+            )}
+
+            {receivedModalOpen && receivedSabitId != null && (
+              <ReceivedBidsModal
+                sabitId={receivedSabitId}
+                onClose={() => {
+                  setReceivedModalOpen(false);
+                  setReceivedSabitId(null);
                 }}
               />
             )}

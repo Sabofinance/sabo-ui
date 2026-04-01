@@ -8,7 +8,7 @@ import CreateSabitModal from "../../components/CreateSabitModal";
 
 interface MySabitListing {
   id: number;
-  type: 'sell' | 'buy';
+  type: 'SELL' | 'BUY';
   currency: 'NGN' | 'GBP' | 'USD' | 'EUR';
   amount: number;
   rate: number;
@@ -47,8 +47,8 @@ const MySabitPage: React.FC = () => {
           statusRaw === 'pending' ? 'active' :
           'active';
 
-        const typeRaw = String(item.type || (item.side as string) || 'sell');
-        const type = typeRaw === 'buy' ? 'buy' : 'sell';
+        const typeRaw = String(item.type || (item.side as string) || 'SELL');
+        const type = typeRaw === 'BUY' ? 'BUY' : 'SELL';
 
         const amount = Number(item.amount || 0);
         const rate = Number(item.rate || 0);
@@ -63,10 +63,10 @@ const MySabitPage: React.FC = () => {
           total,
           status: status as MySabitListing['status'],
           createdAt: String(item.createdAt || item.created_at || new Date().toISOString()),
-          counterparty: item.seller
+          counterparty: item.SELLer
             ? {
-                name: String((item.seller as any).name || ''),
-                avatar: String((item.seller as any).avatar || ''),
+                name: String((item.SELLer as any).name || ''),
+                avatar: String((item.SELLer as any).avatar || ''),
               }
             : item.counterparty
               ? {
@@ -166,7 +166,7 @@ const MySabitPage: React.FC = () => {
             <div className="page-header">
               <div>
                 <h1 className="page-title">My Sabits</h1>
-                <p className="page-subtitle">Manage your buy and sell orders</p>
+                <p className="page-subtitle">Manage your BUY and SELL orders</p>
               </div>
               
               <button className="create-listing-btn" onClick={handleCreateListing}>
@@ -226,10 +226,10 @@ const MySabitPage: React.FC = () => {
                       <td>
                         <div className="type-cell">
                           <span className={`type-indicator ${listing.type}`}>
-                            {listing.type === 'sell' ? 'S' : 'B'}
+                            {listing.type === 'SELL' ? 'S' : 'B'}
                           </span>
                           <span className={`type-text ${listing.type}`}>
-                            {listing.type === 'sell' ? 'SELL' : 'BUY'}
+                            {listing.type === 'SELL' ? 'SELL' : 'BUY'}
                           </span>
                         </div>
                       </td>
@@ -280,7 +280,7 @@ const MySabitPage: React.FC = () => {
                             >
                               EDIT
                             </button>
-                          {listing.type === 'sell' && (
+                          {listing.type === 'SELL' && (
                             <button
                               className="action-btn delete"
                               onClick={() => handleOpenReceivedBids(listing.id)}

@@ -538,25 +538,75 @@ export default function DashboardPage() {
     return rates.find((r) => r.pair === pair || r.pair === pair.replace('/', '_'));
   }
 
-  const firstName = user?.name?.split(' ')[0] ?? 'there';
+  const firstName = user?.name ?? 'there';
+ const pinSet = Boolean(user?.transaction_pin_set);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ padding: '32px 32px 60px', maxWidth: 1080, margin: '0 auto' }}>
+    <div
+      style={{ padding: "32px 32px 60px", maxWidth: 1080, margin: "0 auto" }}
+    >
+      {!pinSet && (
+        <div
+          style={{
+            marginBottom: 24,
+            padding: "16px 20px",
+            borderRadius: 20,
+            background: "#fff7e6",
+            border: "1px solid #fde68a",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div style={{ fontWeight: 900, marginBottom: 4, color: "#92400e" }}>
+              Transaction PIN required
+            </div>
+            <div style={{ color: "#6b7280", fontSize: 14 }}>
+              Set your PIN to place bids and initiate trades securely.
+            </div>
+          </div>
+          <button
+            className="wbtn wbtn-buy"
+            style={{
+              width: "auto",
+              padding: "10px 20px",
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+            onClick={() => navigate("/dashboard/transaction-pin")}
+          >
+            Set Transaction PIN
+          </button>
+        </div>
+      )}
       <div className="db-welcome">
-        <h1>{getGreeting()}, {firstName} 👋</h1>
-        <p className="db-welcome-sub">Here's your financial overview for today.</p>
+        <h1>
+          {getGreeting()}, {firstName} 👋
+        </h1>
+        <p className="db-welcome-sub">
+          Here's your financial overview for today.
+        </p>
       </div>
 
       <div className="db-stat-grid">
         <div className="db-stat">
           <div className="db-stat-label">Total Balance</div>
           {loading ? (
-            <div className="db-skeleton" style={{ height: 36, width: 140, marginBottom: 8 }} />
+            <div
+              className="db-skeleton"
+              style={{ height: 36, width: 140, marginBottom: 8 }}
+            />
           ) : (
             <div className="db-stat-val">
-              ₦{stats.totalBalanceNGN.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+              ₦
+              {stats.totalBalanceNGN.toLocaleString("en-US", {
+                minimumFractionDigits: 0,
+              })}
             </div>
           )}
           <span className="db-stat-change db-ch-lime">▲ 12.4% this month</span>
@@ -564,20 +614,31 @@ export default function DashboardPage() {
         <div className="db-stat">
           <div className="db-stat-label">Active Trades</div>
           {loading ? (
-            <div className="db-skeleton" style={{ height: 36, width: 60, marginBottom: 8 }} />
+            <div
+              className="db-skeleton"
+              style={{ height: 36, width: 60, marginBottom: 8 }}
+            />
           ) : (
-            <div className="db-stat-val db-stat-val-white">{stats.activeTrades}</div>
+            <div className="db-stat-val db-stat-val-white">
+              {stats.activeTrades}
+            </div>
           )}
           <span className="db-stat-change db-ch-neu">
-            {stats.tradesInEscrow} in escrow · {stats.tradesConfirming} confirming
+            {stats.tradesInEscrow} in escrow · {stats.tradesConfirming}{" "}
+            confirming
           </span>
         </div>
         <div className="db-stat">
           <div className="db-stat-label">Pending Bids</div>
           {loading ? (
-            <div className="db-skeleton" style={{ height: 36, width: 60, marginBottom: 8 }} />
+            <div
+              className="db-skeleton"
+              style={{ height: 36, width: 60, marginBottom: 8 }}
+            />
           ) : (
-            <div className="db-stat-val db-stat-val-white">{stats.pendingBids}</div>
+            <div className="db-stat-val db-stat-val-white">
+              {stats.pendingBids}
+            </div>
           )}
           <span className="db-stat-change db-ch-amb">
             {stats.bidsReceived} received · {stats.bidsSent} sent
@@ -586,11 +647,16 @@ export default function DashboardPage() {
         <div className="db-stat">
           <div className="db-stat-label">Trade Success Rate</div>
           {loading ? (
-            <div className="db-skeleton" style={{ height: 36, width: 100, marginBottom: 8 }} />
+            <div
+              className="db-skeleton"
+              style={{ height: 36, width: 100, marginBottom: 8 }}
+            />
           ) : (
             <div className="db-stat-val">{stats.tradeSuccessRate}%</div>
           )}
-          <span className="db-stat-change db-ch-lime">▲ 2.1% vs last month</span>
+          <span className="db-stat-change db-ch-lime">
+            ▲ 2.1% vs last month
+          </span>
         </div>
       </div>
 
@@ -619,8 +685,21 @@ export default function DashboardPage() {
         </div>
 
         <div className="db-wallet-nav">
-          <button className="db-wnav-btn" onClick={() => goTo(current - 1)} aria-label="Previous wallet">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <button
+            className="db-wnav-btn"
+            onClick={() => goTo(current - 1)}
+            aria-label="Previous wallet"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
@@ -628,14 +707,27 @@ export default function DashboardPage() {
             {WALLET_ORDER.map((_, i) => (
               <button
                 key={i}
-                className={`db-dot${i === current ? ' active' : ''}`}
+                className={`db-dot${i === current ? " active" : ""}`}
                 onClick={() => goTo(i)}
                 aria-label={`Go to wallet ${i + 1}`}
               />
             ))}
           </div>
-          <button className="db-wnav-btn" onClick={() => goTo(current + 1)} aria-label="Next wallet">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <button
+            className="db-wnav-btn"
+            onClick={() => goTo(current + 1)}
+            aria-label="Next wallet"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M9 18l6-6-6-6" />
             </svg>
           </button>
@@ -650,7 +742,7 @@ export default function DashboardPage() {
           </div>
           <div className="db-live-badge">
             <div className="db-live-dot" />
-            {ratesUpdatedAt ? `Updated ${ratesUpdatedAt}` : 'Updating…'}
+            {ratesUpdatedAt ? `Updated ${ratesUpdatedAt}` : "Updating…"}
           </div>
         </div>
         <div className="db-rates-strip">
@@ -661,7 +753,11 @@ export default function DashboardPage() {
                 </div>
               ))
             : RATE_PAIRS.map((cfg) => (
-                <RateCard key={cfg.pair} config={cfg} rate={getRateForPair(cfg.pair)} />
+                <RateCard
+                  key={cfg.pair}
+                  config={cfg}
+                  rate={getRateForPair(cfg.pair)}
+                />
               ))}
         </div>
       </div>
@@ -669,20 +765,34 @@ export default function DashboardPage() {
       <div className="db-txn-card">
         <div className="db-section-head">
           <span className="db-section-title">Recent Transactions</span>
-          <button className="db-view-all" onClick={() => navigate('/dashboard/history')}>
+          <button
+            className="db-view-all"
+            onClick={() => navigate("/dashboard/history")}
+          >
             View all ↗
           </button>
         </div>
 
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="db-skeleton" style={{ height: 48, borderRadius: 10 }} />
+              <div
+                key={i}
+                className="db-skeleton"
+                style={{ height: 48, borderRadius: 10 }}
+              />
             ))}
           </div>
         ) : ledger.length === 0 ? (
           <div className="db-empty">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--ink3)" strokeWidth="1.5">
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--ink3)"
+              strokeWidth="1.5"
+            >
               <rect x="2" y="3" width="20" height="18" rx="3" />
               <path d="M7 8h10M7 12h6" />
             </svg>
@@ -704,32 +814,77 @@ export default function DashboardPage() {
             <tbody>
               {ledger.slice(0, 5).map((entry) => {
                 const initials = getInitials(entry.reference);
-                const avatarColors: Record<string, { bg: string; color: string }> = {
-                  deposit: { bg: 'var(--blue-bg)', color: 'var(--blue)' },
-                  trade_credit: { bg: 'var(--green-bg)', color: 'var(--green)' },
-                  trade_debit: { bg: 'var(--amber-bg)', color: 'var(--amber)' },
-                  withdrawal: { bg: 'var(--red-bg)', color: 'var(--red)' },
+                const avatarColors: Record<
+                  string,
+                  { bg: string; color: string }
+                > = {
+                  deposit: { bg: "var(--blue-bg)", color: "var(--blue)" },
+                  trade_credit: {
+                    bg: "var(--green-bg)",
+                    color: "var(--green)",
+                  },
+                  trade_debit: { bg: "var(--amber-bg)", color: "var(--amber)" },
+                  withdrawal: { bg: "var(--red-bg)", color: "var(--red)" },
                 };
-                const avColor = avatarColors[entry.type] ?? { bg: 'var(--lime-faint)', color: 'var(--lime-d)' };
+                const avColor = avatarColors[entry.type] ?? {
+                  bg: "var(--lime-faint)",
+                  color: "var(--lime-d)",
+                };
                 return (
                   <tr key={entry.id}>
                     <td>
                       <div className="db-user-cell">
-                        <div className="db-mini-av" style={{ background: avColor.bg, color: avColor.color }}>
+                        <div
+                          className="db-mini-av"
+                          style={{
+                            background: avColor.bg,
+                            color: avColor.color,
+                          }}
+                        >
                           {initials}
                         </div>
                         <div>
-                          <div className="db-cell-name">{getTxnType(entry.type)}</div>
+                          <div className="db-cell-name">
+                            {getTxnType(entry.type)}
+                          </div>
                           <div className="db-cell-sub">#{entry.reference}</div>
                         </div>
                       </div>
                     </td>
-                    <td><span className={`pill ${getTxnPillClass(entry.type)}`}>{getTxnType(entry.type)}</span></td>
-                    <td><span style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 700, fontSize: 13 }}>{entry.currency}</span></td>
-                    <td><span className={`amt ${getAmtClass(entry.type)}`}>{formatTxnAmount(entry)}</span></td>
-                    <td style={{ color: 'var(--ink3)', fontSize: 12 }}>{(entry as any).rate ? `₦${(entry as any).rate}` : '—'}</td>
-                    <td><span className={`status-pill ${getStatusClass(entry.status)}`}>{getStatusLabel(entry.status)}</span></td>
-                    <td style={{ color: 'var(--ink4)', fontSize: 12 }}>{formatDate(entry.created_at)}</td>
+                    <td>
+                      <span className={`pill ${getTxnPillClass(entry.type)}`}>
+                        {getTxnType(entry.type)}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        style={{
+                          fontFamily: "'Bricolage Grotesque', sans-serif",
+                          fontWeight: 700,
+                          fontSize: 13,
+                        }}
+                      >
+                        {entry.currency}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`amt ${getAmtClass(entry.type)}`}>
+                        {formatTxnAmount(entry)}
+                      </span>
+                    </td>
+                    <td style={{ color: "var(--ink3)", fontSize: 12 }}>
+                      {(entry as any).rate ? `₦${(entry as any).rate}` : "—"}
+                    </td>
+                    <td>
+                      <span
+                        className={`status-pill ${getStatusClass(entry.status)}`}
+                      >
+                        {getStatusLabel(entry.status)}
+                      </span>
+                    </td>
+                    <td style={{ color: "var(--ink4)", fontSize: 12 }}>
+                      {formatDate(entry.created_at)}
+                    </td>
                   </tr>
                 );
               })}

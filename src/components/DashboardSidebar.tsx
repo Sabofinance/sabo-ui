@@ -387,6 +387,41 @@ const DashboardSidebar: React.FC = () => {
 
             <li className="nav-item">
               <NavLink
+                to="/dashboard/bids"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+                onClick={close}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M12 20V10"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M18 20V4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M6 20v-4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="link-text">My Bids</span>
+                <span className="indicator-dot" />
+              </NavLink>
+            </li>
+
+            <li className="nav-item">
+              <NavLink
                 to="/dashboard/disputes"
                 className={({ isActive }) =>
                   `nav-link ${isActive ? "active" : ""}`

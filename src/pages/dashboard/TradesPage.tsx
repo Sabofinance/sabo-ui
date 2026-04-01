@@ -1,76 +1,102 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import bidsApi from "../../lib/api/bids.api";
+import tradesApi from "../../lib/api/trades.api";
+import { extractArray } from "../../lib/api/response";
 import "../../assets/css/HistoryPage.css";
 import { useAuth } from "../../context/AuthContext";
-import { toast } from "react-toastify";
 
-type BidTab = "pending" | "accepted" | "rejected" | "expired" | "withdrawn";
+type TradeStatus = "initiated" | "escrowed" | "confirmed" | "completed" | "cancelled" | "disputed";
+
+interface Trade {
+  id: string;
+  type: 'buy' | 'sell';
+  currency: string;
+  amount: number;
+  rate: number;
+  total: number;
+  status: TradeStatus;
+  createdAt: string;
+  counterparty: {
+    name: string;
+    avatar: string;
+  };
+}
 
 const TradesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [tab, setTab] = useState<BidTab>("pending");
-  const [bids, setBids] = useState<Record<string, unknown>[]>([]);
+  const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
 
   const kycStatus = String((user as any)?.kyc_status || "").toLowerCase();
   const isVerified = kycStatus === "verified";
-  const isPending = kycStatus.includes("pending");
 
-  const kycMessage = useMemo(() => {
-    if (isVerified) return "";
-    if (isPending) return "KYC is currently pending review. Bids unlock once verified.";
-    return "Complete your KYC to view bids.";
-  }, [isPending, isVerified]);
-
-  const load = async (nextTab: BidTab) => {
+  const loadTrades = async () => {
     setLoading(true);
     setError("");
     try {
-      const res = await bidsApi.listMine({ status: nextTab, page: 1, limit: 20 });
-      if (res.success && Array.isArray(res.data)) setBids(res.data);
-      else setBids([]);
-      if (!res.success) setError(res.error?.message || "Failed to load bids.");
+      const res = await tradesApi.list();
+      if (res.success) {
+        const data = extractArray(res.data);
+        const mapped: Trade[] = data.map((t: any) => ({
+          id: String(t.id || t.tradeId),
+          type: t.type === 'sell' ? 'sell' : 'buy',
+          currency: String(t.currency || 'NGN'),
+          amount: Number(t.amount || 0),
+          rate: Number(t.rate || 0),
+          total: Number(t.total || t.value || (Number(t.amount) * Number(t.rate))),
+          status: String(t.status || 'initiated') as TradeStatus,
+          createdAt: String(t.createdAt || t.created_at || new Date().toISOString()),
+          counterparty: {
+            name: String(t.counterpartyName || t.counterparty?.name || 'Trader'),
+            avatar: String(t.counterpartyAvatar || t.counterparty?.avatar || ''),
+          }
+        }));
+        setTrades(mapped);
+      } else {
+        setError(res.error?.message || "Failed to load trades.");
+      }
+    } catch (e: any) {
+      setError(e?.message || "An error occurred.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!isVerified) return;
-    void load(tab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, isVerified]);
+    if (isVerified) void loadTrades();
+  }, [isVerified]);
 
-  const withdrawBid = async (bidId: string) => {
-    const ok = window.confirm("Withdraw this pending bid?");
-    if (!ok) return;
-    setLoading(true);
-    try {
-      const res = await bidsApi.withdraw(bidId);
-      if (!res.success) {
-        toast.error(res.error?.message || "Failed to withdraw bid.");
-        return;
-      }
-      toast.success("Bid withdrawn.");
-      await load(tab);
-    } finally {
-      setLoading(false);
-    }
+  const filteredTrades = trades.filter(t => {
+    const isActive = ['initiated', 'escrowed', 'confirmed', 'disputed'].includes(t.status);
+    return activeTab === 'active' ? isActive : !isActive;
+  });
+
+  const getStatusBadge = (status: TradeStatus) => {
+    const labels: Record<TradeStatus, string> = {
+      initiated: "Initiated",
+      escrowed: "In Escrow",
+      confirmed: "Confirmed",
+      completed: "Completed",
+      cancelled: "Cancelled",
+      disputed: "Disputed"
+    };
+    const className = status === 'completed' ? 'completed' : (status === 'cancelled' ? 'cancelled' : (status === 'disputed' ? 'disputed' : 'pending'));
+    return <span className={`status-badge ${className}`}>{labels[status]}</span>;
   };
 
   if (!isVerified) {
     return (
       <main className="history-page">
         <div className="page-header">
-          <h1 className="page-title">My Bids</h1>
+          <h1 className="page-title">My Trades</h1>
         </div>
         <div style={{ padding: 16, borderRadius: 14, border: "1px solid #fde68a", background: "#fffbeb", marginBottom: 16 }}>
           <div style={{ fontWeight: 900, marginBottom: 4 }}>KYC required</div>
-          <div style={{ color: "#6b7280", fontSize: 13, lineHeight: 1.5 }}>{kycMessage}</div>
+          <div style={{ color: "#6b7280", fontSize: 13, lineHeight: 1.5 }}>Complete your KYC to view trades.</div>
           <button className="export-btn" style={{ marginTop: 12 }} onClick={() => navigate("/dashboard/kyc")}>
             Complete KYC
           </button>
@@ -79,49 +105,18 @@ const TradesPage: React.FC = () => {
     );
   }
 
-  const tabs: { key: BidTab; label: string }[] = [
-    { key: "pending", label: "Pending" },
-    { key: "accepted", label: "Accepted" },
-    { key: "rejected", label: "Rejected" },
-    { key: "expired", label: "Expired" },
-    { key: "withdrawn", label: "Withdrawn" },
-  ];
-
-  const formatRemaining = (bid: Record<string, unknown>) => {
-    const expiresAt = bid.expiresAt ?? bid.expiry ?? bid.expires_at ?? bid.expirationAt ?? null;
-    const createdAt = bid.createdAt ?? bid.created_at ?? bid.created ?? null;
-    const expiresMs = expiresAt ? new Date(String(expiresAt)).getTime() : createdAt ? new Date(String(createdAt)).getTime() + 24 * 60 * 60 * 1000 : 0;
-    const now = Date.now();
-    const ms = expiresMs - now;
-    if (!Number.isFinite(ms)) return "";
-    if (ms <= 0) return "Expired";
-    const s = Math.floor(ms / 1000);
-    const hh = Math.floor(s / 3600);
-    const mm = Math.floor((s % 3600) / 60);
-    const ss = s % 60;
-    return `${hh.toString().padStart(2, "0")}:${mm.toString().padStart(2, "0")}:${ss.toString().padStart(2, "0")}`;
-  };
-
   return (
     <main className="history-page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">My Bids</h1>
-          <p className="page-subtitle">Manage your bids across listings</p>
+          <h1 className="page-title">My Trades</h1>
+          <p className="page-subtitle">Track your active and past trades</p>
         </div>
       </div>
 
-      <div className="tabs-container" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            className={`tab-btn ${tab === t.key ? "active" : ""}`}
-            onClick={() => setTab(t.key)}
-            type="button"
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="tabs-container" style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+        <button className={`tab-btn ${activeTab === 'active' ? 'active' : ''}`} onClick={() => setActiveTab('active')}>Active Trades</button>
+        <button className={`tab-btn ${activeTab === 'past' ? 'active' : ''}`} onClick={() => setActiveTab('past')}>Past Trades</button>
       </div>
 
       <div className="history-table-container">
@@ -129,51 +124,43 @@ const TradesPage: React.FC = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Proposed Rate (NGN)</th>
+              <th>Counterparty</th>
+              <th>Type</th>
               <th>Amount</th>
               <th>Status</th>
-              {tab === "pending" && <th>Expiry</th>}
-              {tab === "pending" && <th>Action</th>}
+              <th>Date</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={tab === "pending" ? 6 : 4} style={{ padding: 16, color: "#6b7280" }}>
-                  Loading bids...
-                </td>
-              </tr>
-            ) : bids.length === 0 ? (
-              <tr>
-                <td colSpan={tab === "pending" ? 6 : 4} style={{ padding: 16, color: "#6b7280" }}>
-                  No bids in this tab.
-                </td>
-              </tr>
+              <tr><td colSpan={7} style={{ padding: 16, color: "#64748b" }}>Loading trades...</td></tr>
+            ) : filteredTrades.length === 0 ? (
+              <tr><td colSpan={7} style={{ padding: 16, color: "#64748b" }}>No trades found.</td></tr>
             ) : (
-              bids.map((bid: any, idx) => (
-                <tr key={String(bid.id ?? idx)}>
-                  <td>{String(bid.id ?? bid.bidId ?? idx)}</td>
-                  <td>{String(bid.proposed_rate_ngn ?? bid.proposedRateNgN ?? bid.proposed_rate ?? bid.rate_ngn ?? bid.proposedRate ?? "-")}</td>
-                  <td>{String(bid.amount ?? "-")}</td>
-                  <td>{String(bid.status ?? bid.state ?? tab)}</td>
-                  {tab === "pending" && <td>{formatRemaining(bid)}</td>}
-                  {tab === "pending" && (
-                    <td>
-                      <button className="page-number" onClick={() => void withdrawBid(String(bid.id ?? idx))} disabled={loading}>
-                        Withdraw
-                      </button>
-                    </td>
-                  )}
+              filteredTrades.map((t) => (
+                <tr key={t.id}>
+                  <td>{t.id}</td>
+                  <td>
+                    <div className="trader-cell">
+                      <img src={t.counterparty.avatar || 'https://via.placeholder.com/32'} alt="" className="trader-avatar" />
+                      <span className="trader-name">{t.counterparty.name}</span>
+                    </div>
+                  </td>
+                  <td><span className={`type-badge ${t.type}`}>{t.type.toUpperCase()}</span></td>
+                  <td>{t.amount} {t.currency}</td>
+                  <td>{getStatusBadge(t.status)}</td>
+                  <td>{new Date(t.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    <button className="page-number" onClick={() => navigate(`/dashboard/trade/${t.id}`)}>
+                      View Details
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
-        {error && (
-          <div style={{ marginTop: 12, padding: 12, borderRadius: 14, background: "#fee2e2", border: "1px solid #fecaca", color: "#991b1b", fontWeight: 600 }}>
-            {error}
-          </div>
-        )}
       </div>
     </main>
   );

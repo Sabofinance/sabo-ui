@@ -9,7 +9,7 @@ All responses follow the standard envelope:
   "data": {},
   "meta": {},
   "error": null
-}
+} 
 ```
 
 ### Error

@@ -50,6 +50,7 @@ const WithdrawalDetailPage = lazy(() => import('./pages/dashboard/WithdrawalDeta
 const BeneficiariesPage = lazy(() => import('./pages/dashboard/BeneficiariesPage'));
 const ConversionsPage = lazy(() => import('./pages/dashboard/ConversionsPage'));
 const TradesPage      = lazy(() => import('./pages/dashboard/TradesPage'));
+const MyBidsPage      = lazy(() => import('./pages/dashboard/MyBidsPage'));
 const TradeDetailPage = lazy(() => import('./pages/dashboard/TradeDetailPage'));
 const DisputesPage    = lazy(() => import('./pages/dashboard/DisputesPage'));
 const NotificationsPage = lazy(() => import('./pages/dashboard/NotificationsPage'));
@@ -164,6 +165,7 @@ function App() {
             <Route path="beneficiaries"   element={<UserProtectedRoute><BeneficiariesPage /></UserProtectedRoute>} />
             <Route path="conversions"     element={<UserProtectedRoute><ConversionsPage /></UserProtectedRoute>} />
             <Route path="trades"          element={<UserProtectedRoute><TradesPage /></UserProtectedRoute>} />
+            <Route path="bids"            element={<UserProtectedRoute><MyBidsPage /></UserProtectedRoute>} />
             <Route path="trade/:id"       element={<UserProtectedRoute><TradeDetailPage /></UserProtectedRoute>} />
             <Route path="disputes"        element={<UserProtectedRoute><DisputesPage /></UserProtectedRoute>} />
             <Route path="notifications"   element={<UserProtectedRoute><NotificationsPage /></UserProtectedRoute>} />

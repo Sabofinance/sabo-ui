@@ -24,7 +24,7 @@ export const MarketplaceSections = () => {
       {/* Built for Everyday Life Section */}
       <section className="everyday-section">
         <div className="everyday-container">
-          <div className="everyday-content-grid">
+          <div className="everyday-conent-grid">
             <div className="everyday-text-col">
               <h2 className="everyday-title">Built for everyday Life.</h2>
             </div>
