@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import PinDotsInput from "./PinDotsInput";
 
 type ReceivedBidsModalProps = {
-  sabitId: number;
+  sabitId: number | string;
   onClose: () => void;
 };
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bidsApi from "../../lib/api/bids.api";
+import { extractArray } from "../../lib/api/response";
 import "../../assets/css/HistoryPage.css";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
@@ -36,9 +37,13 @@ const MyBidsPage: React.FC = () => {
         page: 1,
         limit: 20,
       });
-      if (res.success && Array.isArray(res.data)) setBids(res.data);
-      else setBids([]);
-      if (!res.success) setError(res.error?.message || "Failed to load bids.");
+      if (res.success) {
+        const data = extractArray(res.data);
+        setBids(data);
+      } else {
+        setBids([]);
+        setError(res.error?.message || "Failed to load bids.");
+      }
     } finally {
       setLoading(false);
     }

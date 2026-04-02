@@ -10,7 +10,7 @@ import TradeModal from "../../components/TradeModal";
 import ReceivedBidsModal from '../../components/ReceivedBidsModal';
 
 interface SabitListing {
-  id: number;
+  id: number | string;
   userId: string;
   seller: {
     id: string;
@@ -50,7 +50,7 @@ const ActiveSabitPage: React.FC = () => {
   const [tradeListing, setTradeListing] = useState<SabitListing | null>(null);
 
   const [receivedModalOpen, setReceivedModalOpen] = useState(false);
-  const [receivedSabitId, setReceivedSabitId] = useState<number | null>(null);
+  const [receivedSabitId, setReceivedSabitId] = useState<number | string | null>(null);
 
   const formatNumber = (num: number): string => {
     return new Intl.NumberFormat('en-NG').format(num);
@@ -127,22 +127,37 @@ const ActiveSabitPage: React.FC = () => {
         const mapped: SabitListing[] = sabitList.map((item: Record<string, unknown>, idx: number) => {
           const seller = (item.seller || {}) as any;
           const userId = String(item.userId || item.user_id || seller?.id || '');
+          
+          // Robust ID extraction
+          let rawId = item.id ?? item.sabit_id ?? item.sabitId;
+          if (rawId === "NaN" || rawId === "undefined" || rawId === "null") rawId = null;
+          
+          const finalId = rawId 
+            ? (isNaN(Number(rawId)) ? String(rawId) : Number(rawId)) 
+            : idx + 1;
+
+          // Robust number conversion
+          const toNum = (val: any) => {
+            const n = Number(val);
+            return isNaN(n) ? 0 : n;
+          };
+
           return {
-            id: Number(item.id || idx + 1),
+            id: finalId,
             userId,
             seller: {
               id: userId,
               name: String(item.sellerName || seller?.name || item.name || 'Anonymous Trader'),
               avatar: String(item.sellerAvatar || seller?.avatar || item.avatar || ''),
-              rating: Number(item.rating || item.sellerRating || seller?.rating || 0),
-              completedTrades: Number(item.completed || item.completedTrades || item.sellerCompletedTrades || seller?.completedTrades || 0),
+              rating: toNum(item.rating || item.sellerRating || seller?.rating || 0),
+              completedTrades: toNum(item.completed || item.completedTrades || item.sellerCompletedTrades || seller?.completedTrades || 0),
               verified: Boolean(item.verified ?? seller?.verified ?? false),
             },
             type: String(item.type || '').toLowerCase() === 'buy' ? 'buy' : 'sell',
             currency: String(item.currency || 'NGN') as SabitListing['currency'],
-            amount: Number(item.amount || 0),
-            rate: Number(item.rate_ngn || item.rate || 0),
-            available: Number(item.available || item.remaining || 0),
+            amount: toNum(item.amount || 0),
+            rate: toNum(item.rate_ngn || item.rate || 0),
+            available: toNum(item.available || item.remaining || 0),
             paymentMethods: Array.isArray(item.paymentMethods)
               ? (item.paymentMethods as string[])
               : ((item.paymentMethodsList as string[] | undefined) || []),

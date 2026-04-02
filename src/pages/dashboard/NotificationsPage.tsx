@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import "../../assets/css/HistoryPage.css";
 import "../../assets/css/NotificationsPage.css";
 import notificationsApi from "../../lib/api/notifications.api";
+import { extractArray } from "../../lib/api/response";
 
 const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,10 +20,11 @@ const NotificationsPage: React.FC = () => {
     setLoading(true);
     try {
       const res = await notificationsApi.list({ page: pageNum, limit: 20 });
-      if (res.success && Array.isArray(res.data)) {
-        if (clear) setNotifications(res.data);
-        else setNotifications((prev) => [...prev, ...(res.data as any[])]);
-        setHasMore(res.data.length === 20);
+      if (res.success) {
+        const data = extractArray(res.data);
+        if (clear) setNotifications(data);
+        else setNotifications((prev) => [...prev, ...data]);
+        setHasMore(data.length === 20);
       }
     } catch (err) {
       toast.error("Failed to load notifications");
@@ -124,7 +126,12 @@ const NotificationsPage: React.FC = () => {
                     </div>
                     <div className="notif-meta">
                       <span className="notif-date">
-                        {new Date(n.createdAt).toLocaleString()}
+                        {new Date(n.createdAt || n.created_at).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </span>
                       {n.status === "unread" && <span className="unread-dot" />}
                     </div>

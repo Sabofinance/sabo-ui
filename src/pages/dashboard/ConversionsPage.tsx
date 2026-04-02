@@ -363,26 +363,7 @@ const ConversionsPage: React.FC = () => {
             <CurrencyConverter onSuccess={() => void loadConversions()} />
           </div>
 
-          <div style={{ maxWidth: 860, margin: "0 auto", marginTop: 16 }}>
-            {loading && <p>Loading your conversions...</p>}
-            {error && <p style={{ color: "#dc2626" }}>{error}</p>}
-            {!loading && !error && conversions.length === 0 && (
-              <p>No conversions yet. Create one using the converter above.</p>
-            )}
-            {!loading && conversions.length > 0 && (
-              <pre
-                style={{
-                  background: "#121212",
-                  color: "#f7f7f7",
-                  borderRadius: 10,
-                  padding: 12,
-                  overflowX: "auto",
-                }}
-              >
-                {JSON.stringify(conversions, null, 2)}
-              </pre>
-            )}
-          </div>
+   
         </main>
       </div>
     </>

@@ -1,33 +1,59 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { depositsApi } from "../../lib/api";
 import "../../assets/css/HistoryPage.css";
+import { toast } from "react-toastify";
 
 type AnyRec = Record<string, unknown>;
 
 const DepositDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const depositId = String(id || "");
+  const [searchParams] = useSearchParams();
+  
+  // Flutterwave returns tx_ref (our reference) and status in query params
+  const txRef = searchParams.get("tx_ref");
+  const fwStatus = searchParams.get("status");
+  
+  // Use id from URL or tx_ref from query params
+  const depositId = String(id || txRef || "");
 
   const [deposit, setDeposit] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError("");
+  const load = useCallback(async () => {
+    if (!depositId) return;
+    setLoading(true);
+    setError("");
+    try {
       const res = await depositsApi.getById(depositId);
       if (res.success && res.data) {
         setDeposit(res.data as AnyRec);
+        
+        // If we came from a callback, show a toast based on Flutterwave status
+        if (txRef && fwStatus) {
+          if (fwStatus === 'completed' || fwStatus === 'successful') {
+            toast.success("Deposit completed successfully!");
+          } else {
+            toast.error(`Deposit ${fwStatus}. Please check your history.`);
+          }
+          // Clean up URL by navigating to the canonical detail page
+          navigate(`/dashboard/deposits/${depositId}`, { replace: true });
+        }
       } else {
         setError(res.error?.message || "Failed to load deposit.");
       }
+    } catch (err: any) {
+      setError(err?.message || "An unexpected error occurred.");
+    } finally {
       setLoading(false);
-    };
-    if (depositId) void load();
-  }, [depositId]);
+    }
+  }, [depositId, txRef, fwStatus, navigate]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   if (loading) {
     return (

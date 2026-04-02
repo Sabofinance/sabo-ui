@@ -8,7 +8,7 @@ import '../../assets/css/TransactionPage.css';
 import '../../assets/css/TransactionModals.css';
 
 interface ListingData {
-  id?: number;
+  id?: number | string;
   seller: {
     name: string;
     avatar: string;
@@ -72,22 +72,34 @@ const TransactionPage: React.FC = () => {
 
       if (sabitRes.success && sabitRes.data) {
         const data = sabitRes.data as Record<string, any>;
+        
+        let rawId = data.id ?? data.sabit_id ?? data.sabitId ?? sabitId;
+        if (rawId === "NaN" || rawId === "undefined" || rawId === "null") rawId = null;
+        const finalId = rawId 
+          ? (isNaN(Number(rawId)) ? String(rawId) : Number(rawId)) 
+          : 0;
+
+        const toNum = (val: any) => {
+          const n = Number(val);
+          return isNaN(n) ? 0 : n;
+        };
+
         const mappedListing: ListingData = {
-          id: Number(data.id || data.sabitId || sabitId),
+          id: finalId,
           seller: {
-            name: String(data.sellerName || data.seller?.name || data.name || ''),
+            name: String(data.sellerName || data.seller?.name || data.name || 'Anonymous Trader'),
             avatar: String(data.sellerAvatar || data.seller?.avatar || ''),
-            rating: Number(data.rating || data.seller?.rating || 0),
-            completedTrades: Number(data.completedTrades || data.completed || data.seller?.completedTrades || 0),
+            rating: toNum(data.rating || data.seller?.rating || 0),
+            completedTrades: toNum(data.completedTrades || data.completed || data.seller?.completedTrades || 0),
             verified: Boolean(data.verified ?? data.seller?.verified ?? false),
           },
-          type: (String(data.type || 'sell') === 'buy' ? 'buy' : 'sell') as ListingData['type'],
-          currency: String(data.currency || ''),
-          amount: Number(data.amount || 0),
-          rate: Number(data.rate || 0),
-          available: Number(data.available || data.remaining || 0),
+          type: (String(data.type || 'sell').toLowerCase() === 'buy' ? 'buy' : 'sell') as ListingData['type'],
+          currency: String(data.currency || 'NGN'),
+          amount: toNum(data.amount || 0),
+          rate: toNum(data.rate_ngn || data.rate || 0),
+          available: toNum(data.available || data.remaining || 0),
           paymentMethods: Array.isArray(data.paymentMethods) ? data.paymentMethods : [],
-          timeLimit: String(data.timeLimit || data.time_limit || ''),
+          timeLimit: String(data.timeLimit || data.time_limit || '30 mins'),
         };
         setListing(mappedListing);
       } else {

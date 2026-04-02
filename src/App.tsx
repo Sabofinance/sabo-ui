@@ -157,6 +157,7 @@ function App() {
             <Route path="wallets/:currency" element={<UserProtectedRoute><WalletDetailPage /></UserProtectedRoute>} />
             <Route path="ledger"          element={<UserProtectedRoute><LedgerPage /></UserProtectedRoute>} />
             <Route path="deposits"        element={<UserProtectedRoute><DepositsPage /></UserProtectedRoute>} />
+            <Route path="deposits/callback" element={<UserProtectedRoute><DepositDetailPage /></UserProtectedRoute>} />
             <Route path="deposits/:id"    element={<UserProtectedRoute><DepositDetailPage /></UserProtectedRoute>} />
             <Route path="deposit"         element={<UserProtectedRoute><DepositPage /></UserProtectedRoute>} />
             <Route path="deposit-pending" element={<UserProtectedRoute><DepositPendingPage /></UserProtectedRoute>} />

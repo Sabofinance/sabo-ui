@@ -43,7 +43,7 @@ const TradeDetailPage: React.FC = () => {
   // Modals & PIN
   const [showPinModal, setShowPinModal] = useState(false);
   const [pin, setPin] = useState('');
-  const [pinAction, setPinAction] = useState<'sellerConfirm' | 'complete' | null>(null);
+  const [pinAction, setPinAction] = useState<'sellerConfirm' | 'complete' | 'sellerInitiate' | null>(null);
 
   // Dispute Modal
   const [showDisputeModal, setShowDisputeModal] = useState(false);
@@ -58,6 +58,16 @@ const TradeDetailPage: React.FC = () => {
 
   const isSeller = useMemo(() => trade?.seller_id === user?.id, [trade, user]);
   const isBuyer = useMemo(() => trade?.buyer_id === user?.id, [trade, user]);
+
+  // Debugging logs for status tracing
+  useEffect(() => {
+    if (user) {
+      console.log(`[TradeDetail] User: ${user.id}, KYC: ${user.kyc_status}, PIN Set: ${user.transaction_pin_set}`);
+    }
+    if (trade) {
+      console.log(`[TradeDetail] Trade: ${trade.id}, Status: ${trade.status}, Seller: ${trade.seller_id}, Buyer: ${trade.buyer_id}`);
+    }
+  }, [user, trade]);
 
   const fetchTrade = useCallback(async (isInitial = false) => {
     if (isInitial) setLoading(true);
@@ -108,6 +118,11 @@ const TradeDetailPage: React.FC = () => {
   }, [trade, fetchTrade]);
 
   // Actions
+  const handleSellerInitiate = () => {
+    setPinAction('sellerInitiate');
+    setShowPinModal(true);
+  };
+
   const handleSellerConfirm = () => {
     setPinAction('sellerConfirm');
     setShowPinModal(true);
@@ -138,14 +153,14 @@ const TradeDetailPage: React.FC = () => {
     setProcessing(true);
     try {
       let res;
-      if (pinAction === 'sellerConfirm') {
+      if (pinAction === 'sellerInitiate' || pinAction === 'sellerConfirm') {
         res = await tradesApi.sellerConfirm(tradeId, { pin });
       } else {
         res = await tradesApi.complete(tradeId);
       }
 
       if (res.success) {
-        toast.success(pinAction === 'sellerConfirm' ? 'Trade confirmed!' : 'Trade completed successfully!');
+        toast.success(pinAction === 'complete' ? 'Trade completed successfully!' : 'Trade confirmed!');
         setShowPinModal(false);
         setPin('');
         fetchTrade();
@@ -277,15 +292,30 @@ const TradeDetailPage: React.FC = () => {
               {trade.status === 'escrowed' && (
                 <div>
                   {isSeller ? (
-                    <>
-                      <p style={{ marginBottom: 20 }}>Please confirm this trade within the window.</p>
-                      <div style={{ fontSize: 32, fontWeight: 900, textAlign: 'center', color: '#EF4444', marginBottom: 20 }}>{timeLeft}</div>
-                      <button className="confirm-btn-main" onClick={handleSellerConfirm} disabled={processing}>
-                        {processing ? 'Processing...' : 'Confirm Trade'}
+                    <>                                                                                                                                                                                                                                    
+                      <p style={{ marginBottom: 20 }}>A buyer has initiated this trade. Please accept to proceed.</p>
+                      <button className="confirm-btn-main" onClick={handleSellerInitiate} disabled={processing}>
+                        {processing ? 'Processing...' : 'Accept & Confirm Trade'}
                       </button>
                     </>
                   ) : (
-                    <p>Waiting for seller to confirm the trade. Please hold on...</p>
+                    <p>Waiting for seller to accept the trade. Please hold on...</p>
+                  )}
+                </div>
+              )}
+
+              {trade.status === 'escrowed' && (
+                <div>
+                  {isSeller ? (
+                    <>
+                      <p style={{ marginBottom: 20 }}>A buyer has initiated this trade. Please accept to proceed to payment.</p>
+                      <div style={{ fontSize: 32, fontWeight: 900, textAlign: 'center', color: '#EF4444', marginBottom: 20 }}>{timeLeft}</div>
+                      <button className="confirm-btn-main" onClick={handleSellerConfirm} disabled={processing}>
+                        {processing ? 'Processing...' : 'Accept & Confirm Trade'}
+                      </button>
+                    </>
+                  ) : (
+                    <p>Waiting for seller to accept the trade. Please hold on...</p>
                   )}
                 </div>
               )}

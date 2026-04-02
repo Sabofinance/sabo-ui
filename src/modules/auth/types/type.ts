@@ -12,8 +12,8 @@ export interface User {
   // Legacy/optional fields used across the current UI.
   firstName?: string;
   lastName?: string;
-  isEmailVerified?: boolean;
-  isPhoneVerified?: boolean;
+  email_verified?: boolean;
+  phone_verified?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

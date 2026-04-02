@@ -149,7 +149,14 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
                     <div className="item-title">
                       <h4>{notification.title}</h4>
                     </div>
-                    <span className="item-time">{notification.createdAt}</span>
+                    <span className="item-time">
+                      {new Date(notification.createdAt || (notification as any).created_at).toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
                   </div>
 
                   <p className="item-message">{notification.message}</p>

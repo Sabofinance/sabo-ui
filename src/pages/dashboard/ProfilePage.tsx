@@ -88,7 +88,7 @@ const ProfilePage: React.FC = () => {
         postalCode: '',
         joined: authUser.createdAt ? new Date(authUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '',
         avatar: 'https://i.pravatar.cc/300?u=' + (authUser.id || 'user'),
-        kycVerified: Boolean(authUser.isEmailVerified && authUser.isPhoneVerified), // Improved logic
+        kycVerified: Boolean(authUser.email_verified && authUser.phone_verified), // Improved logic
       });
     }
   }, [authUser]);

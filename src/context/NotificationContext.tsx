@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import notificationsApi from "../lib/api/notifications.api";
 import { useAuth } from "./AuthContext";
 import { useAdminAuth } from "./AdminAuthContext";
+import { extractArray } from "../lib/api/response";
 
 export type NotificationType = "success" | "error" | "info";
 
@@ -37,9 +38,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (!isAuthenticated && !isAdminAuthenticated) return;
 
     const res = await notificationsApi.list({ limit: 20 });
-    if (res.success && Array.isArray(res.data)) {
-      setNotifications(res.data);
-      setUnreadCount(res.data.filter((n: NotificationItem) => n.status === "unread").length);
+    if (res.success) {
+      const data = extractArray(res.data);
+      setNotifications(data);
+      setUnreadCount(data.filter((n: NotificationItem) => n.status === "unread").length);
     }
   }, [isAuthenticated, isLoading, isAdminAuthenticated, isAdminLoading]);
 

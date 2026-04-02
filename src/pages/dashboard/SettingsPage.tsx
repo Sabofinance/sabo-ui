@@ -293,6 +293,25 @@ const SettingsPage: React.FC = () => {
                     </div>
                     <button className="action-btn">View</button>
                   </div>
+
+                  {/* Transaction PIN */}
+                  <div className="settings-item" style={{ borderTop: "1.5px solid #e2e8f0", marginTop: 24, paddingTop: 24 }}>
+                    <div className="item-info">
+                      <span className="item-label">Transaction PIN</span>
+                      <span className="item-description">
+                        {user?.transaction_pin_set 
+                          ? "Your transaction PIN is active. Use it to authorize trades and bids." 
+                          : "Set a 6-digit PIN to secure your marketplace transactions."}
+                      </span>
+                    </div>
+                    <button 
+                      className="btn-primary" 
+                      style={{ width: "auto", padding: "10px 20px", fontSize: 14 }}
+                      onClick={() => navigate("/dashboard/transaction-pin")}
+                    >
+                      {user?.transaction_pin_set ? "Change PIN" : "Set PIN"}
+                    </button>
+                  </div>
                 </>
               )}
 

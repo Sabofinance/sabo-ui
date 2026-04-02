@@ -5,9 +5,10 @@ import { sabitsApi } from '../../lib/api';
 import { extractArray } from '../../lib/api/response';
 import ReceivedBidsModal from '../../components/ReceivedBidsModal';
 import CreateSabitModal from "../../components/CreateSabitModal";
+import { useAuth } from '../../context/AuthContext';
 
 interface MySabitListing {
-  id: number;
+  id: number | string;
   type: 'SELL' | 'BUY';
   currency: 'NGN' | 'GBP' | 'USD' | 'EUR';
   amount: number;
@@ -23,12 +24,21 @@ interface MySabitListing {
 
 const MySabitPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Debugging logs for status tracing
+  useEffect(() => {
+    if (user) {
+      console.log(`[MySabit] User: ${user.id}, KYC: ${user.kyc_status}, PIN Set: ${user.transaction_pin_set}`);
+    }
+  }, [user]);
+
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'cancelled'>('active');
   const [myListings, setMyListings] = useState<MySabitListing[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [receivedModalOpen, setReceivedModalOpen] = useState(false);
-  const [receivedSabitId, setReceivedSabitId] = useState<number | null>(null);
+  const [receivedSabitId, setReceivedSabitId] = useState<number | string | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const loadListings = async () => {
@@ -38,24 +48,35 @@ const MySabitPage: React.FC = () => {
     console.log(response)
     if (response.success) {
       const sabitList = extractArray(response.data);
-      console.log("sabit listing " , sabitList)
       const mapped: MySabitListing[] = sabitList.map((item: Record<string, unknown>, idx: number) => {
-        const statusRaw = String(item.status || item.state || 'active');
+        // Robust ID extraction
+        let rawId = item.id ?? item.sabit_id ?? item.sabitId;
+        if (rawId === "NaN" || rawId === "undefined" || rawId === "null") rawId = null;
+        const finalId = rawId 
+          ? (isNaN(Number(rawId)) ? String(rawId) : Number(rawId)) 
+          : idx + 1;
+
+        const statusRaw = String(item.status || item.state || 'active').toLowerCase();
         const status =
           statusRaw === 'completed' ? 'completed' :
-          statusRaw === 'cancelled' ? 'cancelled' :
-          statusRaw === 'pending' ? 'active' :
+          statusRaw === 'cancelled' || statusRaw === 'rejected' ? 'cancelled' :
           'active';
 
         const typeRaw = String(item.type || (item.side as string) || 'SELL');
         const type = typeRaw === 'BUY' ? 'BUY' : 'SELL';
 
-        const amount = Number(item.amount || 0);
-        const rate = Number(item.rate || 0);
-        const total = Number(item.total || item.value || amount * rate);
+        // Robust number conversion
+        const toNum = (val: any) => {
+          const n = Number(val);
+          return isNaN(n) ? 0 : n;
+        };
+
+        const amount = toNum(item.amount || 0);
+        const rate = toNum(item.rate_ngn || item.rate || 0);
+        const total = toNum(item.total || item.value || amount * rate);
 
         return {
-          id: Number(item.id || idx + 1),
+          id: finalId,
           type,
           currency: String(item.currency || 'NGN') as MySabitListing['currency'],
           amount,
@@ -134,18 +155,18 @@ const MySabitPage: React.FC = () => {
     setCreateModalOpen(true);
   };
 
-  const handleEdit = (id: number) => {
+  const handleEdit = (id: number | string) => {
     void id;
     navigate('/dashboard/active-sabits');
   };
 
-  const handleOpenReceivedBids = (listingId: number) => {
+  const handleOpenReceivedBids = (listingId: number | string) => {
     // Only active SELL listings can receive bids in this UI.
     setReceivedSabitId(listingId);
     setReceivedModalOpen(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: number | string) => {
     void (async () => {
       const response = await sabitsApi.cancel(String(id));
       if (!response.success) {
