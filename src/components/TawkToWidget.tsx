@@ -34,6 +34,12 @@ const TawkToWidget: React.FC = () => {
     script.charset = "UTF-8";
     script.setAttribute("crossorigin", "*");
 
+    script.onerror = () => {
+      console.warn(
+        "Tawk.to widget failed to load. Please verify VITE_TAWK_PROPERTY_ID and VITE_TAWK_WIDGET_ID in your .env file."
+      );
+    };
+
     // Insert before the first script tag (matches Tawk's recommended snippet pattern).
     const firstScript = document.getElementsByTagName("script")[0];
     if (firstScript?.parentNode) {

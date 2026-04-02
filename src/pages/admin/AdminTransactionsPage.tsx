@@ -1,29 +1,66 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { adminApi } from '../../lib/api';
+import Pagination from '../../components/Pagination';
 
 const AdminTransactionsPage: React.FC = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const loadTransactions = async () => {
+  const loadTransactions = async (page = 1) => {
     setLoading(true);
-    const res = await adminApi.listTransactions();
-    if (res.success && Array.isArray(res.data)) setTransactions(res.data);
-    else if (res.success && res.data && Array.isArray((res.data as any).data)) setTransactions((res.data as any).data);
-    else toast.error('Failed to load transactions');
+    const res = await adminApi.listTransactions({ page, limit: 20 });
+    if (res.success) {
+      const data = res.data as any;
+      const list = Array.isArray(data) ? data : data.data || [];
+      setTransactions(list);
+      const meta = data.meta || data;
+      setTotalPages(meta.totalPages || meta.last_page || 1);
+      setCurrentPage(page);
+    } else {
+      toast.error('Failed to load transactions');
+    }
     setLoading(false);
   };
 
-  useEffect(() => { void loadTransactions(); }, []);
+  useEffect(() => { void loadTransactions(currentPage); }, []);
 
   const formatAmount = (val: any) => new Intl.NumberFormat('en-NG').format(Number(val || 0));
 
   return (
     <div style={{ padding: 24 }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800 }}>Transactions</h1>
-        <p style={{ color: '#6b7a99' }}>Full ledger of all system transactions.</p>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, margin: 0 }}>Transactions</h1>
+          <p style={{ color: '#6b7a99', marginTop: 4 }}>Full ledger of all system transactions.</p>
+        </div>
+        <button 
+          onClick={() => void loadTransactions(currentPage)} 
+          disabled={loading}
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            padding: '10px 20px', 
+            borderRadius: '99px', 
+            border: '1.5px solid #e3e8f0', 
+            background: '#fff', 
+            color: '#0d1829', 
+            fontSize: '13px', 
+            fontWeight: '600', 
+            cursor: 'pointer',
+            boxShadow: '0 1px 3px rgba(13,24,41,.06)',
+            transition: 'all .15s'
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+          </svg>
+          {loading ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
 
       <div style={{ background: '#fff', border: '1px solid #e3e8f0', borderRadius: 20, overflow: 'hidden' }}>
@@ -69,6 +106,13 @@ const AdminTransactionsPage: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      <Pagination 
+        currentPage={currentPage} 
+        totalPages={totalPages} 
+        onPageChange={(p) => void loadTransactions(p)} 
+        isLoading={loading} 
+      />
     </div>
   );
 };

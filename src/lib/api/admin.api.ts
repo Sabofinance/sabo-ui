@@ -3,7 +3,7 @@ import { apiRequest } from "./request";
 export const adminApi = {
   // Admin dashboard
   getDashboard: () => apiRequest.get("/admin/dashboard"),
-  getAnalyticsImpact: () => apiRequest.get("/admin/analytics/impact"),
+  getAnalyticsImpact: (params?: Record<string, unknown>) => apiRequest.get("/admin/analytics/impact", params),
 
   // Users
   listUsers: (params?: Record<string, unknown>) => apiRequest.get("/admin/users", params),
@@ -19,7 +19,7 @@ export const adminApi = {
   // Deposits
   listDeposits: (params?: Record<string, unknown>) => apiRequest.get("/admin/deposits", params),
   approveDeposit: (id: string) => apiRequest.post(`/admin/deposits/${id}/approve`),
-  rejectDeposit: (id: string) => apiRequest.post(`/admin/deposits/${id}/reject`),
+  rejectDeposit: (id: string, reason: string) => apiRequest.post(`/admin/deposits/${id}/reject`, { reason }),
   verifyFlutterwave: (id: string) => apiRequest.post(`/admin/deposits/${id}/verify-flutterwave`),
 
   // Disputes
@@ -39,6 +39,7 @@ export const adminApi = {
   listAdmins: (params?: Record<string, unknown>) => apiRequest.get("/admin/admins", params),
   createInvite: (email: string) => apiRequest.post("/admin/invites", { email }),
   acceptInvite: (token: string) => apiRequest.get("/admin/invites/accept", { token }),
+  setupInvite: (payload: Record<string, unknown>) => apiRequest.post("/admin/invites/setup", payload),
   removeAdmin: (id: string) => apiRequest.post(`/admin/admins/${id}/remove`),
   upgradeAdmin: (id: string) => apiRequest.post(`/admin/admins/${id}/upgrade`),
   

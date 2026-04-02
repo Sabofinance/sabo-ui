@@ -1,5 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { beneficiariesApi } from '../../lib/api';
+import { extractArray } from '../../lib/api/response';
+import Pagination from '../../components/Pagination';
 import '../../assets/css/HistoryPage.css';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
@@ -11,6 +13,8 @@ const BeneficiariesPage: React.FC = () => {
   const [beneficiaries, setBeneficiaries] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [currency, setCurrency] = useState<'NGN' | 'GBP' | 'USD' | 'CAD'>('NGN');
   const [bankName, setBankName] = useState('');
@@ -20,15 +24,18 @@ const BeneficiariesPage: React.FC = () => {
   const [iban, setIban] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const loadBeneficiaries = async (showLoading = false) => {
+  const loadBeneficiaries = useCallback(async (page = 1, showLoading = false) => {
     if (showLoading) {
       setLoading(true);
       setError('');
     }
     try {
-      const response = await beneficiariesApi.list();
-      if (response.success && Array.isArray(response.data)) {
-        setBeneficiaries(response.data);
+      const response = await beneficiariesApi.list({ page, limit: 10 });
+      if (response.success) {
+        setBeneficiaries(extractArray(response.data));
+        const meta = (response.data as any)?.meta || (response.data as any);
+        setTotalPages(meta.totalPages || meta.last_page || 1);
+        setCurrentPage(page);
       } else if (!response.success) {
         const msg = response.error?.message || 'Failed to load beneficiaries';
         if (showLoading) {
@@ -47,9 +54,9 @@ const BeneficiariesPage: React.FC = () => {
     } finally {
       if (showLoading) setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { void loadBeneficiaries(true); }, []);
+  useEffect(() => { void loadBeneficiaries(currentPage, true); }, [loadBeneficiaries]);
 
   const handleAdd = async () => {
     const kycStatus = String((user as any)?.kyc_status || '').toLowerCase();
@@ -180,9 +187,18 @@ const BeneficiariesPage: React.FC = () => {
               )
             )}
           </tbody>
-        </table>
-      </div>
+          </table>
+        </div>
       </>
+      )}
+
+      {!loading && !error && beneficiaries.length > 0 && (
+        <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          onPageChange={(p) => void loadBeneficiaries(p, false)} 
+          isLoading={loading} 
+        />
       )}
     </main>
   );

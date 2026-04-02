@@ -6,25 +6,27 @@ import "../../assets/css/HistoryPage.css";
 import "../../assets/css/NotificationsPage.css";
 import notificationsApi from "../../lib/api/notifications.api";
 import { extractArray } from "../../lib/api/response";
+import Pagination from "../../components/Pagination";
 
 const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
   const { fetchNotifications: refreshGlobal } = useNotifications();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [markingAll, setMarkingAll] = useState(false);
 
-  const load = useCallback(async (pageNum: number, clear = false) => {
+  const load = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const res = await notificationsApi.list({ page: pageNum, limit: 20 });
+      const res = await notificationsApi.list({ page, limit: 20 });
       if (res.success) {
         const data = extractArray(res.data);
-        if (clear) setNotifications(data);
-        else setNotifications((prev) => [...prev, ...data]);
-        setHasMore(data.length === 20);
+        setNotifications(data);
+        const meta = (res.data as any)?.meta || (res.data as any);
+        setTotalPages(meta.totalPages || meta.last_page || 1);
+        setCurrentPage(page);
       }
     } catch (err) {
       toast.error("Failed to load notifications");
@@ -34,7 +36,7 @@ const NotificationsPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    void load(1, true);
+    void load(currentPage);
   }, [load]);
 
   const handleMarkRead = async (
@@ -140,20 +142,12 @@ const NotificationsPage: React.FC = () => {
               ))}
             </div>
 
-            {hasMore && (
-              <div className="load-more-container">
-                <button
-                  className="load-more-btn"
-                  onClick={() => {
-                    setPage((p) => p + 1);
-                    void load(page + 1);
-                  }}
-                  disabled={loading}
-                >
-                  {loading ? "Loading..." : "Load More"}
-                </button>
-              </div>
-            )}
+            <Pagination 
+              currentPage={currentPage} 
+              totalPages={totalPages} 
+              onPageChange={(p) => void load(p)} 
+              isLoading={loading} 
+            />
           </>
         )}
 

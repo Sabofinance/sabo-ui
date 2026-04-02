@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CurrencyConverter from "../../components/CurrencyConverter";
 import { extractArray } from "../../lib/api/response";
+import Pagination from "../../components/Pagination";
 
 const C = {
   lime: "#C8F135",
@@ -23,6 +24,8 @@ const ConversionsPage: React.FC = () => {
   const [conversions, setConversions] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const kycStatus = String((user as any)?.kyc_status || "").toLowerCase();
   const isVerified = kycStatus === "verified";
@@ -35,13 +38,19 @@ const ConversionsPage: React.FC = () => {
     return "Complete your KYC to access conversions.";
   }, [isPending, isVerified]);
 
-  const loadConversions = useCallback(async () => {
+  const loadConversions = useCallback(async (page = 1) => {
     setLoading(true);
     setError("");
     try {
-      const response = await conversionsApi.list();
-      if (response.success) setConversions(extractArray(response.data));
-      else setError(response.error?.message || "Failed to load conversions");
+      const response = await conversionsApi.list({ page, limit: 10 });
+      if (response.success) {
+        setConversions(extractArray(response.data));
+        const meta = (response.data as any)?.meta || (response.data as any);
+        setTotalPages(meta.totalPages || meta.last_page || 1);
+        setCurrentPage(page);
+      } else {
+        setError(response.error?.message || "Failed to load conversions");
+      }
     } finally {
       setLoading(false);
     }
@@ -49,7 +58,7 @@ const ConversionsPage: React.FC = () => {
 
   useEffect(() => {
     if (!isVerified) return;
-    void loadConversions();
+    void loadConversions(currentPage);
   }, [isVerified, loadConversions]);
 
   /* ── KYC gate ── */
@@ -360,10 +369,17 @@ const ConversionsPage: React.FC = () => {
               animation: "convFadeUp 0.4s ease 0.05s both",
             }}
           >
-            <CurrencyConverter onSuccess={() => void loadConversions()} />
+            <CurrencyConverter onSuccess={() => void loadConversions(currentPage)} />
           </div>
 
-   
+          {!loading && !error && conversions.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(p) => void loadConversions(p)}
+              isLoading={loading}
+            />
+          )}
         </main>
       </div>
     </>

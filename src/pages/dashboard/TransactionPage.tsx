@@ -84,11 +84,22 @@ const TransactionPage: React.FC = () => {
           return isNaN(n) ? 0 : n;
         };
 
+        const seller = (data.seller || data.user || {}) as any;
+        const username = String(
+          data.sellerUsername || 
+          seller?.username || 
+          data.username || 
+          data.sellerName || 
+          seller?.name || 
+          data.name || 
+          'User'
+        );
+
         const mappedListing: ListingData = {
           id: finalId,
           seller: {
-            name: String(data.sellerName || data.seller?.name || data.name || 'Anonymous Trader'),
-            avatar: String(data.sellerAvatar || data.seller?.avatar || ''),
+            name: username,
+            avatar: String(data.sellerAvatar || seller?.avatar || seller?.profile_picture_url || data.avatar || data.profile_picture_url || ''),
             rating: toNum(data.rating || data.seller?.rating || 0),
             completedTrades: toNum(data.completedTrades || data.completed || data.seller?.completedTrades || 0),
             verified: Boolean(data.verified ?? data.seller?.verified ?? false),

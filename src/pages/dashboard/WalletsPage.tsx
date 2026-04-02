@@ -467,18 +467,6 @@ const WalletsPage: React.FC = () => {
                     <div className="wlt-detail-grid">
                       {[
                         {
-                          label: "Account Name",
-                          value: String(selected.accountName || "---"),
-                        },
-                        {
-                          label: "Account Number",
-                          value: String(selected.accountNumber || "---"),
-                        },
-                        {
-                          label: "Bank Name",
-                          value: String(selected.bank || "Sabo Bank"),
-                        },
-                        {
                           label: "Available Balance",
                           value: `${CURRENCY_SYMBOL[String(selected.currency)] || ""}${fmt(Number((selected as any).available_balance ?? (selected as any).availableBalance ?? (selected as any).balance ?? 0))}`,
                         },

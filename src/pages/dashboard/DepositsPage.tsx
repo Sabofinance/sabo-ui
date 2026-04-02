@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { depositsApi } from "../../lib/api";
 import { extractArray } from "../../lib/api/response";
 import { toast } from "react-toastify";
@@ -79,22 +79,23 @@ const DepositsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError("");
-      const response = await depositsApi.list();
-      if (response.success) {
-        setDeposits(extractArray(response.data));
-      } else {
-        const msg = response.error?.message || "Failed to load deposits";
-        setError(msg);
-        toast.error(msg);
-      }
-      setLoading(false);
-    };
-    void load();
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    const response = await depositsApi.list();
+    if (response.success) {
+      setDeposits(extractArray(response.data));
+    } else {
+      const msg = response.error?.message || "Failed to load deposits";
+      setError(msg);
+      toast.error(msg);
+    }
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
     <>
@@ -402,6 +403,41 @@ const DepositsPage: React.FC = () => {
           font-size: 14px;
         }
 
+        .dep-refresh-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          border-radius: 10px;
+          border: 1px solid ${COLORS.border};
+          background: ${COLORS.surface};
+          color: ${COLORS.textMain};
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.12s ease;
+          font-family: inherit;
+        }
+
+        .dep-refresh-btn:hover:not(:disabled) {
+          background: #f0f7f6;
+          border-color: ${COLORS.textMuted};
+        }
+
+        .dep-refresh-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .dep-refresh-btn svg {
+          flex-shrink: 0;
+          transition: transform 0.4s ease;
+        }
+
+        .dep-refresh-btn.loading svg {
+          transform: rotate(360deg);
+        }
+
         @media (max-width: 640px) {
           .deposits-page { padding: 24px 16px; }
           .dep-table thead th:nth-child(4),
@@ -490,12 +526,25 @@ const DepositsPage: React.FC = () => {
         {/* ── table ── */}
         <div className="dep-table-wrap">
           <div className="dep-table-toolbar">
-            <span className="dep-table-toolbar-title">Transaction History</span>
-            {!loading && !error && (
-              <span className="dep-table-count-badge">
-                {deposits.length} {deposits.length === 1 ? "record" : "records"}
-              </span>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span className="dep-table-toolbar-title">Transaction History</span>
+              {!loading && !error && (
+                <span className="dep-table-count-badge">
+                  {deposits.length} {deposits.length === 1 ? "record" : "records"}
+                </span>
+              )}
+            </div>
+            <button 
+              className={`dep-refresh-btn ${loading ? 'loading' : ''}`}
+              onClick={() => void load()}
+              disabled={loading}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+              </svg>
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </button>
           </div>
 
           <table className="dep-table">
@@ -600,7 +649,7 @@ const DepositsPage: React.FC = () => {
                           fontSize: "13px",
                         }}
                       >
-                        {dateRaw ? new Date(dateRaw).toLocaleString() : "-"}
+                        {dateRaw && !isNaN(new Date(dateRaw).getTime()) ? new Date(dateRaw).toLocaleString() : "-"}
                       </td>
                       <td>
                         <span className="dep-row-arrow">›</span>

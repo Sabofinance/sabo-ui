@@ -61,6 +61,7 @@ const AdminUserDetailsPage = lazy(() => import('./pages/admin/AdminUserDetailsPa
 const AdminKycPage = lazy(() => import('./pages/admin/AdminKycPage'));
 const AdminDepositsPage = lazy(() => import('./pages/admin/AdminDepositsPage'));
 const AdminDisputesPage = lazy(() => import("./pages/admin/AdminDisputesPage"));
+const AdminAnalyticsPage = lazy(() => import('./pages/admin/AdminAnalyticsPage'));
 const AdminTransactionsPage = lazy(
   () => import("./pages/admin/AdminTransactionsPage"),
 );
@@ -94,10 +95,6 @@ const AdminPublicRoute: React.FC<{ children: React.ReactNode }> = ({ children })
 
   if (isLoading || isAdminLoading) return <AppLoader />;
   if (isAdminAuthenticated) return <Navigate to="/dashboard/admin" replace />;
-  if (isAuthenticated) {
-    const role = String(user?.role || '').toLowerCase();
-    return <Navigate to={role === 'admin' ? '/dashboard/admin' : '/dashboard'} replace />;
-  }
 
   return <>{children}</>;
 };
@@ -178,6 +175,7 @@ function App() {
             <Route path="admin/deposits" element={<AdminProtectedRoute><AdminDepositsPage /></AdminProtectedRoute>} />
             <Route path="admin/disputes" element={<AdminProtectedRoute><AdminDisputesPage /></AdminProtectedRoute>} />
             <Route path="admin/transactions" element={<AdminProtectedRoute><AdminTransactionsPage /></AdminProtectedRoute>} />
+            <Route path="admin/analytics" element={<AdminProtectedRoute><AdminAnalyticsPage /></AdminProtectedRoute>} />
             <Route path="admin/profile" element={<AdminProtectedRoute><AdminProfilePage /></AdminProtectedRoute>} />
             <Route path="admin/admins" element={<AdminProtectedRoute allowedRoles={["super_admin"]}><AdminAdminsPage /></AdminProtectedRoute>} />
             <Route path="admin/logs" element={<AdminProtectedRoute allowedRoles={["super_admin"]}><AdminLogsPage /></AdminProtectedRoute>} />

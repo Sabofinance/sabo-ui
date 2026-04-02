@@ -25,6 +25,7 @@ import { extractArray } from "../../lib/api/response";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import PinDotsInput from "../../components/PinDotsInput";
+import Pagination from "../../components/Pagination";
 
 import { useMemo, useCallback } from "react";
 
@@ -673,17 +674,19 @@ const TradesPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"active" | "past">("active");
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const kycStatus = String((user as any)?.kyc_status || "").toLowerCase();
  
   const isVerified = kycStatus === "verified";
  console.log("verif"  ,isVerified);
-  const loadTrades = async () => {
+  const loadTrades = async (page = 1) => {
     setLoading(true);
     setRefreshing(true);
     setError("");
     try {
-      const res = await tradesApi.list();
+      const res = await tradesApi.list({ page, limit: 10 });
       if (res.success) {
         const data = extractArray(res.data);
         const mapped: Trade[] = data.map((item: any) => {
@@ -732,6 +735,9 @@ const TradesPage: React.FC = () => {
           };
         });
         setTrades(mapped);
+        const meta = (res.data as any)?.meta || (res.data as any);
+        setTotalPages(meta.totalPages || meta.last_page || 1);
+        setCurrentPage(page);
       } else {
         setError(res.error?.message || "Failed to load trades.");
       }
@@ -744,7 +750,7 @@ const TradesPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isVerified) void loadTrades();
+    if (isVerified) void loadTrades(currentPage);
   }, [isVerified]);
 
   const isActiveTrade = (tr: Trade) =>
@@ -1339,6 +1345,13 @@ const TradesPage: React.FC = () => {
             ))
           )}
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(p) => void loadTrades(p)}
+          isLoading={loading}
+        />
       </div>
 
       {/* Modal */}

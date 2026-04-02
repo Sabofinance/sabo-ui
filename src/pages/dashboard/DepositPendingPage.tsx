@@ -43,16 +43,45 @@ const DepositPendingPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="summary-cards">
-        <div className="summary-card" style={{ flex: 1 }}>
+      <div className="summary-cards" style={{ display: 'block' }}>
+        <div className="summary-card" style={{ padding: '24px' }}>
           <div className="summary-info">
-            <span className="summary-label">What happens next</span>
-            <div style={{ marginTop: 10, color: "#475569", lineHeight: 1.6 }}>
-              {copy.bullets.map((b) => (
-                <React.Fragment key={b}>
-                  - {b}
-                  <br />
-                </React.Fragment>
+            <span className="summary-label" style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', color: '#64748b' }}>
+              WHAT HAPPENS NEXT
+            </span>
+            <div style={{ marginTop: 20 }}>
+              {copy.bullets.map((b, i) => (
+                <div key={i} style={{ 
+                  display: 'flex', 
+                  gap: '14px', 
+                  marginBottom: i === copy.bullets.length - 1 ? 0 : '18px',
+                  alignItems: 'flex-start'
+                }}>
+                  <div style={{ 
+                    width: '24px', 
+                    height: '24px', 
+                    borderRadius: '50%', 
+                    background: '#C8F032', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    color: '#0A1E28'
+                  }}>
+                    {i + 1}
+                  </div>
+                  <p style={{ 
+                    margin: 0, 
+                    color: '#334155', 
+                    fontSize: '14.5px', 
+                    lineHeight: '1.5',
+                    fontWeight: 500 
+                  }}>
+                    {b}
+                  </p>
+                </div>
               ))}
             </div>
           </div>

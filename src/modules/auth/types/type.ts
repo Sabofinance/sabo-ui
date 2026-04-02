@@ -8,6 +8,8 @@ export interface User {
   kyc_status?: "unverified" | "pending" | "verified" | "rejected" | string;
   role: "user" | "admin" | "super_admin" | string;
   transaction_pin_set?: boolean;
+  profile_picture_url?: string | null;
+  is_suspended?: boolean;
 
   // Legacy/optional fields used across the current UI.
   firstName?: string;

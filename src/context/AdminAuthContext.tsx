@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { adminAuthApi } from "../lib/api/admin-auth.api";
+import { adminApi } from "../lib/api";
 import type { AuthTokens } from "../modules/auth/types/type";
 import { toast } from "react-toastify";
 
@@ -9,7 +10,13 @@ export type AdminUser = {
   id?: string;
   email?: string;
   name?: string;
+  username?: string;
+  phone?: string;
   role: AdminRole;
+  profile_picture_url?: string | null;
+  is_suspended?: boolean;
+  kyc_status?: string;
+  created_at?: string;
 };
 
 interface AdminAuthContextValue {
@@ -21,6 +28,7 @@ interface AdminAuthContextValue {
   adminLogin: (data: { email: string; password: string }) => Promise<void>;
   adminVerifyOtp: (data: { email: string; otp: string }) => Promise<void>;
   adminLogout: () => Promise<void>;
+  refreshAdmin: () => Promise<void>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextValue | undefined>(undefined);
@@ -84,33 +92,52 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const isAdminAuthenticated = Boolean(adminAccessToken && (adminUser?.role === "admin" || adminUser?.role === "super_admin"));
 
-  useEffect(() => {
-    // Ensure axios picks the correct token scope on initial load.
-    const userToken = localStorage.getItem("accessToken");
-    if (userToken) {
-      localStorage.setItem(SESSION_TYPE_KEY, "user");
+  const fetchCurrentAdmin = useCallback(async () => {
+    const token = localStorage.getItem(ADMIN_ACCESS_KEY);
+    if (!token) {
       setIsAdminLoading(false);
       return;
     }
-    if (adminAccessToken) {
+
+    try {
+      // Ensure we use the admin session scope for this request
       localStorage.setItem(SESSION_TYPE_KEY, "admin");
-      // If we have a token but missing/invalid decoded role, force-clear.
-      const derived = deriveAdminUserFromToken(adminAccessToken);
-      if (!derived) {
-        localStorage.removeItem(ADMIN_ACCESS_KEY);
-        localStorage.removeItem(ADMIN_REFRESH_KEY);
-        localStorage.removeItem(ADMIN_USER_KEY);
-        setAdminAccessToken(null);
-        setAdminRefreshToken(null);
-        setAdminUser(null);
+      
+      const response = await adminApi.getProfile();
+      if (response.success && response.data) {
+        // Robustly extract admin object if nested under 'profile' key
+        const data = response.data as any;
+        const nextAdmin = (data.profile ? data.profile : data) as AdminUser;
+        
+        setAdminUser(nextAdmin);
+        localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(nextAdmin));
       } else {
-        setAdminUser(derived);
-        localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(derived));
+        // If the token isn't valid (401/403), ensure we don't keep the admin "authenticated".
+        if (response.error?.status === 401 || response.error?.status === 403) {
+          localStorage.removeItem(ADMIN_ACCESS_KEY);
+          localStorage.removeItem(ADMIN_REFRESH_KEY);
+          localStorage.removeItem(ADMIN_USER_KEY);
+          setAdminAccessToken(null);
+          setAdminRefreshToken(null);
+          setAdminUser(null);
+        }
       }
+    } catch (err: any) {
+      // Session might be stale/expired
+      localStorage.removeItem(ADMIN_ACCESS_KEY);
+      localStorage.removeItem(ADMIN_REFRESH_KEY);
+      localStorage.removeItem(ADMIN_USER_KEY);
+      setAdminAccessToken(null);
+      setAdminRefreshToken(null);
+      setAdminUser(null);
+    } finally {
+      setIsAdminLoading(false);
     }
-    setIsAdminLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    void fetchCurrentAdmin();
+  }, [fetchCurrentAdmin]);
 
   const clearAdminSession = useCallback(async () => {
     localStorage.removeItem(ADMIN_ACCESS_KEY);
@@ -155,16 +182,23 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       localStorage.setItem(SESSION_TYPE_KEY, "admin");
       localStorage.setItem(ADMIN_ACCESS_KEY, accessToken);
       localStorage.setItem(ADMIN_REFRESH_KEY, refreshToken);
-      localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(derivedUser));
-
-      // Clear user session to avoid confusion.
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
 
       setAdminAccessToken(accessToken);
       setAdminRefreshToken(refreshToken);
-      setAdminUser(derivedUser);
+      
+      // Fetch full admin profile immediately
+      const profileRes = await adminApi.getProfile();
+      if (profileRes.success && profileRes.data) {
+        const data = profileRes.data as any;
+        const nextAdmin = (data.profile ? data.profile : data) as AdminUser;
+        setAdminUser(nextAdmin);
+        localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(nextAdmin));
+      } else {
+        setAdminUser(derivedUser);
+        localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(derivedUser));
+      }
+
+      // Clear user session to avoid confusion.
     } catch (e: any) {
       toast.error(e?.message || "Admin sign-in failed");
       await clearAdminSession();
@@ -188,8 +222,9 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       adminLogin,
       adminVerifyOtp,
       adminLogout,
+      refreshAdmin: fetchCurrentAdmin,
     }),
-    [adminUser, adminAccessToken, adminRefreshToken, isAdminAuthenticated, isAdminLoading, adminLogin, adminVerifyOtp, adminLogout]
+    [adminUser, adminAccessToken, adminRefreshToken, isAdminAuthenticated, isAdminLoading, adminLogin, adminVerifyOtp, adminLogout, fetchCurrentAdmin]
   );
 
   return <AdminAuthContext.Provider value={value}>{children}</AdminAuthContext.Provider>;

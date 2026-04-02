@@ -15,18 +15,8 @@ const UserProtectedRoute: React.FC<UserProtectedRouteProps> = ({ children }) => 
 
   if (isLoading || isAdminLoading) return <AppLoader />;
 
-  if (isAdminAuthenticated) {
-    // Admin must never land on user routes.
-    return <Navigate to="/dashboard/admin" replace />;
-  }
-
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  const role = String(user?.role || "").toLowerCase();
-  if (role === "admin" || role === "super_admin") {
-    return <Navigate to="/dashboard/admin" replace />;
   }
 
   return <>{children}</>;

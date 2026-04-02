@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import '../../assets/css/ActiveSabitPage.css';
 import { sabitsApi } from '../../lib/api';
 import { extractArray } from '../../lib/api/response';
@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import BidModal from '../../components/BidModal';
 import TradeModal from "../../components/TradeModal";
 import ReceivedBidsModal from '../../components/ReceivedBidsModal';
+import Pagination from "../../components/Pagination";
 
 interface SabitListing {
   id: number | string;
@@ -32,12 +33,31 @@ interface SabitListing {
 
 const ActiveSabitPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
-  const [selectedCurrency, setSelectedCurrency] = useState<string>('all');
-  const [selectedType, setSelectedType] = useState<string>('all');
+
+  // Initialize from query params if present
+  const queryParams = new URLSearchParams(location.search);
+  const initialType = queryParams.get('type')?.toLowerCase() || 'all';
+  const initialCurrency = queryParams.get('currency')?.toUpperCase() || 'all';
+
+  const [selectedCurrency, setSelectedCurrency] = useState<string>(initialCurrency === 'ALL' ? 'all' : initialCurrency);
+  const [selectedType, setSelectedType] = useState<string>(initialType);
   const [listings, setListings] = useState<SabitListing[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Update filters if URL changes
+  useEffect(() => {
+    const q = new URLSearchParams(location.search);
+    const t = q.get('type')?.toLowerCase();
+    const c = q.get('currency')?.toUpperCase();
+    if (t) setSelectedType(t);
+    if (c) setSelectedCurrency(c === 'ALL' ? 'all' : c);
+  }, [location.search]);
+
   const kycStatus = String((user as any)?.kyc_status || '').toLowerCase();
   const isVerified = kycStatus === 'verified';
   const isPending = kycStatus.includes('pending');
@@ -113,67 +133,79 @@ const ActiveSabitPage: React.FC = () => {
     setReceivedModalOpen(true);
   };
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      const params: Record<string, unknown> = { status: 'active' };
-      if (selectedCurrency !== 'all') params.currency = selectedCurrency;
-      if (selectedType !== 'all') params.type = selectedType;
+  const load = useCallback(async (page = 1) => {
+    setLoading(true);
+    setError('');
+    const params: Record<string, unknown> = { status: 'active', page, limit: 12 };
+    if (selectedCurrency !== 'all') params.currency = selectedCurrency;
+    if (selectedType !== 'all') params.type = selectedType;
 
-      const response = await sabitsApi.list(params);
-      if (response.success) {
-        const sabitList = extractArray(response.data);
-        const mapped: SabitListing[] = sabitList.map((item: Record<string, unknown>, idx: number) => {
-          const seller = (item.seller || {}) as any;
-          const userId = String(item.userId || item.user_id || seller?.id || '');
-          
-          // Robust ID extraction
-          let rawId = item.id ?? item.sabit_id ?? item.sabitId;
-          if (rawId === "NaN" || rawId === "undefined" || rawId === "null") rawId = null;
-          
-          const finalId = rawId 
-            ? (isNaN(Number(rawId)) ? String(rawId) : Number(rawId)) 
-            : idx + 1;
+    const response = await sabitsApi.list(params);
+    if (response.success) {
+      const sabitList = extractArray(response.data);
+      const mapped: SabitListing[] = sabitList.map((item: Record<string, unknown>, idx: number) => {
+        const seller = (item.seller || item.user || {}) as any;
+        const userId = String(item.userId || item.user_id || seller?.id || '');
+        
+        let rawId = item.id ?? item.sabit_id ?? item.sabitId;
+        if (rawId === "NaN" || rawId === "undefined" || rawId === "null") rawId = null;
+        
+        const finalId = rawId 
+          ? (isNaN(Number(rawId)) ? String(rawId) : Number(rawId)) 
+          : idx + 1;
 
-          // Robust number conversion
-          const toNum = (val: any) => {
-            const n = Number(val);
-            return isNaN(n) ? 0 : n;
-          };
+        const toNum = (val: any) => {
+          const n = Number(val);
+          return isNaN(n) ? 0 : n;
+        };
 
-          return {
-            id: finalId,
-            userId,
-            seller: {
-              id: userId,
-              name: String(item.sellerName || seller?.name || item.name || 'Anonymous Trader'),
-              avatar: String(item.sellerAvatar || seller?.avatar || item.avatar || ''),
-              rating: toNum(item.rating || item.sellerRating || seller?.rating || 0),
-              completedTrades: toNum(item.completed || item.completedTrades || item.sellerCompletedTrades || seller?.completedTrades || 0),
-              verified: Boolean(item.verified ?? seller?.verified ?? false),
-            },
-            type: String(item.type || '').toLowerCase() === 'buy' ? 'buy' : 'sell',
-            currency: String(item.currency || 'NGN') as SabitListing['currency'],
-            amount: toNum(item.amount || 0),
-            rate: toNum(item.rate_ngn || item.rate || 0),
-            available: toNum(item.available || item.remaining || 0),
-            paymentMethods: Array.isArray(item.paymentMethods)
-              ? (item.paymentMethods as string[])
-              : ((item.paymentMethodsList as string[] | undefined) || []),
-            timeLimit: String(item.timeLimit || item.time_limit || '30 mins'),
-            status: String(item.status || item.state || 'active'),
-          };
-        });
-        setListings(mapped);
-      } else {
-        setListings([]);
-        setError(response.success ? '' : (response.error?.message || 'Failed to load listings'));
-      }
-      setLoading(false);
-    };
-    void load();
+        const username = String(
+          item.sellerUsername || 
+          seller?.username || 
+          item.username || 
+          item.sellerName || 
+          seller?.name || 
+          item.name || 
+          'User'
+        );
+
+        return {
+          id: finalId,
+          userId,
+          seller: {
+            id: userId,
+            name: username,
+            avatar: String(item.sellerAvatar || seller?.avatar || seller?.profile_picture_url || item.avatar || item.profile_picture_url || ''),
+            rating: toNum(item.rating || item.sellerRating || seller?.rating || 0),
+            completedTrades: toNum(item.completed || item.completedTrades || item.sellerCompletedTrades || seller?.completedTrades || 0),
+            verified: Boolean(item.verified ?? seller?.verified ?? false),
+          },
+          type: String(item.type || '').toLowerCase() === 'buy' ? 'buy' : 'sell',
+          currency: String(item.currency || 'NGN') as SabitListing['currency'],
+          amount: toNum(item.amount || 0),
+          rate: toNum(item.rate_ngn || item.rate || 0),
+          available: toNum(item.available || item.remaining || 0),
+          paymentMethods: Array.isArray(item.paymentMethods)
+            ? (item.paymentMethods as string[])
+            : ((item.paymentMethodsList as string[] | undefined) || []),
+          timeLimit: String(item.timeLimit || item.time_limit || '30 mins'),
+          status: String(item.status || item.state || 'active'),
+        };
+      });
+      setListings(mapped);
+      const meta = (response.data as any)?.meta || (response.data as any);
+      setTotalPages(meta.totalPages || meta.last_page || 1);
+      setCurrentPage(page);
+    } else {
+      setListings([]);
+      setError(response.success ? '' : (response.error?.message || 'Failed to load listings'));
+    }
+    setLoading(false);
   }, [selectedCurrency, selectedType]);
+
+  useEffect(() => {
+    void load(1);
+  }, [load]);
 
   return (
     <div className="active-sabit-wrapper">
@@ -286,9 +318,17 @@ const ActiveSabitPage: React.FC = () => {
               {filteredListings.map((listing) => (
                 <div key={listing.id} className="listing-card">
                   <div className="card-header">
-                      <div className="seller-info">
-                      {listing.seller.avatar && (
-                        <img src={listing.seller.avatar} alt={listing.seller.name} className="seller-avatar" />
+                    <div className="seller-info">
+                      {listing.seller.avatar || (listing.seller as any).profile_picture_url ? (
+                        <img 
+                          src={listing.seller.avatar || (listing.seller as any).profile_picture_url} 
+                          alt={listing.seller.name} 
+                          className="seller-avatar" 
+                        />
+                      ) : (
+                        <div className="seller-avatar-initials">
+                          {listing.seller.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                        </div>
                       )}
                       <div>
                         <div className="seller-name-row">
@@ -351,8 +391,8 @@ const ActiveSabitPage: React.FC = () => {
                           <>
                             <button
                               className="trade-btn"
-                              style={{ flex: 1, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0" }}
-                              disabled
+                              style={{ flex: 1, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", cursor: "pointer" }}
+                              onClick={() => navigate('/dashboard/my-sabits')}
                             >
                               Your Listing
                             </button>
@@ -406,6 +446,13 @@ const ActiveSabitPage: React.FC = () => {
                 <p>Try adjusting your filters</p>
               </div>
             )}
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(p) => void load(p)}
+              isLoading={loading}
+            />
 
             {bidModalOpen && bidListing && (
               <BidModal

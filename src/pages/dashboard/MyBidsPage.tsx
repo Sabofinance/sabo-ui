@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bidsApi from "../../lib/api/bids.api";
 import { extractArray } from "../../lib/api/response";
+import Pagination from "../../components/Pagination";
 import "../../assets/css/HistoryPage.css";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
@@ -16,6 +17,8 @@ const MyBidsPage: React.FC = () => {
   const [bids, setBids] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const kycStatus = String((user as any)?.kyc_status || "").toLowerCase();
   const isVerified = kycStatus === "verified";
@@ -28,18 +31,21 @@ const MyBidsPage: React.FC = () => {
     return "Complete your KYC to view bids.";
   }, [isPending, isVerified]);
 
-  const load = async (nextTab: BidTab) => {
+  const load = async (nextTab: BidTab, page = 1) => {
     setLoading(true);
     setError("");
     try {
       const res = await bidsApi.listMine({
         status: nextTab,
-        page: 1,
-        limit: 20,
+        page,
+        limit: 15,
       });
       if (res.success) {
         const data = extractArray(res.data);
         setBids(data);
+        const meta = (res.data as any)?.meta || (res.data as any);
+        setTotalPages(meta.totalPages || meta.last_page || 1);
+        setCurrentPage(page);
       } else {
         setBids([]);
         setError(res.error?.message || "Failed to load bids.");
@@ -51,7 +57,7 @@ const MyBidsPage: React.FC = () => {
 
   useEffect(() => {
     if (!isVerified) return;
-    void load(tab);
+    void load(tab, currentPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, isVerified]);
 
@@ -138,6 +144,25 @@ const MyBidsPage: React.FC = () => {
           <h1 className="page-title">My Bids</h1>
           <p className="page-subtitle">Manage your bids across listings</p>
         </div>
+        <button 
+          className="export-btn" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            background: '#fff',
+            color: '#0A1E28',
+            border: '1px solid #e2e8f0'
+          }} 
+          onClick={() => void load(tab)}
+          disabled={loading}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+          </svg>
+          {loading ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
 
       <div
@@ -237,6 +262,13 @@ const MyBidsPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      <Pagination 
+        currentPage={currentPage} 
+        totalPages={totalPages} 
+        onPageChange={(p) => void load(tab, p)} 
+        isLoading={loading} 
+      />
     </main>
   );
 };

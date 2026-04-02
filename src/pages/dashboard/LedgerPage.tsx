@@ -1,34 +1,42 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ledgerApi } from '../../lib/api';
 import { extractArray } from '../../lib/api/response';
+import Pagination from '../../components/Pagination';
 import '../../assets/css/HistoryPage.css';
 
 const LedgerPage: React.FC = () => {
   const [entries, setEntries] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const load = useCallback(async (page = 1) => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await ledgerApi.listEntries({ page, limit: 20 });
+      if (response.success) {
+        const list = extractArray(response.data);
+        setEntries(list);
+        const meta = (response.data as any)?.meta || (response.data as any);
+        setTotalPages(meta.totalPages || meta.last_page || 1);
+        setCurrentPage(page);
+      } else {
+        setError(response.error?.message || 'Failed to load ledger entries');
+        setEntries([]);
+      }
+    } catch (err: any) {
+      setError('An unexpected error occurred while loading ledger');
+      setEntries([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const response = await ledgerApi.listEntries();
-        if (response.success) {
-          setEntries(extractArray(response.data));
-        } else {
-          setError(response.error?.message || 'Failed to load ledger entries');
-          setEntries([]);
-        }
-      } catch (err: any) {
-        setError('An unexpected error occurred while loading ledger');
-        setEntries([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    void load();
-  }, []);
+    void load(currentPage);
+  }, [load]);
 
   return (
     <main className="history-page">
@@ -64,6 +72,14 @@ const LedgerPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+      )}
+      {!loading && !error && entries.length > 0 && (
+        <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          onPageChange={(p) => void load(p)} 
+          isLoading={loading} 
+        />
       )}
     </main>
   );

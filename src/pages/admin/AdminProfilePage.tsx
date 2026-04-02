@@ -16,7 +16,7 @@ const CSS = `
 `;
 
 const AdminProfilePage: React.FC = () => {
-  const { adminUser } = useAdminAuth();
+  const { adminUser, refreshAdmin } = useAdminAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -24,8 +24,12 @@ const AdminProfilePage: React.FC = () => {
   const loadProfile = async () => {
     setLoading(true);
     const res = await adminApi.getProfile();
-    if (res.success) setProfile(res.data);
-    else toast.error("Failed to load profile");
+    if (res.success && res.data) {
+      const data = res.data as any;
+      setProfile(data.profile || data);
+    } else {
+      toast.error("Failed to load profile");
+    }
     setLoading(false);
   };
 
@@ -45,6 +49,7 @@ const AdminProfilePage: React.FC = () => {
     if (res.success) {
       toast.success("Profile picture updated");
       void loadProfile();
+      void refreshAdmin(); // Update context so other parts reflect the new picture
     } else {
       toast.error(res.error?.message || "Upload failed");
     }
@@ -65,15 +70,23 @@ const AdminProfilePage: React.FC = () => {
       .slice(0, 2)
       .toUpperCase() || "?";
 
+  const joinedDate = displayUser?.created_at || displayUser?.createdAt 
+    ? new Date(displayUser.created_at || displayUser.createdAt).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      })
+    : 'N/A';
+
   return (
     <div style={{ padding: 24 }}>
       <style>{CSS}</style>
       <div className="adm-profile-card">
         <div className="adm-profile-header">
           <div className="adm-profile-avatar-wrap">
-            {displayUser?.avatarUrl ? (
+            {displayUser?.profile_picture_url || displayUser?.avatarUrl ? (
               <img
-                src={displayUser.avatarUrl}
+                src={displayUser.profile_picture_url || displayUser.avatarUrl}
                 alt="Avatar"
                 className="adm-profile-avatar"
               />
@@ -115,21 +128,43 @@ const AdminProfilePage: React.FC = () => {
 
         <div className="adm-profile-info">
           <div className="adm-profile-item">
+            <span className="adm-profile-label">Full Name</span>
+            <span className="adm-profile-value">{displayUser?.name || 'N/A'}</span>
+          </div>
+          <div className="adm-profile-item">
+            <span className="adm-profile-label">Username</span>
+            <span className="adm-profile-value">@{displayUser?.username || 'N/A'}</span>
+          </div>
+          <div className="adm-profile-item">
             <span className="adm-profile-label">Email Address</span>
             <span className="adm-profile-value">{displayUser?.email}</span>
           </div>
           <div className="adm-profile-item">
-            <span className="adm-profile-label">Admin ID</span>
-            <span className="adm-profile-value">#{displayUser?.id}</span>
+            <span className="adm-profile-label">Phone Number</span>
+            <span className="adm-profile-value">{displayUser?.phone || 'N/A'}</span>
           </div>
           <div className="adm-profile-item">
-            <span className="adm-profile-label">Permissions</span>
+            <span className="adm-profile-label">Role</span>
             <span
               className="adm-profile-value"
               style={{ textTransform: "capitalize" }}
             >
-              {displayUser?.role}
+              {displayUser?.role?.replace("_", " ")}
             </span>
+          </div>
+          <div className="adm-profile-item">
+            <span className="adm-profile-label">Account Status</span>
+            <span className="adm-profile-value" style={{ color: displayUser?.is_suspended ? '#ef4444' : '#10b981' }}>
+              {displayUser?.is_suspended ? 'Suspended' : 'Active'}
+            </span>
+          </div>
+          <div className="adm-profile-item">
+            <span className="adm-profile-label">Joined On</span>
+            <span className="adm-profile-value">{joinedDate}</span>
+          </div>
+          <div className="adm-profile-item">
+            <span className="adm-profile-label">Admin ID</span>
+            <span className="adm-profile-value" style={{ fontSize: '12px', color: '#94a3b8' }}>{displayUser?.id}</span>
           </div>
         </div>
       </div>

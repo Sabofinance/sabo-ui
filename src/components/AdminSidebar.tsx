@@ -62,6 +62,11 @@ const Icons = {
       <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
     </Icon>
   ),
+  Analytics: () => (
+    <Icon>
+      <path d="M18 20V10M12 20V4M6 20v-6" />
+    </Icon>
+  ),
   Admins: () => (
     <Icon>
       <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
@@ -135,6 +140,7 @@ const AdminSidebar: React.FC = () => {
           {navLink("/dashboard/admin/deposits", "Deposits", Icons.Deposits)}
           {navLink("/dashboard/admin/disputes", "Disputes", Icons.Disputes)}
           {navLink("/dashboard/admin/transactions", "Transactions", Icons.Transactions)}
+          {navLink("/dashboard/admin/analytics", "Analytics", Icons.Analytics)}
           {isSuperAdmin &&
             navLink("/dashboard/admin/admins", "Admins", Icons.Admins)}
           {isSuperAdmin && navLink("/dashboard/admin/logs", "Logs", Icons.Logs)}

@@ -60,6 +60,9 @@ const DashboardHeader: React.FC = () => {
   const displayEmail = (activeUser as any)?.email || '';
   const displayRole = (activeUser as any)?.role ? String((activeUser as any)?.role) : '';
 
+  const profileLink = isAdminAuthenticated ? "/dashboard/admin/profile" : "/dashboard/profile";
+  const avatarUrl = (activeUser as any)?.profile_picture_url || `https://i.pravatar.cc/150?u=${displayEmail || 'user'}`;
+
   return (
     <header className="dashboard-header">
 
@@ -110,7 +113,7 @@ const DashboardHeader: React.FC = () => {
             aria-haspopup="true"
           >
             <img
-              src="https://i.pravatar.cc/150?u=akingbade"
+              src={avatarUrl}
               alt={displayName}
               className="profile-avatar"
             />
@@ -131,8 +134,8 @@ const DashboardHeader: React.FC = () => {
             <div className="dropdown-menu">
               <div className="dropdown-header">
                 <img
-                  src="https://i.pravatar.cc/150?u=akingbade"
-                  alt="Mrs Akingbade"
+                  src={avatarUrl}
+                  alt={displayName}
                   className="dropdown-avatar"
                 />
                 <div className="dropdown-user-info">
@@ -143,7 +146,7 @@ const DashboardHeader: React.FC = () => {
 
               <div className="dropdown-divider"></div>
 
-              <Link to="/dashboard/profile" className="dropdown-item"
+              <Link to={profileLink} className="dropdown-item"
                 onClick={() => setProfileOpen(false)}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" strokeWidth="1.8">

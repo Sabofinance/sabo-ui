@@ -16,215 +16,311 @@ const fmt = (n: number) => new Intl.NumberFormat('en-NG').format(n);
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-
-.adm{
-  --bg:       #f4f6f9;
-  --surface:  #ffffff;
-  --border:   #e3e8f0;
-  --border-2: #cdd5e0;
-  --text:     #0d1829;
-  --muted:    #6b7a99;
-  --subtle:   #98a5be;
-  --accent:   #7cb800;
-  --accent-bg:#eef9cc;
-  --accent-lt:#f5fde4;
-  --green:    #16a34a;
-  --green-bg: #dcfce7;
-  --red:      #dc2626;
-  --red-bg:   #fee2e2;
-  --amber:    #d97706;
-  --amber-bg: #fef3c7;
-  --blue:     #2563eb;
-  --blue-bg:  #dbeafe;
-  --r-sm: 8px;
-  --r-md: 12px;
-  --r-lg: 16px;
-  --r-xl: 20px;
-  --sh-sm: 0 1px 3px rgba(13,24,41,.06), 0 1px 2px rgba(13,24,41,.04);
-  --sh-md: 0 4px 16px rgba(13,24,41,.08), 0 2px 6px rgba(13,24,41,.04);
-  --sh-lg: 0 12px 40px rgba(13,24,41,.10);
-  font-family:'DM Sans',system-ui,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-}
-.adm h1,.adm h2,.adm h3,.adm h4{font-family:'Bricolage Grotesque',system-ui,sans-serif;}
-
-/* Page shell */
-.adm-page{padding:clamp(16px,3vw,32px);max-width:1440px;margin:0 auto;}
-
-/* Header */
-.adm-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;}
-.adm-header h1{font-size:clamp(20px,3vw,28px);font-weight:800;letter-spacing:-0.5px;line-height:1.2;}
-.adm-header p{font-size:13px;color:var(--muted);margin-top:3px;}
-.adm-refresh-btn{
-  display:flex;align-items:center;gap:7px;
-  padding:9px 18px;border-radius:99px;border:1.5px solid var(--border-2);
-  background:var(--surface);color:var(--text);
-  font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;
-  box-shadow:var(--sh-sm);transition:all .15s;
-}
-.adm-refresh-btn:hover{background:var(--bg);border-color:var(--accent);}
-
-/* Stat cards row */
-.adm-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
-@media(max-width:900px){.adm-stats{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:480px){.adm-stats{grid-template-columns:1fr 1fr;}}
-
-.adm-stat{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--r-xl);padding:20px 22px;box-shadow:var(--sh-sm);
-  display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden;
-}
-.adm-stat::before{
-  content:'';position:absolute;top:-24px;right:-24px;
-  width:80px;height:80px;border-radius:50%;
-  background:radial-gradient(circle,var(--dot-color,#e3e8f0) 0%,transparent 70%);
-  pointer-events:none;opacity:.6;
-}
-.adm-stat-label{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);}
-.adm-stat-value{font-size:32px;font-weight:900;letter-spacing:-1px;font-family:'Bricolage Grotesque',system-ui,sans-serif;line-height:1;}
-.adm-stat-sub{font-size:12px;color:var(--muted);font-weight:500;}
-
-/* Two-col grid */
-.adm-grid{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;}
-@media(max-width:1100px){.adm-grid{grid-template-columns:1fr;}}
-
-.adm-col{display:flex;flex-direction:column;gap:16px;}
-
-/* Card */
-.adm-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--r-xl);box-shadow:var(--sh-sm);overflow:hidden;
-}
-.adm-card-body{padding:22px 24px;}
-.adm-card-head{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:18px 24px;border-bottom:1px solid var(--border);
-}
-.adm-card-head h3{font-size:15px;font-weight:700;letter-spacing:-.2px;}
-
-/* Donut chart wrapper */
-.adm-donut-row{display:flex;align-items:center;gap:24px;padding:20px 24px;}
-.adm-donut{
-  width:110px;height:110px;min-width:110px;border-radius:50%;
-  position:relative;flex-shrink:0;
-}
-.adm-donut-hole{
-  position:absolute;inset:18px;border-radius:50%;
-  background:var(--surface);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-}
-.adm-donut-hole span{font-size:16px;font-weight:900;color:var(--text);}
-.adm-donut-hole small{font-size:10px;font-weight:600;color:var(--muted);margin-top:1px;}
-.adm-legend{display:flex;flex-direction:column;gap:10px;}
-.adm-legend-item{display:flex;align-items:center;justify-content:space-between;gap:16px;}
-.adm-legend-label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text);}
-.adm-legend-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
-.adm-legend-val{font-size:14px;font-weight:800;color:var(--text);}
-
-/* Tags */
-.adm-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;letter-spacing:.3px;white-space:nowrap;}
-.adm-tag-green{background:var(--green-bg);color:var(--green);}
-.adm-tag-red{background:var(--red-bg);color:var(--red);}
-.adm-tag-amber{background:var(--amber-bg);color:var(--amber);}
-.adm-tag-blue{background:var(--blue-bg);color:var(--blue);}
-.adm-tag-gray{background:var(--bg);color:var(--muted);}
-.adm-tag-accent{background:var(--accent-bg);color:var(--accent);}
-
-/* Tables */
-.adm-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.adm-table{width:100%;border-collapse:collapse;font-size:13px;min-width:460px;}
-.adm-table th{
-  text-align:left;padding:10px 16px;
-  font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
-  color:var(--subtle);background:var(--bg);border-bottom:1px solid var(--border);
-  white-space:nowrap;
-}
-.adm-table td{
-  padding:12px 16px;border-bottom:1px solid var(--border);
-  vertical-align:middle;
-}
-.adm-table tr:last-child td{border-bottom:none;}
-.adm-table tr:hover td{background:#fafbfd;}
-.adm-table td.mono{font-family:monospace;font-size:12px;color:var(--muted);}
-
-/* Action buttons */
-.adm-btn{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:6px 14px;border-radius:99px;border:none;
-  font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;
-  transition:opacity .15s,transform .1s;white-space:nowrap;
-}
-.adm-btn:active{transform:scale(.97);}
-.adm-btn:disabled{opacity:.45;cursor:not-allowed;}
-.adm-btn-outline{background:var(--bg);color:var(--text);border:1.5px solid var(--border-2);}
-.adm-btn-outline:hover:not(:disabled){border-color:var(--text);}
-.adm-btn-green{background:var(--green-bg);color:var(--green);}
-.adm-btn-green:hover:not(:disabled){background:#bbf7d0;}
-.adm-btn-red{background:var(--red-bg);color:var(--red);}
-.adm-btn-red:hover:not(:disabled){background:#fecaca;}
-.adm-btn-amber{background:var(--amber-bg);color:var(--amber);}
-.adm-btn-blue{background:var(--blue-bg);color:var(--blue);}
-
-/* SVG charts */
-.adm-chart-wrap{padding:0 24px 16px;}
-
-/* Error banner */
-.adm-error{margin-bottom:16px;padding:14px 18px;border-radius:var(--r-md);background:var(--red-bg);color:var(--red);font-weight:600;font-size:13px;}
-
-/* Empty */
-.adm-empty{text-align:center;padding:28px 16px;color:var(--subtle);font-size:13px;}
-
-/* Avatar initials */
-.adm-avatar{
-  width:32px;height:32px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:800;flex-shrink:0;
-  background:var(--accent-bg);color:var(--accent);
+.adm {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #C8F135;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 24px;
 }
 
-/* Modal */
-.adm-overlay{
-  position:fixed;inset:0;background:rgba(13,24,41,.45);
-  backdrop-filter:blur(6px);z-index:1000;
-  display:flex;align-items:center;justify-content:center;padding:20px;
+.adm-container {
+  max-width: 1400px;
+  margin: 0 auto;
 }
-.adm-modal{
-  background:var(--surface);border-radius:var(--r-xl);
-  width:100%;max-width:520px;box-shadow:var(--sh-lg);
-  overflow:hidden;animation:adm-pop .2s cubic-bezier(.34,1.56,.64,1);
-}
-@keyframes adm-pop{from{opacity:0;transform:scale(.94) translateY(10px);}to{opacity:1;transform:none;}}
-.adm-modal-head{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:20px 24px;border-bottom:1px solid var(--border);
-}
-.adm-modal-head h2{font-size:18px;font-weight:800;}
-.adm-modal-close{
-  width:32px;height:32px;border-radius:50%;border:1px solid var(--border);
-  background:var(--bg);cursor:pointer;font-size:18px;color:var(--muted);
-  display:flex;align-items:center;justify-content:center;line-height:1;
-}
-.adm-modal-close:hover{background:var(--red-bg);color:var(--red);border-color:var(--red-bg);}
-.adm-modal-body{padding:24px;}
-.adm-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.adm-modal-field label{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--subtle);display:block;margin-bottom:4px;}
-.adm-modal-field p{font-size:14px;font-weight:700;color:var(--text);}
-.adm-modal-pre{
-  background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);
-  padding:14px;font-size:11.5px;font-family:monospace;
-  overflow:auto;max-height:240px;line-height:1.5;color:var(--text);margin-top:12px;
-}
-.adm-modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;}
 
-/* Animations */
-@keyframes adm-rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
-.adm-rise{animation:adm-rise .4s cubic-bezier(.22,1,.36,1) both;}
-.adm-d1{animation-delay:.04s;}.adm-d2{animation-delay:.09s;}
-.adm-d3{animation-delay:.14s;}.adm-d4{animation-delay:.19s;}
-.adm-d5{animation-delay:.24s;}.adm-d6{animation-delay:.29s;}
+.adm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.adm-header h1 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.adm-header p {
+  color: var(--muted);
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+
+/* Stats Grid */
+.adm-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.adm-stat-card {
+  background: var(--surface);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.adm-stat-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.adm-stat-value {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  margin: 8px 0;
+}
+
+.adm-stat-footer {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Main Content Grid */
+.adm-main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1100px) {
+  .adm-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.adm-card {
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.adm-card-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.adm-card-header h3 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.adm-card-content {
+  padding: 0;
+}
+
+/* Table Styles */
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.adm-table th {
+  text-align: left;
+  padding: 12px 24px;
+  background: #f1f5f9;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.adm-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.adm-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Tags */
+.adm-tag {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.adm-tag-success { background: #dcfce7; color: #16a34a; }
+.adm-tag-warning { background: #fef3c7; color: #d97706; }
+.adm-tag-error { background: #fee2e2; color: #ef4444; }
+.adm-tag-info { background: #dbeafe; color: #2563eb; }
+
+/* Buttons */
+.adm-btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.adm-btn-refresh:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.adm-btn-action {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: white;
+  transition: all 0.2s;
+}
+
+.adm-btn-action:hover {
+  background: #f1f5f9;
+}
+
+/* Donut & Charts */
+.adm-chart-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.adm-donut-box {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.adm-donut-visual {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.adm-donut-inner {
+  position: absolute;
+  inset: 15px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.adm-donut-inner b { font-size: 18px; color: var(--text); }
+.adm-donut-inner span { font-size: 10px; color: var(--muted); }
+
+.adm-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.adm-legend-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.adm-legend-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.adm-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.adm-legend-value {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Modal Overlay */
+.adm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.adm-modal {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.adm-modal-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.adm-modal-body {
+  padding: 24px;
+}
+
+.adm-modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
 `;
 
 /* ─── Donut chart ─────────────────────────────────────────── */
@@ -243,21 +339,21 @@ const Donut: React.FC<{ segments: { label: string; value: number; color: string 
   }, [segments]);
 
   return (
-    <div className="adm-donut-row">
-      <div className="adm-donut" style={{ background: grad }}>
-        <div className="adm-donut-hole">
-          <span>{total}</span>
-          <small>{label}</small>
+    <div className="adm-donut-box">
+      <div className="adm-donut-visual" style={{ background: grad }}>
+        <div className="adm-donut-inner">
+          <b>{total}</b>
+          <span>{label}</span>
         </div>
       </div>
       <div className="adm-legend">
         {segments.map(s => (
           <div key={s.label} className="adm-legend-item">
-            <span className="adm-legend-label">
+            <div className="adm-legend-label">
               <span className="adm-legend-dot" style={{ background: s.color }} />
               {s.label}
-            </span>
-            <span className="adm-legend-val">{s.value}</span>
+            </div>
+            <span className="adm-legend-value">{s.value}</span>
           </div>
         ))}
       </div>
@@ -305,6 +401,7 @@ const AdminDashboardPage: React.FC = () => {
   const [error, setError] = useState('');
   const [users, setUsers] = useState<AnyRecord[]>([]);
   const [selectedUser, setSelectedUser] = useState<AnyRecord | null>(null);
+  const [selectedDeposit, setSelectedDeposit] = useState<AnyRecord | null>(null);
   const [userDetailsLoading, setUserDetailsLoading] = useState(false);
   const [kycSubmissions, setKycSubmissions] = useState<AnyRecord[]>([]);
   const [pendingDeposits, setPendingDeposits] = useState<AnyRecord[]>([]);
@@ -332,59 +429,47 @@ const AdminDashboardPage: React.FC = () => {
   };
 
   const listAll = async () => {
-    setLoading(true); setError(''); setSelectedUser(null);
+    setLoading(true); setError(''); setSelectedUser(null); setSelectedDeposit(null);
     try {
-      const [dashRes, txRes, impactRes] = await Promise.all([
+      const [dashRes, txRes, impactRes] = await Promise.allSettled([
         adminApi.getDashboard(), 
         adminApi.listTransactions({ limit: 30 }),
         adminApi.getAnalyticsImpact()
       ]);
-      console.log('AdminDashboard getDashboard', dashRes);
-      console.log('AdminDashboard listTransactions', txRes);
+      console.log('AdminDashboard responses:', { dashRes, txRes, impactRes });
       
-      if (!dashRes.success) {
-        toast.error(dashRes.error?.message || 'Failed to load admin overview');
-      } else {
-        setDashboardData(dashRes.data as AnyRecord ?? null);
+      if (dashRes.status === 'fulfilled' && dashRes.value.success) {
+        setDashboardData(dashRes.value.data as AnyRecord ?? null);
+      } else if (dashRes.status === 'fulfilled' && !dashRes.value.success) {
+        toast.error(dashRes.value.error?.message || 'Failed to load dashboard overview');
       }
 
-      if (txRes.success) {
-        setAdminTransactions(safeList(txRes.data));
-      } else {
-        toast.error(txRes.error?.message || 'Failed to load admin transactions');
+      if (txRes.status === 'fulfilled' && txRes.value.success) {
+        setAdminTransactions(safeList(txRes.value.data));
       }
 
-      if (impactRes.success) {
-        setAnalyticsImpact(impactRes.data as AnyRecord ?? null);
+      if (impactRes.status === 'fulfilled' && impactRes.value.success) {
+        setAnalyticsImpact(impactRes.value.data as AnyRecord ?? null);
       }
 
-      const usersRes = await adminApi.listUsers();
-      if (usersRes.success) {
-        const usersList = safeList(usersRes.data);
-        setUsers(usersList);
-      } else {
-        toast.error(usersRes.error?.message || 'Failed to load users');
-      }
+      const [usersRes, kycRes, depRes, disputesRes] = await Promise.allSettled([
+        adminApi.listUsers(),
+        adminApi.listKyc(),
+        adminApi.listDeposits({ status: 'pending' }),
+        adminApi.listDisputes({ status: 'open', limit: 10 })
+      ]);
 
-      const kycRes = await adminApi.listKyc();
-      if (kycRes.success) {
-        setKycSubmissions(safeList(kycRes.data));
-      } else {
-        toast.error(kycRes.error?.message || 'Failed to load KYC submissions');
+      if (usersRes.status === 'fulfilled' && usersRes.value.success) {
+        setUsers(safeList(usersRes.value.data));
       }
-
-      const depRes = await adminApi.listDeposits({ status: 'pending' });
-      if (depRes.success) {
-        setPendingDeposits(safeList(depRes.data));
-      } else {
-        toast.error(depRes.error?.message || 'Failed to load pending deposits');
+      if (kycRes.status === 'fulfilled' && kycRes.value.success) {
+        setKycSubmissions(safeList(kycRes.value.data));
       }
-
-      const disputesRes = await adminApi.listDisputes({ status: 'open', limit: 10 });
-      if (disputesRes.success) {
-        setDisputes(safeList(disputesRes.data));
-      } else {
-        toast.error(disputesRes.error?.message || 'Failed to load disputes');
+      if (depRes.status === 'fulfilled' && depRes.value.success) {
+        setPendingDeposits(safeList(depRes.value.data));
+      }
+      if (disputesRes.status === 'fulfilled' && disputesRes.value.success) {
+        setDisputes(safeList(disputesRes.value.data));
       }
     } catch (err: any) {
       const msg = err?.message || 'Failed to load admin dashboard';
@@ -545,6 +630,21 @@ const AdminDashboardPage: React.FC = () => {
     } finally { setDepositsActionLoadingId(''); }
   };
 
+  const handleVerifyFlutterwave = async (depositId: string) => {
+    setDepositsActionLoadingId(depositId);
+    try {
+      const res = await adminApi.verifyFlutterwave(depositId);
+      if (!res.success) {
+        toast.error(res.error?.message || 'Verification failed');
+        return;
+      }
+      toast.success('Transaction verified and credited!');
+      await listAll();
+    } finally {
+      setDepositsActionLoadingId('');
+    }
+  };
+
   const initials = (name: string) => name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
   const kycStatusTag = (status: string) => {
     const st = status.toLowerCase();
@@ -578,340 +678,277 @@ const AdminDashboardPage: React.FC = () => {
   return (
     <div className="adm">
       <style>{CSS}</style>
-      <div className="adm-page">
-
+      <div className="adm-container">
+        
         {/* Header */}
-        <div className="adm-header adm-rise">
+        <header className="adm-header">
           <div>
             <h1>Admin Dashboard</h1>
-            <p>Users, KYC, and deposit approvals · {adminTransactions.length} recent transactions</p>
+            <p>System overview, user management, and transaction approvals.</p>
           </div>
-          <button className="adm-refresh-btn" onClick={() => void listAll()}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <button className="adm-btn-refresh" onClick={() => void listAll()} disabled={loading}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
               <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
             </svg>
-            Refresh
+            {loading ? 'Refreshing...' : 'Refresh'}
           </button>
-        </div>
+        </header>
 
-        {error && <div className="adm-error adm-rise">{error}</div>}
+        {error && <div className="adm-error">{error}</div>}
 
-        {/* Stat cards */}
-        <div className="adm-stats adm-rise adm-d1">
+        {/* Stats Row */}
+        <div className="adm-stats-grid">
           {[
-            { label: 'Total Users', value: totalUsers, sub: 'All registered accounts', color: '#dbeafe', accent: '#2563eb' },
-            { label: 'Active Users', value: activeUsers, sub: 'In good standing', color: '#dcfce7', accent: '#16a34a' },
-            { label: 'Suspended', value: suspendedUsers, sub: 'Access restricted', color: '#fee2e2', accent: '#dc2626' },
-            { label: 'KYC Submissions', value: kycSubmissions.length, sub: `${kycCounts.pending} pending review`, color: '#fef3c7', accent: '#d97706' },
-            { label: 'Open Disputes', value: disputes.length, sub: 'Needs resolution', color: '#fee2e2', accent: '#dc2626' },
+            { label: 'Total Users', value: totalUsers, sub: 'Registered accounts', color: '#3b82f6' },
+            { label: 'Active Users', value: activeUsers, sub: 'In good standing', color: '#10b981' },
+            { label: 'Suspended', value: suspendedUsers, sub: 'Access restricted', color: '#ef4444' },
+            { label: 'KYC Pending', value: kycCounts.pending, sub: 'Needs review', color: '#f59e0b' },
           ].map(s => (
-            <div key={s.label} className="adm-stat" style={{ '--dot-color': s.color } as React.CSSProperties}>
-              <span className="adm-stat-label">{s.label}</span>
-              <span className="adm-stat-value" style={{ color: s.accent }}>{s.value}</span>
-              <span className="adm-stat-sub">{s.sub}</span>
+            <div key={s.label} className="adm-stat-card">
+              <div className="adm-stat-label">{s.label}</div>
+              <div className="adm-stat-value" style={{ color: s.color }}>{s.value}</div>
+              <div className="adm-stat-footer">{s.sub}</div>
             </div>
           ))}
         </div>
 
-        {/* Analytics Impact Section */}
-        {analyticsImpact && (
-          <div className="adm-card adm-rise adm-d2" style={{ marginBottom: 24 }}>
-            <div className="adm-card-head">
-              <h3>System Impact & Analytics</h3>
-            </div>
-            <div className="adm-card-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
-              {Object.entries(analyticsImpact).map(([key, val]) => (
-                <div key={key}>
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 4 }}>
-                    {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}
-                  </div>
-                  <div style={{ fontSize: 24, fontWeight: 800 }}>
-                    {typeof val === 'number' ? fmt(val) : String(val)}
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Status Breakdown Section */}
+        <section className="adm-card" style={{ marginBottom: '32px' }}>
+          <div className="adm-card-header">
+            <h3>Status Breakdown</h3>
           </div>
-        )}
-
-        {/* Main grid */}
-        <div className="adm-grid">
-
-          {/* ── Left column ── */}
-          <div className="adm-col">
-
-            {/* User status donut */}
-            <div className="adm-card adm-rise adm-d2">
-              <div className="adm-card-head">
-                <h3>User Status</h3>
-                <span className="adm-tag adm-tag-gray">{totalUsers} total</span>
-              </div>
-              <Donut
-                total={totalUsers}
-                label="users"
-                segments={[
-                  { label: 'Active', value: activeUsers, color: '#7cb800' },
-                  { label: 'Suspended', value: suspendedUsers, color: '#dc2626' },
-                ]}
-              />
-            </div>
-
-            {/* Users table */}
-            <div className="adm-card adm-rise adm-d3">
-              <div className="adm-card-head">
-                <h3>Users</h3>
-                <span className="adm-tag adm-tag-blue">{users.length} accounts</span>
-              </div>
-              <div className="adm-table-wrap">
-                <table className="adm-table">
-                  <thead>
-                    <tr>
-                      <th>User</th>
-                      <th>Email</th>
-                      <th>Role</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.length === 0 ? (
-                      <tr><td colSpan={5} className="adm-empty">No users found.</td></tr>
-                    ) : (
-                      users.map(u => {
-                        const id = String(u.id || u.userId || '');
-                        const name = String(u.name || [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Unknown');
-                        const suspended = isSuspended(u);
-                        const isLoading = userActionLoadingId === id;
-                        return (
-                          <tr key={id}>
-                            <td>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <div className="adm-avatar">{initials(name)}</div>
-                                <div>
-                                  <div style={{ fontWeight: 600, fontSize: 13 }}>{name}</div>
-                                  <div className="mono" style={{ fontSize: 11 }}>#{id}</div>
-                                </div>
-                              </div>
-                            </td>
-                            <td style={{ color: 'var(--muted)', fontSize: 13 }}>{String(u.email || '-')}</td>
-                            <td>
-                              <span className="adm-tag adm-tag-gray" style={{ textTransform: 'capitalize' }}>{String(u.role || 'user')}</span>
-                            </td>
-                            <td>
-                              <span className={`adm-tag ${suspended ? 'adm-tag-red' : 'adm-tag-green'}`}>
-                                {suspended ? 'Suspended' : 'Active'}
-                              </span>
-                            </td>
-                            <td>
-                              <div style={{ display: 'flex', gap: 6 }}>
-                                <button
-                                  className="adm-btn adm-btn-blue"
-                                  disabled={userDetailsLoading || isLoading}
-                                  onClick={() => void fetchUserDetails(id)}
-                                >
-                                  View
-                                </button>
-                                <button
-                                  className={`adm-btn ${suspended ? 'adm-btn-green' : 'adm-btn-red'}`}
-                                  disabled={isLoading}
-                                  onClick={() => void handleToggleSuspend(u)}
-                                >
-                                  {suspended ? 'Reinstate' : 'Suspend'}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div className="adm-chart-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+            <Donut
+              total={totalUsers}
+              label="Users"
+              segments={[
+                { label: 'Active', value: activeUsers, color: 'var(--green)' },
+                { label: 'Suspended', value: suspendedUsers, color: 'var(--red)' },
+              ]}
+            />
+            <Donut
+              total={kycSubmissions.length}
+              label="KYC"
+              segments={[
+                { label: 'Verified', value: kycCounts.verified, color: 'var(--green)' },
+                { label: 'Pending', value: kycCounts.pending, color: 'var(--amber)' },
+                { label: 'Rejected', value: kycCounts.rejected, color: 'var(--red)' },
+              ]}
+            />
           </div>
+        </section>
 
-          {/* ── Right column ── */}
-          <div className="adm-col">
-
-            {/* KYC donut */}
-            <div className="adm-card adm-rise adm-d2">
-              <div className="adm-card-head">
-                <h3>KYC Status</h3>
-                <span className="adm-tag adm-tag-amber">{kycCounts.pending} pending</span>
-              </div>
-              <Donut
-                total={kycSubmissions.length}
-                label="kyc"
-                segments={[
-                  { label: 'Pending', value: kycCounts.pending, color: '#d97706' },
-                  { label: 'Verified', value: kycCounts.verified, color: '#16a34a' },
-                  { label: 'Rejected', value: kycCounts.rejected, color: '#dc2626' },
-                ]}
-              />
+        {/* Main Content Area */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Pending Deposits */}
+          <section className="adm-card">
+            <div className="adm-card-header">
+              <h3>Pending Deposits</h3>
+              <span className="adm-tag adm-tag-warning">{pendingDeposits.length} Pending</span>
             </div>
-
-            {/* KYC trend */}
-            <div className="adm-card adm-rise adm-d3">
-              <div className="adm-card-head">
-                <h3>KYC Submissions — 7 days</h3>
-              </div>
-              <div className="adm-chart-wrap" style={{ paddingTop: 12 }}>
-                <SparkLine points={kycTrendPoints} color="#16a34a" height={80} />
-              </div>
+            <div className="adm-card-content">
+              <table className="adm-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Amount</th>
+                    <th>Currency</th>
+                    <th>Provider</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingDeposits.length === 0 ? (
+                    <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--muted)', padding: '40px' }}>No pending deposits</td></tr>
+                  ) : (
+                    pendingDeposits.map((d, i) => (
+                      <tr key={String(d.id || i)}>
+                        <td style={{ fontWeight: 600 }}>#{String(d.id || '-').slice(0, 8)}</td>
+                        <td style={{ fontWeight: 700 }}>{fmt(Number(d.amount || 0))}</td>
+                        <td><span className="adm-tag adm-tag-info">{String(d.currency || 'NGN')}</span></td>
+                        <td style={{ color: 'var(--muted)' }}>{String(d.provider || 'Flutterwave')}</td>
+                        <td>
+                          <button className="adm-btn-action" onClick={() => setSelectedDeposit(d)}>View</button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
+          </section>
 
-            {/* Pending deposits */}
-            <div className="adm-card adm-rise adm-d4">
-              <div className="adm-card-head">
-                <h3>Pending Deposits</h3>
-                <span className="adm-tag adm-tag-accent">{pendingDeposits.length}</span>
-              </div>
-              <div className="adm-chart-wrap" style={{ paddingTop: 12 }}>
-                <SparkLine points={depositTrendPoints} color="#7cb800" height={72} />
-              </div>
-              <div className="adm-table-wrap">
-                <table className="adm-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Amount</th>
-                      <th>Currency</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pendingDeposits.length === 0 ? (
-                      <tr><td colSpan={4} className="adm-empty">No pending deposits.</td></tr>
-                    ) : (
-                      pendingDeposits.slice(0, 8).map((d, i) => {
-                        const depositId = String(d.id || d.depositId || d._id || i + 1);
-                        const isLoading = depositsActionLoadingId === depositId;
-                        return (
-                          <tr key={depositId}>
-                            <td className="mono">#{depositId}</td>
-                            <td style={{ fontWeight: 700 }}>{fmt(Number(d.amount || d.value || 0))}</td>
-                            <td><span className="adm-tag adm-tag-gray">{String(d.currency || '-')}</span></td>
-                            <td>
-                              <div style={{ display: 'flex', gap: 6 }}>
-                                <button className="adm-btn adm-btn-green" disabled={isLoading} onClick={() => void handleApproveDeposit(depositId)}>
-                                  Approve
-                                </button>
-                                <button className="adm-btn adm-btn-red" disabled={isLoading} onClick={() => void handleRejectDeposit(depositId)}>
-                                  Reject
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+          {/* KYC Submissions */}
+          <section className="adm-card">
+            <div className="adm-card-header">
+              <h3>KYC Submissions</h3>
+              <span className="adm-tag adm-tag-info">{kycSubmissions.length} Total</span>
             </div>
-
-            {/* Open Disputes */}
-            <div className="adm-card adm-rise adm-d5">
-              <div className="adm-card-head">
-                <h3>Open Disputes</h3>
-                <span className="adm-tag adm-tag-red">{disputes.length} open</span>
-              </div>
-              <div className="adm-table-wrap">
-                <table className="adm-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>User</th>
-                      <th>Status</th>
-                      <th>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {disputes.length === 0 ? (
-                      <tr><td colSpan={4} className="adm-empty">No open disputes.</td></tr>
-                    ) : (
-                      disputes.slice(0, 8).map((d, i) => {
-                        const id = String(d.id || d._id || d.disputeId || i + 1);
-                        return (
-                          <tr key={id}>
-                            <td className="mono">#{id}</td>
-                            <td style={{ color: 'var(--muted)' }}>{String(d.userEmail || d.email || d.user || '—')}</td>
-                            <td><span className="adm-tag adm-tag-amber">{String(d.status || d.state || 'open')}</span></td>
-                            <td>{String(d.amount || d.value || '—')}</td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+            <div className="adm-card-content">
+              <table className="adm-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {kycSubmissions.length === 0 ? (
+                    <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--muted)', padding: '40px' }}>No KYC submissions</td></tr>
+                  ) : (
+                    kycSubmissions.slice(0, 10).map((k, i) => {
+                      const status = String(k.status || 'pending').toLowerCase();
+                      return (
+                        <tr key={String(k.id || i)}>
+                          <td style={{ fontWeight: 600 }}>{String(k.userEmail || k.user || '-')}</td>
+                          <td>
+                            <span className={`adm-tag ${status.includes('approved') ? 'adm-tag-success' : status.includes('rejected') ? 'adm-tag-error' : 'adm-tag-warning'}`}>
+                              {status}
+                            </span>
+                          </td>
+                          <td style={{ color: 'var(--muted)' }}>
+                            {k.createdAt ? new Date(String(k.createdAt)).toLocaleDateString() : '-'}
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                              <button 
+                                className="adm-btn-action" 
+                                style={{ color: 'var(--green)' }}
+                                onClick={() => void handleApproveKyc(String(k.id))}
+                              >
+                                Approve
+                              </button>
+                              <button 
+                                className="adm-btn-action" 
+                                style={{ color: 'var(--red)' }}
+                                onClick={() => void handleRejectKyc(String(k.id))}
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
+          </section>
 
-            {/* KYC submissions table */}
-            <div className="adm-card adm-rise adm-d5">
-              <div className="adm-card-head">
-                <h3>KYC Submissions</h3>
-                <span className="adm-tag adm-tag-gray">{kycSubmissions.length} total</span>
+          {/* Open Disputes Section */}
+          <section className="adm-card">
+            <div className="adm-card-header">
+              <h3>Open Disputes</h3>
+              <span className="adm-tag adm-tag-error">{disputes.length} Open</span>
+            </div>
+            <div className="adm-card-content">
+              <table className="adm-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Reason</th>
+                    <th>Created At</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {disputes.length === 0 ? (
+                    <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--muted)', padding: '40px' }}>No open disputes</td></tr>
+                  ) : (
+                    disputes.slice(0, 10).map((d, i) => (
+                      <tr key={String(d.id || i)}>
+                        <td style={{ fontWeight: 600 }}>#{String(d.id || '-').slice(0, 8)}</td>
+                        <td>{String(d.userEmail || d.user || '-')}</td>
+                        <td style={{ color: 'var(--muted)' }}>{String(d.reason || d.subject || 'No reason')}</td>
+                        <td>{d.createdAt ? new Date(String(d.createdAt)).toLocaleDateString() : '-'}</td>
+                        <td><span className="adm-tag adm-tag-warning">Open</span></td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {/* Deposit detail modal */}
+      {selectedDeposit && (
+        <div className="adm-overlay" onClick={() => setSelectedDeposit(null)}>
+          <div className="adm-modal" onClick={e => e.stopPropagation()}>
+            <div className="adm-modal-header">
+              <h2 style={{ margin: 0, fontFamily: 'Bricolage Grotesque', fontSize: '20px' }}>Deposit Details</h2>
+              <button style={{ border: 'none', background: 'none', fontSize: '24px', cursor: 'pointer', color: 'var(--muted)' }} onClick={() => setSelectedDeposit(null)}>×</button>
+            </div>
+            <div className="adm-modal-body">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+                {[
+                  { label: 'ID', value: String(selectedDeposit.id || selectedDeposit.depositId || '-') },
+                  { label: 'User', value: String(selectedDeposit.userEmail || selectedDeposit.email || selectedDeposit.user || '-') },
+                  { label: 'Amount', value: `${fmt(Number(selectedDeposit.amount || 0))} ${String(selectedDeposit.currency || '-')}` },
+                  { label: 'Provider', value: String(selectedDeposit.provider || selectedDeposit.gateway || '-') },
+                  { label: 'Status', value: String(selectedDeposit.status || 'Pending') },
+                  { label: 'Date', value: String(selectedDeposit.createdAt || selectedDeposit.date ? new Date(String(selectedDeposit.createdAt || selectedDeposit.date)).toLocaleString() : '-') },
+                ].map(f => (
+                  <div key={f.label}>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{f.label}</label>
+                    <div style={{ fontWeight: 700, marginTop: 4, fontSize: '15px' }}>{f.value}</div>
+                  </div>
+                ))}
               </div>
-              <div className="adm-table-wrap">
-                <table className="adm-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Status</th>
-                      <th>Document</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {kycSubmissions.length === 0 ? (
-                      <tr><td colSpan={4} className="adm-empty">No KYC submissions.</td></tr>
-                    ) : (
-                      kycSubmissions.slice(0, 10).map((k, i) => {
-                        const kycId = String(k.id || k.kycId || i + 1);
-                        const status = String(k.status || k.state || '');
-                        const doc = String(k.documentNumber || k.document_number || k.document || '—');
-                        const stLower = status.toLowerCase();
-                        const canVerify = !stLower || stLower.includes('pending') || stLower.includes('submitted') || stLower === 'unverified';
-                        const isLoading = kycActionLoadingId === kycId;
-                        return (
-                          <tr key={kycId}>
-                            <td className="mono">#{kycId}</td>
-                            <td>{kycStatusTag(status)}</td>
-                            <td style={{ color: 'var(--muted)', fontSize: 12 }}>{doc}</td>
-                            <td>
-                              <div style={{ display: 'flex', gap: 6 }}>
-                                <button className="adm-btn adm-btn-green" disabled={!canVerify || isLoading} onClick={() => void handleApproveKyc(kycId)}>
-                                  Approve
-                                </button>
-                                <button className="adm-btn adm-btn-red" disabled={!canVerify || isLoading} onClick={() => void handleRejectKyc(kycId)}>
-                                  Reject
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              
+              {/* Proof of Payment */}
+              {(() => {
+                const proofUrl = String(selectedDeposit.proof || selectedDeposit.proof_url || selectedDeposit.documentUrl || "");
+                if (!proofUrl) return null;
+                return (
+                  <div style={{ marginTop: 24 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>Proof of Payment</label>
+                      <a href={proofUrl} download target="_blank" rel="noreferrer" className="adm-btn-action" style={{ textDecoration: 'none' }}>Download</a>
+                    </div>
+                    <div style={{ border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+                      <img src={proofUrl} alt="Proof" style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', background: '#f8fafc' }} />
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+            <div className="adm-modal-footer">
+              <button 
+                className="adm-btn-action" 
+                style={{ padding: '10px 20px', color: 'var(--red)', borderColor: 'var(--red)', fontWeight: 700 }}
+                onClick={() => { void handleRejectDeposit(String(selectedDeposit.id)); setSelectedDeposit(null); }}
+              >
+                Reject
+              </button>
+              <button 
+                className="adm-btn-action" 
+                style={{ padding: '10px 20px', background: 'var(--text)', color: 'white', fontWeight: 700 }}
+                onClick={() => { void handleApproveDeposit(String(selectedDeposit.id)); setSelectedDeposit(null); }}
+              >
+                Approve (Manual)
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* User detail modal */}
       {selectedUser && (
         <div className="adm-overlay" onClick={() => setSelectedUser(null)}>
           <div className="adm-modal" onClick={e => e.stopPropagation()}>
-            <div className="adm-modal-head">
-              <h2>User Details</h2>
-              <button className="adm-modal-close" onClick={() => setSelectedUser(null)} aria-label="Close">×</button>
+            <div className="adm-modal-header">
+              <h2 style={{ margin: 0, fontFamily: 'Bricolage Grotesque', fontSize: '20px' }}>User Details</h2>
+              <button style={{ border: 'none', background: 'none', fontSize: '24px', cursor: 'pointer', color: 'var(--muted)' }} onClick={() => setSelectedUser(null)}>×</button>
             </div>
             <div className="adm-modal-body">
-              <div className="adm-modal-grid">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
                 {[
                   { label: 'Name', value: String(selectedUser.name || [selectedUser.firstName, selectedUser.lastName].filter(Boolean).join(' ') || '—') },
                   { label: 'Email', value: String(selectedUser.email || '—') },
@@ -920,21 +957,21 @@ const AdminDashboardPage: React.FC = () => {
                   { label: 'Phone', value: String(selectedUser.phone || selectedUser.phoneNumber || '—') },
                   { label: 'KYC Status', value: String(selectedUser.kyc_status || selectedUser.kycStatus || '—') },
                 ].map(f => (
-                  <div key={f.label} className="adm-modal-field">
-                    <label>{f.label}</label>
-                    <p>{f.value}</p>
+                  <div key={f.label}>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{f.label}</label>
+                    <div style={{ fontWeight: 700, marginTop: 4, fontSize: '15px' }}>{f.value}</div>
                   </div>
                 ))}
               </div>
               <div style={{ marginTop: 20 }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.6px', textTransform: 'uppercase', color: 'var(--subtle)', marginBottom: 6 }}>Raw JSON</div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.6px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>Raw JSON</div>
                 <pre className="adm-modal-pre">{JSON.stringify(selectedUser, null, 2)}</pre>
               </div>
             </div>
             <div className="adm-modal-footer">
               <button
-                className="adm-btn"
-                style={{ background: 'var(--text)', color: '#fff', padding: '9px 22px', borderRadius: 99, fontSize: 13 }}
+                className="adm-btn-action"
+                style={{ padding: '10px 20px', background: 'var(--text)', color: 'white', fontWeight: 700 }}
                 onClick={() => setSelectedUser(null)}
               >
                 Close

@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { disputesApi } from '../../lib/api';
+import { extractArray } from '../../lib/api/response';
+import Pagination from '../../components/Pagination';
 import '../../assets/css/HistoryPage.css';
 import { toast } from 'react-toastify';
 
@@ -8,33 +10,39 @@ const DisputesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [processingId, setProcessingId] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const load = useCallback(async (page = 1) => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await disputesApi.list({ page, limit: 15 });
+      if (response.success) {
+        setDisputes(extractArray(response.data));
+        const meta = (response.data as any)?.meta || (response.data as any);
+        setTotalPages(meta.totalPages || meta.last_page || 1);
+        setCurrentPage(page);
+      } else {
+        const msg = response.error?.message || 'Failed to load disputes';
+        setError(msg);
+      }
+    } catch (err: any) {
+      setError('An unexpected error occurred while loading disputes');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const response = await disputesApi.list();
-        if (response.success && Array.isArray(response.data)) {
-          setDisputes(response.data);
-        } else {
-          const msg = response.error?.message || 'Failed to load disputes';
-          setError(msg);
-        }
-      } catch (err: any) {
-        setError('An unexpected error occurred while loading disputes');
-      } finally {
-        setLoading(false);
-      }
-    };
-    void load();
-  }, []);
+    void load(currentPage);
+  }, [load]);
 
   const reload = async () => {
     try {
-      const response = await disputesApi.list();
-      if (response.success && Array.isArray(response.data)) {
-        setDisputes(response.data);
+      const response = await disputesApi.list({ page: currentPage, limit: 15 });
+      if (response.success) {
+        setDisputes(extractArray(response.data));
         setError('');
       } else {
         const msg = response.error?.message || 'Failed to reload disputes';
@@ -134,6 +142,15 @@ const DisputesPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+      )}
+
+      {!loading && !error && disputes.length > 0 && (
+        <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          onPageChange={(p) => void load(p)} 
+          isLoading={loading} 
+        />
       )}
     </main>
   );

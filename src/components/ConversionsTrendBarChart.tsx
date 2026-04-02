@@ -75,9 +75,9 @@ const ConversionsTrendBarChart: React.FC<ConversionsTrendBarChartProps> = ({ poi
               <div
                 title={`${p.day}: ${formatCurrency(p.value)}`}
                 style={{
-                  width: 14,
+                  width: 32,
                   height: h,
-                  borderRadius: 7,
+                  borderRadius: 16,
                   background: 'linear-gradient(180deg, #10B981 0%, rgba(16,185,129,0.35) 100%)',
                 }}
               />

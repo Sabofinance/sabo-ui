@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { depositsApi } from "../../lib/api";
+import { extractArray } from "../../lib/api/response";
 import "../../assets/css/HistoryPage.css";
 import { toast } from "react-toastify";
 
@@ -27,9 +28,37 @@ const DepositDetailPage: React.FC = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await depositsApi.getById(depositId);
+      let res = await depositsApi.getById(depositId);
+      
+      // If direct fetch fails, we try searching the list.
+      // This is necessary because Flutterwave callbacks use a reference (tx_ref) 
+      // which might not be the actual database UUID.
+      if (!res.success) {
+        const listRes = await depositsApi.list();
+        if (listRes.success) {
+          const list = extractArray(listRes.data);
+          const found = list.find((d: any) => 
+            String(d.reference || "").toLowerCase() === depositId.toLowerCase() ||
+            String(d.id || "").toLowerCase() === depositId.toLowerCase() ||
+            String(d.tx_ref || "").toLowerCase() === depositId.toLowerCase()
+          );
+          
+          if (found) {
+            res = { success: true, data: found };
+          }
+        }
+      }
+
       if (res.success && res.data) {
-        setDeposit(res.data as AnyRec);
+        // Unwrap nested response if necessary (e.g., { deposit: { ... } } or { data: { ... } })
+        let data = res.data as any;
+        if (data && typeof data === "object" && !Array.isArray(data)) {
+          if (data.deposit && typeof data.deposit === "object") data = data.deposit;
+          else if (data.data && typeof data.data === "object" && !Array.isArray(data.data)) data = data.data;
+        }
+        
+        setDeposit(data as AnyRec);
+        const actualId = String(data.id || depositId);
         
         // If we came from a callback, show a toast based on Flutterwave status
         if (txRef && fwStatus) {
@@ -39,7 +68,7 @@ const DepositDetailPage: React.FC = () => {
             toast.error(`Deposit ${fwStatus}. Please check your history.`);
           }
           // Clean up URL by navigating to the canonical detail page
-          navigate(`/dashboard/deposits/${depositId}`, { replace: true });
+          navigate(`/dashboard/deposits/${actualId}`, { replace: true });
         }
       } else {
         setError(res.error?.message || "Failed to load deposit.");
@@ -78,7 +107,7 @@ const DepositDetailPage: React.FC = () => {
   const currency = String(d.currency || "-");
   const status = String(d.status || "-");
   const provider = String(d.provider || d.gateway || "-");
-  const createdAt = String(d.createdAt || d.date || "");
+  const createdAt = String(d.createdAt || d.created_at || d.date || d.updatedAt || d.updated_at || "");
 
   return (
     <main className="history-page">
@@ -120,7 +149,7 @@ const DepositDetailPage: React.FC = () => {
               ["Amount", String(d.amount || "0")],
               ["Provider", provider],
               ["Status", status],
-              ["Date", createdAt ? new Date(createdAt).toLocaleString() : "-"],
+              ["Date", createdAt && !isNaN(new Date(createdAt).getTime()) ? new Date(createdAt).toLocaleString() : "-"],
             ].map(([k, v]) => (
               <tr key={k}>
                 <td style={{ fontWeight: 800, width: 220 }}>{k}</td>

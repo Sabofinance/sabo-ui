@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { beneficiariesApi, walletsApi, withdrawalsApi } from '../../lib/api';
 import { extractArray } from '../../lib/api/response';
+import Pagination from '../../components/Pagination';
 import '../../assets/css/HistoryPage.css';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
@@ -21,33 +22,42 @@ const WithdrawalsPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      const [wRes, bRes, walletsRes] = await Promise.all([
-        withdrawalsApi.list(),
-        beneficiariesApi.list(),
-        walletsApi.list(),
-      ]);
+  const load = useCallback(async (page = 1) => {
+    setLoading(true);
+    setError('');
+    const [wRes, bRes, walletsRes] = await Promise.all([
+      withdrawalsApi.list({ page, limit: 10 }),
+      beneficiariesApi.list(),
+      walletsApi.list(),
+    ]);
 
-      if (wRes.success) setWithdrawals(extractArray(wRes.data));
-      else toast.error(wRes.error?.message || 'Failed to load withdrawals');
+    if (wRes.success) {
+      setWithdrawals(extractArray(wRes.data));
+      const meta = (wRes.data as any)?.meta || (wRes.data as any);
+      setTotalPages(meta.totalPages || meta.last_page || 1);
+      setCurrentPage(page);
+    } else {
+      toast.error(wRes.error?.message || 'Failed to load withdrawals');
+    }
 
-      if (bRes.success) setBeneficiaries(extractArray(bRes.data));
-      else toast.error(bRes.error?.message || 'Failed to load beneficiaries');
+    if (bRes.success) setBeneficiaries(extractArray(bRes.data));
+    else toast.error(bRes.error?.message || 'Failed to load beneficiaries');
 
-      if (walletsRes.success) setWallets(extractArray(walletsRes.data));
-      else toast.error(walletsRes.error?.message || 'Failed to load wallets');
+    if (walletsRes.success) setWallets(extractArray(walletsRes.data));
+    else toast.error(walletsRes.error?.message || 'Failed to load wallets');
 
-      setLoading(false);
-    };
-    void load();
+    setLoading(false);
   }, []);
 
+  useEffect(() => {
+    void load(currentPage);
+  }, [load]);
+
   const reload = async () => {
-    const response = await withdrawalsApi.list();
+    const response = await withdrawalsApi.list({ page: currentPage, limit: 10 });
     if (response.success) {
       setWithdrawals(extractArray(response.data));
     } else {
@@ -120,9 +130,30 @@ const WithdrawalsPage: React.FC = () => {
           <h1 className="page-title">Withdrawals</h1>
           <p className="page-subtitle">Request withdrawals to your saved beneficiaries</p>
         </div>
-        <button className="export-btn" style={{ background: '#C8F032', color: '#0A1E28' }} onClick={() => navigate('/dashboard/beneficiaries')}>
-          Manage beneficiaries
-        </button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button 
+            className="export-btn" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              background: '#fff',
+              color: '#0A1E28',
+              border: '1px solid #e2e8f0'
+            }} 
+            onClick={() => void load()}
+            disabled={loading}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+              <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+            </svg>
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
+          <button className="export-btn" style={{ background: '#C8F032', color: '#0A1E28' }} onClick={() => navigate('/dashboard/beneficiaries')}>
+            Manage beneficiaries
+          </button>
+        </div>
       </div>
 
       {!isVerified && (
@@ -222,6 +253,12 @@ const WithdrawalsPage: React.FC = () => {
         </table>
       </div>
 
+      <Pagination 
+        currentPage={currentPage} 
+        totalPages={totalPages} 
+        onPageChange={(p) => void load(p)} 
+        isLoading={loading} 
+      />
     </main>
   );
 };

@@ -514,12 +514,12 @@ export default function DashboardPage() {
     if (currency === 'NGN') {
       navigate('/dashboard/deposits');
     } else {
-      navigate('/dashboard/marketplace?type=SELL&currency=' + currency);
+      navigate('/dashboard/active-sabits?type=SELL&currency=' + currency);
     }
   }
 
   function handleSell(currency: string) {
-    navigate('/dashboard/marketplace?type=BUY&currency=' + currency);
+    navigate('/dashboard/active-sabits?type=BUY&currency=' + currency);
   }
 
   // ── Derived data ───────────────────────────────────────────────────────────
@@ -813,7 +813,10 @@ export default function DashboardPage() {
             </thead>
             <tbody>
               {ledger.slice(0, 5).map((entry) => {
-                const initials = getInitials(entry.reference);
+                const txnTitle = getTxnType(entry.type);
+                const displayTrader = ['deposit', 'withdrawal'].includes(entry.type) ? 'Self' : 'System';
+                const initials = displayTrader.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
                 const avatarColors: Record<
                   string,
                   { bg: string; color: string }
@@ -830,25 +833,15 @@ export default function DashboardPage() {
                   bg: "var(--lime-faint)",
                   color: "var(--lime-d)",
                 };
+                
                 return (
                   <tr key={entry.id}>
                     <td>
-                      <div className="db-user-cell">
-                        <div
-                          className="db-mini-av"
-                          style={{
-                            background: avColor.bg,
-                            color: avColor.color,
-                          }}
-                        >
-                          {initials}
+                      <div>
+                        <div className="db-cell-name">
+                          {txnTitle}
                         </div>
-                        <div>
-                          <div className="db-cell-name">
-                            {getTxnType(entry.type)}
-                          </div>
-                          <div className="db-cell-sub">#{entry.reference}</div>
-                        </div>
+                        <div className="db-cell-sub">#{entry.reference}</div>
                       </div>
                     </td>
                     <td>

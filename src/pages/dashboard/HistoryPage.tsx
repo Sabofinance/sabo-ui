@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ledgerApi } from '../../lib/api';
 import { extractArray } from '../../lib/api/response';
+import Pagination from '../../components/Pagination';
 import '../../assets/css/HistoryPage.css';
 
 interface Transaction {
@@ -33,53 +34,71 @@ const HistoryPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [hasNext, setHasNext] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    const loadLedger = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const params: Record<string, unknown> = { page, limit };
-        if (from) params.from = new Date(from).toISOString();
-        if (to) params.to = new Date(to).toISOString();
-        if (typeFilter !== 'all') params.type = typeFilter;
-        if (currencyFilter !== 'all') params.currency = currencyFilter;
+  const loadLedger = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const params: Record<string, unknown> = { page, limit };
+      if (from) params.from = new Date(from).toISOString();
+      if (to) params.to = new Date(to).toISOString();
+      if (typeFilter !== 'all') params.type = typeFilter;
+      if (currencyFilter !== 'all') params.currency = currencyFilter;
 
-        const response = await ledgerApi.listEntries(params);
-        if (response.success) {
-          const ledgerList = extractArray(response.data);
-          const mapped: Transaction[] = ledgerList.map((entry: Record<string, unknown>, index: number) => ({
+      const response = await ledgerApi.listEntries(params);
+      if (response.success) {
+        const ledgerList = extractArray(response.data);
+        const mapped: Transaction[] = ledgerList.map((entry: Record<string, unknown>, index: number) => {
+          const counterparty = (entry.counterparty || {}) as any;
+          const type = (String(entry.type || 'buy').toLowerCase() === 'sell' ? 'sell' : 'buy') as Transaction['type'];
+          
+          // Determine who the counterparty is based on transaction type
+          let cpName = String(entry.counterpartyUsername || counterparty?.username || entry.counterpartyName || counterparty?.name || '');
+          if (!cpName) {
+            const entryType = String(entry.type || '').toLowerCase();
+            if (['deposit', 'withdrawal'].includes(entryType)) {
+              cpName = 'Self';
+            } else {
+              cpName = 'System';
+            }
+          }
+
+          const cpAvatar = String(entry.counterpartyAvatar || counterparty?.profile_picture_url || counterparty?.avatar || '');
+
+          return {
             id: Number(entry.id || index + 1),
-            type: (String(entry.type || 'buy').toLowerCase() === 'sell' ? 'sell' : 'buy') as Transaction['type'],
+            type,
             currency: (String(entry.currency || 'NGN') as Transaction['currency']),
             amount: Number(entry.amount || 0),
             rate: Number(entry.rate || 0),
             total: Number(entry.total || entry.value || 0),
             counterparty: {
-              name: String(entry.counterpartyName || (entry.counterparty as any)?.name || 'Unknown Trader'),
-              avatar: String(entry.counterpartyAvatar || (entry.counterparty as any)?.avatar || `https://i.pravatar.cc/150?u=${index}`),
-              verified: Boolean(entry.verified ?? (entry.counterparty as any)?.verified ?? false),
+              name: cpName,
+              avatar: cpAvatar,
+              verified: Boolean(entry.verified ?? counterparty?.verified ?? false),
             },
             status: (String(entry.status || 'completed').toLowerCase() as Transaction['status']),
             date: String(entry.date || entry.createdAt || new Date().toISOString()),
-            // Reference must come from API fields; avoid generating random fallbacks.
             reference: String(entry.reference ?? entry.id ?? ''),
-          }));
-          setTransactions(mapped);
-          setHasNext(mapped.length === limit);
-        } else if (!response.success) {
-          setError(response.error?.message || 'Failed to load transaction history');
-        }
-      } catch (err: any) {
-        setError('An unexpected error occurred while loading your history');
-      } finally {
-        setLoading(false);
+          };
+        });
+        setTransactions(mapped);
+        const meta = (response.data as any)?.meta || (response.data as any);
+        setTotalPages(meta.totalPages || meta.last_page || (mapped.length === limit ? page + 1 : page));
+      } else if (!response.success) {
+        setError(response.error?.message || 'Failed to load transaction history');
       }
-    };
-
-    void loadLedger();
+    } catch (err: any) {
+      setError('An unexpected error occurred while loading your history');
+    } finally {
+      setLoading(false);
+    }
   }, [from, to, typeFilter, currencyFilter, page, limit]);
+
+  useEffect(() => {
+    void loadLedger();
+  }, [loadLedger]);
 
   const handleExport = () => {
     if (transactions.length === 0) return;
@@ -176,14 +195,35 @@ const HistoryPage: React.FC = () => {
                 <p className="page-subtitle">View all your past transactions</p>
               </div>
               
-              <button className="export-btn" onClick={handleExport} disabled={transactions.length === 0}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Export Report
-              </button>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button 
+                  className="export-btn" 
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    background: '#fff',
+                    color: '#0A1E28',
+                    border: '1px solid #e2e8f0'
+                  }} 
+                  onClick={() => void loadLedger()}
+                  disabled={loading}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+                    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                  </svg>
+                  {loading ? 'Refreshing...' : 'Refresh'}
+                </button>
+                <button className="export-btn" onClick={handleExport} disabled={transactions.length === 0}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Export Report
+                </button>
+              </div>
             </div>
 
             {loading ? (
@@ -329,7 +369,6 @@ const HistoryPage: React.FC = () => {
                   <tr>
                     <th>Reference</th>
                     <th>Date & Time</th>
-                    <th>Trader</th>
                     <th>Type</th>
                     <th>Currency</th>
                     <th>Amount</th>
@@ -346,22 +385,6 @@ const HistoryPage: React.FC = () => {
                       </td>
                       <td>
                         <span className="date-cell">{formatDate(tx.date)}</span>
-                      </td>
-                      <td>
-                        <div className="trader-cell">
-                          <img src={tx.counterparty.avatar} alt="" className="trader-avatar" />
-                          <div>
-                            <div className="trader-name-row">
-                              <span className="trader-name">{tx.counterparty.name}</span>
-                              {tx.counterparty.verified && (
-                                <svg className="verified-badge" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8F032" strokeWidth="2.5">
-                                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                  <polyline points="22 4 12 14.01 9 11.01"/>
-                                </svg>
-                              )}
-                            </div>
-                          </div>
-                        </div>
                       </td>
                       <td>
                         <span className={`type-badge ${tx.type}`}>
@@ -403,12 +426,12 @@ const HistoryPage: React.FC = () => {
               )}
             </div>
 
-            {/* Pagination */}
-            <div className="pagination">
-              <button className="page-arrow" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹</button>
-              <button className="page-number active">{page}</button>
-              <button className="page-arrow" disabled={!hasNext} onClick={() => setPage((p) => p + 1)}>›</button>
-            </div>
+            <Pagination 
+              currentPage={page} 
+              totalPages={totalPages} 
+              onPageChange={(p) => setPage(p)} 
+              isLoading={loading} 
+            />
           </>
         )}
     </main>

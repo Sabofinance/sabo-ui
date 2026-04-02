@@ -5,6 +5,13 @@ import { toast } from "react-toastify";
 interface CreateSabitModalProps {
   onClose: () => void;
   onSuccess: () => void;
+  editData?: {
+    id: string | number;
+    type: "SELL" | "BUY";
+    currency: string;
+    amount: number | string;
+    rate: number | string;
+  };
 }
 
 const S = {
@@ -106,12 +113,13 @@ const S = {
   }),
 };
 
-const CreateSabitModal: React.FC<CreateSabitModalProps> = ({ onClose, onSuccess }) => {
-  const [type, setType] = useState<"sell" | "buy">("sell");
-  const [currency, setCurrency] = useState("GBP");
-  const [amount, setAmount] = useState("");
-  const [rate, setRate] = useState("");
+const CreateSabitModal: React.FC<CreateSabitModalProps> = ({ onClose, onSuccess, editData }) => {
+  const [type, setType] = useState<"sell" | "buy">(editData?.type.toLowerCase() as any || "sell");
+  const [currency, setCurrency] = useState(editData?.currency || "GBP");
+  const [amount, setAmount] = useState(editData?.amount?.toString() || "");
+  const [rate, setRate] = useState(editData?.rate?.toString() || "");
   const [submitting, setSubmitting] = useState(false);
+  const [successId, setSuccessId] = useState<string | number | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,18 +130,27 @@ const CreateSabitModal: React.FC<CreateSabitModalProps> = ({ onClose, onSuccess 
 
     setSubmitting(true);
     try {
-      const res = await sabitsApi.create({
+      const payload = {
         type: type.toUpperCase(),
         currency: currency.toUpperCase(),
         amount: String(amount),
         rate_ngn: String(rate),
-      });
+      };
+
+      const res = editData 
+        ? await sabitsApi.update(editData.id, payload)
+        : await sabitsApi.create(payload);
 
       if (res.success) {
-        toast.success("Listing created successfully!");
-        onSuccess();
+        const id = (res.data as any)?.id || editData?.id;
+        toast.success(editData ? "Listing updated successfully!" : "Listing created successfully!");
+        if (!editData && id) {
+          setSuccessId(id);
+        } else {
+          onSuccess();
+        }
       } else {
-        toast.error(res.error?.message || "Failed to create listing.");
+        toast.error(res.error?.message || "Failed to process listing.");
       }
     } catch (err: any) {
       toast.error(err?.message || "An unexpected error occurred.");
@@ -142,12 +159,57 @@ const CreateSabitModal: React.FC<CreateSabitModalProps> = ({ onClose, onSuccess 
     }
   };
 
+  if (successId) {
+    return (
+      <div style={S.overlay} onClick={onClose}>
+        <div style={S.card} onClick={(e) => e.stopPropagation()}>
+          <div style={S.header}>
+            <div style={S.accentBar} />
+            <h2 style={S.headerTitle}>Listing Created!</h2>
+            <button style={S.closeBtn} onClick={onClose}>×</button>
+          </div>
+          <div style={{ ...S.body, textAlign: 'center' }}>
+            <div style={{ 
+              width: 64, height: 64, borderRadius: '50%', background: '#C8F135', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              margin: '0 auto 20px' 
+            }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0d1f1e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <p style={{ color: '#0d1f1e', fontWeight: 600, fontSize: 16, marginBottom: 24 }}>
+              Your listing has been successfully posted to the marketplace.
+            </p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button 
+                style={{ ...S.submitBtn(false), background: '#0d1f1e', color: '#fff' }}
+                onClick={() => {
+                  onSuccess();
+                  window.location.href = `/dashboard/active-sabits`;
+                }}
+              >
+                View Listing
+              </button>
+              <button 
+                style={{ ...S.submitBtn(false), background: 'transparent', border: '2px solid #dde8e6' }}
+                onClick={onSuccess}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={S.overlay} onClick={onClose}>
       <div style={S.card} onClick={(e) => e.stopPropagation()}>
         <div style={S.header}>
           <div style={S.accentBar} />
-          <h2 style={S.headerTitle}>Create New Listing</h2>
+          <h2 style={S.headerTitle}>{editData ? "Edit Listing" : "Create New Listing"}</h2>
           <button style={S.closeBtn} onClick={onClose}>×</button>
         </div>
 
@@ -188,7 +250,7 @@ const CreateSabitModal: React.FC<CreateSabitModalProps> = ({ onClose, onSuccess 
             />
 
             <button type="submit" style={S.submitBtn(submitting)} disabled={submitting}>
-              {submitting ? "Creating..." : "Create Listing"}
+              {submitting ? (editData ? "Updating..." : "Creating...") : (editData ? "Update Listing" : "Create Listing")}
             </button>
           </form>
         </div>

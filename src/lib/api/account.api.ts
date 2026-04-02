@@ -28,5 +28,9 @@ export const accountApi = {
   confirmAccountDeletion: async (password: string, otp: string) => {
     return apiClient.post<null>("/account/delete/confirm", { password, otp });
   },
+
+  updateProfilePicture: async (formData: FormData) => {
+    return apiClient.post<null>("/account/profile/picture", formData);
+  },
 };
 

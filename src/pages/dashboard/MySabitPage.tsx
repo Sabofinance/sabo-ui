@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/css/MySabitPage.css';
 import { sabitsApi } from '../../lib/api';
 import { extractArray } from '../../lib/api/response';
 import ReceivedBidsModal from '../../components/ReceivedBidsModal';
 import CreateSabitModal from "../../components/CreateSabitModal";
+import Pagination from "../../components/Pagination";
 import { useAuth } from '../../context/AuthContext';
 
 interface MySabitListing {
@@ -40,11 +41,14 @@ const MySabitPage: React.FC = () => {
   const [receivedModalOpen, setReceivedModalOpen] = useState(false);
   const [receivedSabitId, setReceivedSabitId] = useState<number | string | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editListing, setEditListing] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const loadListings = async () => {
+  const loadListings = useCallback(async (page = 1) => {
     setLoading(true);
     setError('');
-    const response = await sabitsApi.list({ mine: true });
+    const response = await sabitsApi.list({ mine: true, page, limit: 10 });
     console.log(response)
     if (response.success) {
       const sabitList = extractArray(response.data);
@@ -98,17 +102,19 @@ const MySabitPage: React.FC = () => {
         };
       });
       setMyListings(mapped);
+      const meta = (response.data as any)?.meta || (response.data as any);
+      setTotalPages(meta.totalPages || meta.last_page || 1);
+      setCurrentPage(page);
     } else {
       setMyListings([]);
       setError(response.error?.message || 'Failed to load your sabits');
     }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
-    void loadListings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void loadListings(currentPage);
+  }, [loadListings]);
 
   const filteredListings = myListings.filter(listing => {
     if (activeTab === 'active') return listing.status === 'active';
@@ -155,9 +161,20 @@ const MySabitPage: React.FC = () => {
     setCreateModalOpen(true);
   };
 
-  const handleEdit = (id: number | string) => {
-    void id;
-    navigate('/dashboard/active-sabits');
+  const handleEdit = (listing: MySabitListing) => {
+    setEditListing({
+      id: listing.id,
+      type: listing.type,
+      currency: listing.currency,
+      amount: listing.amount,
+      rate: listing.rate
+    });
+    setCreateModalOpen(true);
+  };
+
+  const handleCloseCreate = () => {
+    setCreateModalOpen(false);
+    setEditListing(null);
   };
 
   const handleOpenReceivedBids = (listingId: number | string) => {
@@ -190,13 +207,34 @@ const MySabitPage: React.FC = () => {
                 <p className="page-subtitle">Manage your BUY and SELL orders</p>
               </div>
               
-              <button className="create-listing-btn" onClick={handleCreateListing}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Create New Listing
-              </button>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button 
+                  className="create-listing-btn" 
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    background: '#fff',
+                    color: '#0A1E28',
+                    border: '1px solid #e2e8f0'
+                  }} 
+                  onClick={() => void loadListings()}
+                  disabled={loading}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+                    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                  </svg>
+                  {loading ? 'Refreshing...' : 'Refresh'}
+                </button>
+                <button className="create-listing-btn" onClick={handleCreateListing}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Create New Listing
+                </button>
+              </div>
             </div>
 
             {/* Tabs */}
@@ -297,7 +335,7 @@ const MySabitPage: React.FC = () => {
                           <div className="actions-cell">
                             <button 
                               className="action-btn edit" 
-                              onClick={() => handleEdit(listing.id)}
+                              onClick={() => handleEdit(listing)}
                             >
                               EDIT
                             </button>
@@ -337,6 +375,13 @@ const MySabitPage: React.FC = () => {
                 </div>
               )}
             </div>
+
+            <Pagination 
+              currentPage={currentPage} 
+              totalPages={totalPages} 
+              onPageChange={(p) => void loadListings(p)} 
+              isLoading={loading} 
+            />
       </main>
 
       {receivedModalOpen && receivedSabitId != null && (
@@ -351,11 +396,12 @@ const MySabitPage: React.FC = () => {
 
       {createModalOpen && (
         <CreateSabitModal
-          onClose={() => setCreateModalOpen(false)}
+          onClose={handleCloseCreate}
           onSuccess={() => {
-            setCreateModalOpen(false);
+            handleCloseCreate();
             void loadListings();
           }}
+          editData={editListing}
         />
       )}
     </div>

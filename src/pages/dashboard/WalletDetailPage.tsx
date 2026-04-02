@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ledgerApi, walletsApi } from "../../lib/api";
+import { extractArray } from "../../lib/api/response";
 import "../../assets/css/HistoryPage.css";
 
 type AnyRec = Record<string, unknown>;
@@ -46,8 +47,8 @@ const WalletDetailPage: React.FC = () => {
       const walletId = String(w.id || w.walletId || "");
       if (walletId) {
         const ledgerRes = await ledgerApi.listByWalletId(walletId, { limit: 50 });
-        if (ledgerRes.success && Array.isArray(ledgerRes.data)) {
-          setEntries(ledgerRes.data as AnyRec[]);
+        if (ledgerRes.success) {
+          setEntries(extractArray(ledgerRes.data));
         }
       }
 

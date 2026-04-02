@@ -19,7 +19,8 @@ const AdminLoginPage: React.FC = () => {
     setGeneralError("");
     try {
       await adminLogin(data);
-      // Step 1 success: move to OTP step; do not create dashboard session yet.
+      // Step 1 success: move to OTP step; store email for the next step.
+      sessionStorage.setItem("adminPendingEmail", data.email);
       navigate("/admin/verify-otp");
     } catch (e: any) {
       setGeneralError(e?.message || "Admin login failed.");

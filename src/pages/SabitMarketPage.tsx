@@ -93,15 +93,23 @@ const SabitMarketPage = () => {
   const formattedListings = useMemo(() => {
     return listings
       .map((item: Record<string, unknown>, idx: number) => {
-        const seller = item.seller as any;
+        const seller = (item.seller || item.user || {}) as any;
         const id = Number(item.id || item.sabitId || idx + 1);
         const type = String(item.type || (item.side as string) || 'sell').toLowerCase() === 'buy' ? 'buy' : 'sell';
         const badge = type === 'sell' ? 'SELL' : 'BUY';
         const currency = String(item.currency || 'GBP');
         const amount = Number(item.amount || 0);
         const rate = Number(item.rate || 0);
-        const sellerName = String(item.sellerName || seller?.name || item.name || 'Verified Trader');
-        const avatar = String(item.sellerAvatar || seller?.avatar || item.avatar || `https://i.pravatar.cc/150?u=${sellerName}`);
+        const username = String(
+          item.sellerUsername || 
+          seller?.username || 
+          item.username || 
+          item.sellerName || 
+          seller?.name || 
+          item.name || 
+          'User'
+        );
+        const avatar = String(item.sellerAvatar || seller?.avatar || seller?.profile_picture_url || item.avatar || item.profile_picture_url || '');
         const trades = Number(item.completedTrades || item.completed || 0);
         const rating = Number(item.rating || seller?.rating || 0);
 
@@ -112,7 +120,8 @@ const SabitMarketPage = () => {
           currency,
           amount,
           rate,
-          sellerName,
+          sellerName: username,
+          username,
           avatar,
           trades,
           rating,
@@ -127,6 +136,7 @@ const SabitMarketPage = () => {
       .map((item) => ({
         id: item.id,
         name: item.sellerName,
+        username: item.username,
         avatar: item.avatar,
         badge: item.badge,
         sell: item.currency && item.amount ? `${item.currency} ${item.amount}` : '',
@@ -235,15 +245,24 @@ const SabitMarketPage = () => {
                     <td colSpan={6}>Loading listings...</td>
                   </tr>
                 )}
-                {!loading && formattedListings.map(l => (
-                  <tr key={l.id}>
-                    <td>
-                      <div className="smp-trader-cell">
-                        <img src={l.avatar} alt={l.name} className="smp-avatar" />
-                        <span className="smp-trader-name">{l.name}</span>
-                      </div>
-                    </td>
-                    <td>
+                {!loading && formattedListings.map(l => {
+                  const initials = l.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                  return (
+                    <tr key={l.id}>
+                      <td>
+                        <div className="smp-trader-cell">
+                          {l.avatar ? (
+                            <img src={l.avatar} alt={l.name} className="smp-avatar" />
+                          ) : (
+                            <div className="smp-avatar-initials">{initials}</div>
+                          )}
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span className="smp-trader-name">{l.name}</span>
+                            {l.username && <span className="smp-trader-username">@{l.username}</span>}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
                       <span className={`smp-badge ${l.badge === 'SELL' ? 'sell' : 'buy'}`}>
                         {l.badge} SABIT
                       </span>

@@ -94,18 +94,18 @@ const DepositsWithdrawalsBarChart: React.FC<DepositsWithdrawalsBarChartProps> = 
                 <div
                   title={`${p.day} deposits: ${formatCurrency(p.deposits)}`}
                   style={{
-                    width: 10,
+                    width: 24,
                     height: depH,
-                    borderRadius: 6,
+                    borderRadius: 8,
                     background: 'linear-gradient(180deg, #32D4F0 0%, rgba(50,212,240,0.35) 100%)',
                   }}
                 />
                 <div
                   title={`${p.day} withdrawals: ${formatCurrency(p.withdrawals)}`}
                   style={{
-                    width: 10,
+                    width: 24,
                     height: wH,
-                    borderRadius: 6,
+                    borderRadius: 8,
                     background: 'linear-gradient(180deg, #F032D4 0%, rgba(240,50,212,0.35) 100%)',
                   }}
                 />
