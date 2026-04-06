@@ -34,7 +34,7 @@ const HistoryPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const loadLedger = useCallback(async () => {
     setLoading(true);
@@ -59,7 +59,8 @@ const HistoryPage: React.FC = () => {
             const entryType = String(entry.type || '').toLowerCase();
             if (['deposit', 'withdrawal'].includes(entryType)) {
               cpName = 'Self';
-            } else {
+            }
+            else {
               cpName = 'System';
             }
           }
@@ -84,8 +85,8 @@ const HistoryPage: React.FC = () => {
           };
         });
         setTransactions(mapped);
-        const meta = (response.data as any)?.meta || (response.data as any);
-        setTotalPages(meta.totalPages || meta.last_page || (mapped.length === limit ? page + 1 : page));
+        const meta = (response.data as any);
+        setTotal(meta.total || 0);
       } else if (!response.success) {
         setError(response.error?.message || 'Failed to load transaction history');
       }
@@ -428,7 +429,8 @@ const HistoryPage: React.FC = () => {
 
             <Pagination 
               currentPage={page} 
-              totalPages={totalPages} 
+              total={total} 
+              limit={limit}
               onPageChange={(p) => setPage(p)} 
               isLoading={loading} 
             />

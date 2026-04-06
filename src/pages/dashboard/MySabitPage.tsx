@@ -43,12 +43,13 @@ const MySabitPage: React.FC = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editListing, setEditListing] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
 
-  const loadListings = useCallback(async (page = 1) => {
+  const loadListings = useCallback(async () => {
     setLoading(true);
     setError('');
-    const response = await sabitsApi.list({ mine: true, page, limit: 10 });
+    const response = await sabitsApi.list({ mine: true, page: currentPage, limit });
     if (response.success) {
       const sabitList = extractArray(response.data);
       const mapped: MySabitListing[] = sabitList.map((item: Record<string, unknown>, idx: number) => {
@@ -101,18 +102,17 @@ const MySabitPage: React.FC = () => {
         };
       });
       setMyListings(mapped);
-      const meta = (response.data as any)?.meta || (response.data as any);
-      setTotalPages(meta.totalPages || meta.last_page || 1);
-      setCurrentPage(page);
+      const meta = (response.data as any);
+      setTotal(meta.total || meta.totalItems || 0);
     } else {
       setMyListings([]);
       setError(response.error?.message || 'Failed to load your sabits');
     }
     setLoading(false);
-  }, []);
+  }, [currentPage, limit]);
 
   useEffect(() => {
-    void loadListings(currentPage);
+    void loadListings();
   }, [loadListings]);
 
   const filteredListings = myListings.filter(listing => {
@@ -208,7 +208,7 @@ const MySabitPage: React.FC = () => {
           <div className="ms-header-actions">
             <button
               className="ms-btn-refresh"
-              onClick={() => void loadListings(currentPage)}
+              onClick={() => void loadListings()}
               disabled={loading}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -349,8 +349,9 @@ const MySabitPage: React.FC = () => {
 
         <Pagination
           currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(p) => void loadListings(p)}
+          total={total}
+          limit={limit}
+          onPageChange={(p) => setCurrentPage(p)}
           isLoading={loading}
         />
       </main>

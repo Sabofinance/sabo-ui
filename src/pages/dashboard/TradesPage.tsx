@@ -1348,10 +1348,12 @@ const TradesPage: React.FC = () => {
 
         <Pagination
           currentPage={currentPage}
-          totalPages={totalPages}
+          total={totalPages}
           onPageChange={(p) => void loadTrades(p)}
           isLoading={loading}
+          limit={10}
         />
+         
       </div>
 
       {/* Modal */}

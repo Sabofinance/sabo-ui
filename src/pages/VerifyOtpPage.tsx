@@ -60,11 +60,7 @@ const VerifyOtpPage: React.FC = () => {
     setGeneralError("");
     setResending(true);
     try {
-      await resendOtp({ email });
-      setDigits(Array.from({ length: 6 }, () => ""));
-      setSecondsLeft(60);
-      // Focus the first digit for faster UX.
-      window.setTimeout(() => inputsRef.current[0]?.focus(), 0);
+     window.location.href = "/login";
     } catch (err: any) {
       setGeneralError(err?.message || "Failed to resend OTP.");
     } finally {

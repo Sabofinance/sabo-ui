@@ -44,7 +44,7 @@ const DepositDetailPage: React.FC = () => {
           );
           
           if (found) {
-            res = { success: true, data: found };
+            res = { success: true, data: found, error: null };
           }
         }
       }

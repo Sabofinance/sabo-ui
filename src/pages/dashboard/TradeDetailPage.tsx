@@ -192,7 +192,7 @@ const TradeDetailPage: React.FC = () => {
   const getStatusColor = (status: TradeStatus) => {
     switch (status) {
       case 'escrowed': return '#F59E0B';
-      case 'confirmed': return '#3B82F6';
+      case 'disputed': return '#3B82F6';
       case 'completed': return '#10B981';
       case 'cancelled': return '#EF4444';
       default: return '#64748B';

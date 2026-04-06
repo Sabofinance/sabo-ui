@@ -66,36 +66,31 @@ const AdminLogsPage: React.FC = () => {
   const [logs, setLogs] = useState<AdminLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(20);
+  const [total, setTotal] = useState(0);
 
-  const loadLogs = useCallback(async (page = 1) => {
+  const loadLogs = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await adminApi.listLogs({ page, limit: 20 });
+      const res = await adminApi.listLogs({ page: currentPage, limit });
 
       if (res.success) {
         // API returns: { data: { logs: [...] }, meta: {} }
-        // res.data is the inner `data` object → { logs: [...] }
         const inner = res.data as { logs?: AdminLog[] } | AdminLog[] | null;
-
         let list: AdminLog[] = [];
 
         if (Array.isArray(inner)) {
-          // Unlikely but safe — if the API ever returns a bare array
           list = inner;
         } else if (inner && Array.isArray((inner as any).logs)) {
-          // Correct path: inner = { logs: [...] }
           list = (inner as { logs: AdminLog[] }).logs;
         }
 
         setLogs(list);
 
-        // Pagination — try meta first, fall back to single page
-        const meta = (res as any).meta ?? {};
-        setTotalPages(
-          meta.totalPages ?? meta.last_page ?? meta.total_pages ?? 1
-        );
-        setCurrentPage(page);
+        // Pagination
+        const data = res.data as any;
+        const meta = data?.meta || data || {};
+        setTotal(meta.total || meta.totalCount || meta.total_count || 0);
       } else {
         toast.error(res.error?.message || 'Could not load logs');
       }
@@ -105,10 +100,10 @@ const AdminLogsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentPage, limit]);
 
   useEffect(() => {
-    void loadLogs(1);
+    void loadLogs();
   }, [loadLogs]);
 
   return (
@@ -125,7 +120,7 @@ const AdminLogsPage: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={() => void loadLogs(currentPage)}
+          onClick={() => void loadLogs()}
           disabled={loading}
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
@@ -261,8 +256,9 @@ const AdminLogsPage: React.FC = () => {
 
       <Pagination
         currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={(p) => void loadLogs(p)}
+        total={total}
+        limit={limit}
+        onPageChange={(p) => setCurrentPage(p)}
         isLoading={loading}
       />
 

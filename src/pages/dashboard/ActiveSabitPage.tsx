@@ -47,7 +47,8 @@ const ActiveSabitPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(12);
+  const [total, setTotal] = useState(0);
 
   // Update filters if URL changes
   useEffect(() => {
@@ -133,10 +134,10 @@ const ActiveSabitPage: React.FC = () => {
     setReceivedModalOpen(true);
   };
 
-  const load = useCallback(async (page = 1) => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError('');
-    const params: Record<string, unknown> = { status: 'active', page, limit: 12 };
+    const params: Record<string, unknown> = { status: 'active', page: currentPage, limit };
     if (selectedCurrency !== 'all') params.currency = selectedCurrency;
     if (selectedType !== 'all') params.type = selectedType;
 
@@ -193,18 +194,17 @@ const ActiveSabitPage: React.FC = () => {
         };
       });
       setListings(mapped);
-      const meta = (response.data as any)?.meta || (response.data as any);
-      setTotalPages(meta.totalPages || meta.last_page || 1);
-      setCurrentPage(page);
+      const meta = (response.data as any);
+      setTotal(meta.total || 0);
     } else {
       setListings([]);
       setError(response.success ? '' : (response.error?.message || 'Failed to load listings'));
     }
     setLoading(false);
-  }, [selectedCurrency, selectedType]);
+  }, [selectedCurrency, selectedType, currentPage, limit]);
 
   useEffect(() => {
-    void load(1);
+    void load();
   }, [load]);
 
   return (
@@ -467,8 +467,9 @@ const ActiveSabitPage: React.FC = () => {
 
         <Pagination
           currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(p) => void load(p)}
+          total={total}
+          limit={limit}
+          onPageChange={(p) => setCurrentPage(p)}
           isLoading={loading}
         />
 

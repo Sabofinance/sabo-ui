@@ -1,3 +1,4 @@
+import type { AxiosRequestConfig } from "axios";
 import { apiRequest } from "./request";
 
 export const depositsApi = {
@@ -5,8 +6,11 @@ export const depositsApi = {
   getById: (depositId: string) => apiRequest.get(`/deposits/${depositId}`),
   ngnInitiate: (payload: Record<string, unknown>) =>
     apiRequest.post("/deposits/ngn/initiate", payload),
-  foreign: (formData: FormData) =>
-    apiRequest.post("/deposits/foreign", formData, { headers: { "Content-Type": undefined } }),
+  foreign: (formData: FormData, config?: AxiosRequestConfig) =>
+    apiRequest.post("/deposits/foreign", formData, {
+      ...config,
+      headers: { ...config?.headers, "Content-Type": undefined },
+    }),
   cancel: (depositId: string) => apiRequest.post(`/deposits/${depositId}/cancel`),
 };
 

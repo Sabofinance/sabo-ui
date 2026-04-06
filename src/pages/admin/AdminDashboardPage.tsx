@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { adminApi } from '../../lib/api';
 import { useNotifications } from '../../context/NotificationContext';
+import { AdminSkeleton } from './AdminSkelenton';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -624,7 +625,7 @@ const AdminDashboardPage: React.FC = () => {
   const handleRejectDeposit = async (depositId: string) => {
     setDepositsActionLoadingId(depositId);
     try {
-      const res = await adminApi.rejectDeposit(depositId);
+      const res = await adminApi.rejectDeposit(depositId, 'Admin rejection');
       if (!res.success) { toast.error(res.error?.message || 'Failed to reject deposit'); return; }
       toast.success('Deposit rejected'); await listAll();
     } finally { setDepositsActionLoadingId(''); }
@@ -654,25 +655,22 @@ const AdminDashboardPage: React.FC = () => {
   };
 
   /* ── Loading skeleton ── */
-  if (loading) {
-    return (
-      <div className="adm">
-        <style>{CSS}</style>
-        <div className="adm-page">
-          <div className="adm-header">
-            <div>
-              <h1>Admin Dashboard</h1>
-              <p>Users, KYC, and deposit approvals</p>
-            </div>
-          </div>
-          <div style={{ textAlign: 'center', padding: '60px 0', color: '#6b7a99', fontSize: 14 }}>
-            <div style={{ fontSize: 28, marginBottom: 12 }}>⚙️</div>
-            Loading admin dashboard...
-          </div>
-        </div>
-      </div>
-    );
-  }
+ if (loading) {
+   return (
+     <div className="adm">
+       <style>{CSS}</style>
+       <div className="adm-page">
+         <div className="adm-header">
+           <div>
+             <h1>Admin Dashboard</h1>
+             <p>Users, KYC, and deposit approvals</p>
+           </div>
+         </div>
+         <AdminSkeleton />
+       </div>
+     </div>
+   );
+ }
 
   /* ── Main render ── */
   return (

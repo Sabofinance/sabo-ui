@@ -399,7 +399,7 @@ const AdminAnalyticsPage: React.FC = () => {
                   activeDisputes.map((disp, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid #f8fafc' }}>
                       <td style={{ padding: '16px 12px', fontSize: '14px', fontWeight: '700', color: '#0A1E28' }}>{String(disp.reason || disp.subject || 'No reason provided')}</td>
-                      <td style={{ padding: '16px 12px', fontSize: '14px', color: '#64748b' }}>{String(disp.userEmail || disp.user?.fullName || disp.userId || 'Unknown')}</td>
+                      <td style={{ padding: '16px 12px', fontSize: '14px', color: '#64748b' }}>{String(disp.userEmail || (disp.user as any)?.fullName || disp.userId || 'Unknown')}</td>
                       <td style={{ padding: '16px 12px', fontSize: '13px', color: '#64748b' }}>{disp.createdAt ? new Date(String(disp.createdAt)).toLocaleDateString() : '-'}</td>
                     </tr>
                   ))
@@ -455,10 +455,12 @@ const AdminAnalyticsPage: React.FC = () => {
           <div style={{ marginTop: '24px' }}>
             <Pagination 
               currentPage={page} 
-              totalPages={totalPages} 
+              total={totalPages}
+              limit={10}
               onPageChange={(p) => setPage(p)} 
               isLoading={loading} 
             />
+           
           </div>
         </div>
       </div>

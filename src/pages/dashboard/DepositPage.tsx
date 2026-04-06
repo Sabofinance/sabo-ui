@@ -89,9 +89,10 @@ const DepositPage: React.FC = () => {
     formData.append("amount", String(foreignRaw));
     formData.append("proof", foreignFile);
     const res = await depositsApi.foreign(formData, {
-      onUploadProgress: (evt) => {
+      onUploadProgress: (evt: any) => {
+
         if (!evt.total) return;
-        const pct = Math.round((evt.loaded / evt.total) * 100);
+        const pct = Math.round((evt.loaded / (evt.total || 1)) * 100);
         setUploadPct(Math.max(0, Math.min(100, pct)));
       },
     });

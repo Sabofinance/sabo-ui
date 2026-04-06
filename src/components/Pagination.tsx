@@ -3,13 +3,15 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PaginationProps {
   currentPage: number;
-  totalPages: number;
+  total: number;
+  limit: number;
   onPageChange: (page: number) => void;
   isLoading?: boolean;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange, isLoading }) => {
-  if (totalPages === 0) return null;
+const Pagination: React.FC<PaginationProps> = ({ currentPage, total, limit, onPageChange, isLoading }) => {
+  const totalPages = Math.ceil(total / limit);
+  if (totalPages <= 1) return null;
 
   const getPages = () => {
     const pages = [];

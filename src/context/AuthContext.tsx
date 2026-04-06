@@ -151,6 +151,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(nextUser);
           localStorage.setItem('user', JSON.stringify(nextUser));
           setIsAuthenticated(true);
+        } else {
+          // If we can't fetch the user, something is wrong with the token or the server.
+          // Clean up and throw an error so the UI can show it.
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          setAccessToken(null);
+          setRefreshToken(null);
+          throw new Error(userRes.error?.message || "Failed to fetch user profile after OTP verification.");
         }
       } else {
         throw new Error(response.error?.message || "OTP Verification failed");

@@ -41,7 +41,7 @@ const AdminAcceptInvitePage: React.FC = () => {
       try {
         const res = await adminApi.acceptInvite(token);
         if (res.success) {
-          setInvitedEmail(res.data?.email || '');
+          setInvitedEmail((res.data as { email?: string })?.email || '');
         } else {
           setError(res.error?.message || 'This invitation is invalid or has expired.');
         }

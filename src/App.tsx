@@ -60,11 +60,12 @@ const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminUserDetailsPage = lazy(() => import('./pages/admin/AdminUserDetailsPage'));
 const AdminKycPage = lazy(() => import('./pages/admin/AdminKycPage'));
 const AdminDepositsPage = lazy(() => import('./pages/admin/AdminDepositsPage'));
-const AdminDisputesPage = lazy(() => import("./pages/admin/AdminDisputesPage"));
+const AdminWithdrawalsPage = lazy(() => import('./pages/admin/AdminWithdrawalsPage'));
+const AdminDisputesPage = lazy(() => import('./pages/admin/AdminDisputesPage'));
 // const AdminAnalyticsPage = lazy(() => import('./pages/admin/AdminAnalyticsPage'));
 const AdminMetricsPage = lazy(() => import('./pages/admin/AdminMetricsPage'));
 const AdminTransactionsPage = lazy(
-  () => import("./pages/admin/AdminTransactionsPage"),
+  () => import('./pages/admin/AdminTransactionsPage'),
 );
 const AdminAdminsPage = lazy(() => import('./pages/admin/AdminAdminsPage'));
 const AdminLogsPage = lazy(() => import('./pages/admin/AdminLogsPage'));
@@ -174,6 +175,7 @@ function App() {
             <Route path="admin/users/:id" element={<AdminProtectedRoute><AdminUserDetailsPage /></AdminProtectedRoute>} />
             <Route path="admin/kyc" element={<AdminProtectedRoute><AdminKycPage /></AdminProtectedRoute>} />
             <Route path="admin/deposits" element={<AdminProtectedRoute><AdminDepositsPage /></AdminProtectedRoute>} />
+            <Route path="admin/withdrawals" element={<AdminProtectedRoute><AdminWithdrawalsPage /></AdminProtectedRoute>} />
             <Route path="admin/disputes" element={<AdminProtectedRoute><AdminDisputesPage /></AdminProtectedRoute>} />
             <Route path="admin/transactions" element={<AdminProtectedRoute><AdminTransactionsPage /></AdminProtectedRoute>} />
             {/* <Route path="admin/analytics" element={<AdminProtectedRoute><AdminAnalyticsPage /></AdminProtectedRoute>} /> */}

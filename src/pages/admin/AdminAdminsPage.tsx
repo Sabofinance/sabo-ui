@@ -24,24 +24,24 @@ const AdminAdminsPage: React.FC = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
   const [error404, setError404] = useState(false);
 
-  const load = async (page = 1) => {
+  const load = async () => {
     setLoading(true);
     setError404(false);
     try {
-      const res = await adminApi.listAdmins({ page, limit: 10 });
+      const res = await adminApi.listAdmins({ page: currentPage, limit });
       if (res.success) {
         const data = res.data as any;
         // Support { admins: [...] } or { data: [...] } or [...]
-        const list = data.admins || (Array.isArray(data) ? data : data.data || []);
+        const list = data.admins || data.items || (Array.isArray(data) ? data : data.data || []);
         setAdmins(list as AdminRec[]);
-        const meta = data.meta || data;
-        setTotalPages(meta.totalPages || meta.last_page || 1);
-        setCurrentPage(page);
+        const meta = data.meta || data || {};
+        setTotal(meta.total || meta.totalCount || meta.total_count || 0);
       } else {
-        if (res.error?.code === 'NOT_FOUND' || res.status === 404) {
+        if (res.error?.code === 'NOT_FOUND' || (res.error as any)?.status === 404) {
           setError404(true);
         }
         toast.error(res.error?.message || 'Could not load admins');
@@ -54,14 +54,14 @@ const AdminAdminsPage: React.FC = () => {
     }
   };
 
-  useEffect(() => { void load(currentPage); }, []);
+  useEffect(() => { void load(); }, [currentPage]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail) return;
     setInviting(true);
     try {
-      const res = await adminApi.createInvite(inviteEmail);
+      const res = await adminApi.createInvite({ email: inviteEmail });
       if (res.success) {
         toast.success('Admin invite sent to ' + inviteEmail);
         setInviteEmail('');
@@ -80,7 +80,7 @@ const AdminAdminsPage: React.FC = () => {
       const res = await adminApi.removeAdmin(id);
       if (res.success) {
         toast.success('Admin access revoked');
-        void load(currentPage);
+        void load();
       } else {
         toast.error(res.error?.message || 'Remove failed');
       }
@@ -96,7 +96,7 @@ const AdminAdminsPage: React.FC = () => {
       const res = await adminApi.upgradeAdmin(id);
       if (res.success) {
         toast.success('Admin upgraded to Super Admin');
-        void load(currentPage);
+        void load();
       } else {
         toast.error(res.error?.message || 'Upgrade failed');
       }
@@ -147,7 +147,7 @@ const AdminAdminsPage: React.FC = () => {
         </div>
 
         <button 
-          onClick={() => void load(currentPage)} 
+          onClick={() => void load()}
           disabled={loading}
           style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#fff', color: '#0A1E28', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
         >
@@ -271,8 +271,9 @@ const AdminAdminsPage: React.FC = () => {
       <div style={{ marginTop: '24px' }}>
         <Pagination 
           currentPage={currentPage} 
-          totalPages={totalPages} 
-          onPageChange={(p) => void load(p)} 
+          total={total} 
+          limit={limit}
+          onPageChange={(p) => setCurrentPage(p)} 
           isLoading={loading} 
         />
       </div>

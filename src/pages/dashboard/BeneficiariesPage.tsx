@@ -14,7 +14,8 @@ const BeneficiariesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
 
   const [currency, setCurrency] = useState<'NGN' | 'GBP' | 'USD' | 'CAD'>('NGN');
   const [bankName, setBankName] = useState('');
@@ -24,18 +25,17 @@ const BeneficiariesPage: React.FC = () => {
   const [iban, setIban] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const loadBeneficiaries = useCallback(async (page = 1, showLoading = false) => {
+  const loadBeneficiaries = useCallback(async (showLoading = false) => {
     if (showLoading) {
       setLoading(true);
       setError('');
     }
     try {
-      const response = await beneficiariesApi.list({ page, limit: 10 });
+      const response = await beneficiariesApi.list({ page: currentPage, limit });
       if (response.success) {
         setBeneficiaries(extractArray(response.data));
-        const meta = (response.data as any)?.meta || (response.data as any);
-        setTotalPages(meta.totalPages || meta.last_page || 1);
-        setCurrentPage(page);
+        const meta = (response.data as any);
+        setTotal(meta.total || 0);
       } else if (!response.success) {
         const msg = response.error?.message || 'Failed to load beneficiaries';
         if (showLoading) {
@@ -54,9 +54,9 @@ const BeneficiariesPage: React.FC = () => {
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, []);
+  }, [currentPage, limit]);
 
-  useEffect(() => { void loadBeneficiaries(currentPage, true); }, [loadBeneficiaries]);
+  useEffect(() => { void loadBeneficiaries(true); }, [loadBeneficiaries]);
 
   const handleAdd = async () => {
     const kycStatus = String((user as any)?.kyc_status || '').toLowerCase();
@@ -94,7 +94,11 @@ const BeneficiariesPage: React.FC = () => {
     setAccountNumber('');
     setSortCode('');
     setIban('');
-    await loadBeneficiaries(false);
+    if (currentPage === 1) {
+      void loadBeneficiaries(false);
+    } else {
+      setCurrentPage(1);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -104,7 +108,7 @@ const BeneficiariesPage: React.FC = () => {
     const res = await beneficiariesApi.remove(id);
     if (!res.success) toast.error(res.error?.message || 'Failed to delete beneficiary');
     else toast.success('Beneficiary deleted.');
-    await loadBeneficiaries(false);
+    void loadBeneficiaries(false);
   };
 
   const byCurrency = useMemo(() => {
@@ -193,12 +197,15 @@ const BeneficiariesPage: React.FC = () => {
       )}
 
       {!loading && !error && beneficiaries.length > 0 && (
-        <Pagination 
-          currentPage={currentPage} 
-          totalPages={totalPages} 
-          onPageChange={(p) => void loadBeneficiaries(p, false)} 
-          isLoading={loading} 
-        />
+        <div className="history-pagination">
+          <Pagination 
+            currentPage={currentPage} 
+            total={total} 
+            limit={limit} 
+            onPageChange={(p) => setCurrentPage(p)} 
+            isLoading={loading} 
+          />
+        </div>
       )}
     </main>
   );

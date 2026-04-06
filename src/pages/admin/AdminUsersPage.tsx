@@ -25,7 +25,8 @@ const AdminUsersPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
 
@@ -34,16 +35,16 @@ const AdminUsersPage: React.FC = () => {
     return status.includes('suspend');
   };
 
-  const loadUsers = async (page = 1) => {
+  const loadUsers = async () => {
     setLoading(true);
     try {
-      const res = await adminApi.listUsers({ page, limit: 10 });
+      const res = await adminApi.listUsers({ page: currentPage, limit });
       if (res.success) {
         const list = extractArray(res.data);
         setUsers(Array.isArray(list) ? (list as UserRecord[]) : []);
-        const meta = (res.data as any)?.meta || (res.data as any);
-        setTotalPages(meta.totalPages || meta.last_page || 1);
-        setCurrentPage(page);
+        const data = res.data as any;
+        const meta = data.meta || data || {};
+        setTotal(meta.total || meta.totalCount || meta.total_count || 0);
       } else {
         toast.error(res.error?.message || 'Could not load users.');
       }
@@ -52,7 +53,7 @@ const AdminUsersPage: React.FC = () => {
     }
   };
 
-  useEffect(() => { void loadUsers(currentPage); }, []);
+  useEffect(() => { void loadUsers(); }, [currentPage]);
 
   const handleToggle = async (id: string, suspended: boolean) => {
     if (!window.confirm(`Are you sure you want to ${suspended ? 'reinstate' : 'suspend'} this user?`)) return;
@@ -64,7 +65,7 @@ const AdminUsersPage: React.FC = () => {
         toast.error(res.error?.message || 'Action failed');
       } else {
         toast.success(suspended ? 'User reinstated successfully' : 'User suspended successfully');
-        void loadUsers(currentPage);
+        void loadUsers();
       }
     } finally {
       setActionLoadingId('');
@@ -117,7 +118,7 @@ const AdminUsersPage: React.FC = () => {
             />
           </div>
           <button 
-            onClick={() => void loadUsers(currentPage)} 
+            onClick={() => void loadUsers()}
             disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#fff', color: '#0A1E28', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
           >
@@ -247,8 +248,9 @@ const AdminUsersPage: React.FC = () => {
       <div style={{ marginTop: '24px' }}>
         <Pagination 
           currentPage={currentPage} 
-          totalPages={totalPages} 
-          onPageChange={(p) => void loadUsers(p)} 
+          total={total}
+          limit={limit}
+          onPageChange={(p) => setCurrentPage(p)} 
           isLoading={loading} 
         />
       </div>

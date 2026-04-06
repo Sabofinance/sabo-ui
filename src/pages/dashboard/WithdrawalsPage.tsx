@@ -133,44 +133,69 @@ const WithdrawalsPage: React.FC = () => {
       <div className="page-header">
         <div>
           <h1 className="page-title">Withdrawals</h1>
-          <p className="page-subtitle">Request withdrawals to your saved beneficiaries</p>
+          <p className="page-subtitle">
+            Request withdrawals to your saved beneficiaries
+          </p>
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button 
-            className="export-btn" 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px',
-              background: '#fff',
-              color: '#0A1E28',
-              border: '1px solid #e2e8f0'
-            }} 
+        <div style={{ display: "flex", gap: 12 }}>
+          <button
+            className="export-btn"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "#fff",
+              color: "#0A1E28",
+              border: "1px solid #e2e8f0",
+            }}
             onClick={() => void load()}
             disabled={loading}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
               <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
             </svg>
-            {loading ? 'Refreshing...' : 'Refresh'}
+            {loading ? "Refreshing..." : "Refresh"}
           </button>
-          <button className="export-btn" style={{ background: '#C8F032', color: '#0A1E28' }} onClick={() => navigate('/dashboard/beneficiaries')}>
+          <button
+            className="export-btn"
+            style={{ background: "#C8F032", color: "#0A1E28" }}
+            onClick={() => navigate("/dashboard/beneficiaries")}
+          >
             Manage beneficiaries
           </button>
         </div>
       </div>
 
       {!isVerified && (
-        <div className="summary-cards" style={{ marginBottom: '1.5rem' }}>
-          <div className="summary-card" style={{ flex: 1, borderLeft: '5px solid #f39c12' }}>
+        <div className="summary-cards" style={{ marginBottom: "1.5rem" }}>
+          <div
+            className="summary-card"
+            style={{ flex: 1, borderLeft: "5px solid #f39c12" }}
+          >
             <div className="summary-info">
               <span className="summary-label">KYC required</span>
-              <span className="summary-value" style={{ fontSize: 14, color: '#6b7280' }}>
+              <span
+                className="summary-value"
+                style={{ fontSize: 14, color: "#6b7280" }}
+              >
                 Withdrawals are only available after KYC verification.
               </span>
               <div style={{ marginTop: 12 }}>
-                <button className="export-btn" onClick={() => navigate('/dashboard/kyc')}>
+                <button
+                  className="export-btn"
+                  onClick={() => navigate("/dashboard/kyc")}
+                >
                   Complete KYC
                 </button>
               </div>
@@ -179,35 +204,61 @@ const WithdrawalsPage: React.FC = () => {
         </div>
       )}
 
-      <div className="filters-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
+      <div
+        className="filters-section"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: 14,
+        }}
+      >
         <div className="filter-group">
           <label>Currency</label>
-          <select className="filter-select" value={currency} onChange={(e) => setCurrency(e.target.value as any)}>
+          <select
+            className="filter-select"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as any)}
+          >
             <option value="NGN">NGN</option>
             <option value="GBP">GBP</option>
             <option value="USD">USD</option>
             <option value="CAD">CAD</option>
           </select>
-          <div style={{ marginTop: 6, fontSize: 12, color: '#6b7280' }}>
-            Available: {new Intl.NumberFormat('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(availableBalance)} {currency}
+          <div style={{ marginTop: 6, fontSize: 12, color: "#6b7280" }}>
+            Available:{" "}
+            {new Intl.NumberFormat("en-NG", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }).format(availableBalance)}{" "}
+            {currency}
           </div>
         </div>
 
         <div className="filter-group">
           <label>Beneficiary</label>
-          <select className="filter-select" value={beneficiaryId} onChange={(e) => setBeneficiaryId(e.target.value)}>
+          <select
+            className="filter-select"
+            value={beneficiaryId}
+            onChange={(e) => setBeneficiaryId(e.target.value)}
+          >
             {filteredBeneficiaries.length === 0 ? (
               <option value="">No beneficiaries for {currency}</option>
             ) : (
               filteredBeneficiaries.map((b: any) => (
                 <option key={String(b.id)} value={String(b.id)}>
-                  {String(b.bank_name || b.bankName || 'Bank')} · {String(b.account_name || b.accountName || 'Account')} · {String(b.account_number || b.accountNumber || '')}
+                  {String(b.bank_name || b.bankName || "Bank")} ·{" "}
+                  {String(b.account_name || b.accountName || "Account")} ·{" "}
+                  {String(b.account_number || b.accountNumber || "")}
                 </option>
               ))
             )}
           </select>
           {filteredBeneficiaries.length === 0 && (
-            <button className="export-btn" style={{ marginTop: 10 }} onClick={() => navigate('/dashboard/beneficiaries')}>
+            <button
+              className="export-btn"
+              style={{ marginTop: 10 }}
+              onClick={() => navigate("/dashboard/beneficiaries")}
+            >
               Add beneficiary
             </button>
           )}
@@ -215,7 +266,12 @@ const WithdrawalsPage: React.FC = () => {
 
         <div className="filter-group">
           <label>Amount</label>
-          <input className="filter-select" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />
+          <input
+            className="filter-select"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0.00"
+          />
         </div>
 
         <div className="filter-group">
@@ -226,51 +282,105 @@ const WithdrawalsPage: React.FC = () => {
             inputMode="numeric"
             maxLength={6}
             value={pin}
-            onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            onChange={(e) =>
+              setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
+            }
             placeholder="••••••"
           />
         </div>
 
-        <div className="filter-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+        <div
+          className="filter-group"
+          style={{ display: "flex", alignItems: "flex-end" }}
+        >
           <button
             className="export-btn"
-            style={{ width: '100%', justifyContent: 'center', background: '#0A1E28', color: '#C8F032' }}
-            disabled={submitting || !isVerified || filteredBeneficiaries.length === 0}
+            style={{
+              width: "100%",
+              justifyContent: "center",
+              background: "#0A1E28",
+              color: "#C8F032",
+            }}
+            disabled={
+              submitting || !isVerified || filteredBeneficiaries.length === 0
+            }
             onClick={() => void submitWithdrawal()}
           >
-            {submitting ? 'Submitting…' : 'Request Withdrawal'}
+            {submitting ? "Submitting…" : "Request Withdrawal"}
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="error-state" style={{ marginTop: 14, padding: '14px 16px', borderRadius: 14, background: '#ffebee', color: '#c62828' }}>
+        <div
+          className="error-state"
+          style={{
+            marginTop: 14,
+            padding: "14px 16px",
+            borderRadius: 14,
+            background: "#ffebee",
+            color: "#c62828",
+          }}
+        >
           {error}
         </div>
       )}
 
       <div className="history-table-container">
         <table className="history-table">
-          <thead><tr><th>ID</th><th>Currency</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Currency</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} style={{ padding: 16, color: '#6b7280' }}>Loading withdrawals...</td></tr>
+              <tr>
+                <td colSpan={5} style={{ padding: 16, color: "#6b7280" }}>
+                  Loading withdrawals...
+                </td>
+              </tr>
             ) : withdrawals.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: 16, color: '#6b7280' }}>No withdrawals yet.</td></tr>
+              <tr>
+                <td colSpan={5} style={{ padding: 16, color: "#6b7280" }}>
+                  No withdrawals yet.
+                </td>
+              </tr>
             ) : (
               withdrawals.map((withdrawal, index) => {
-                const id = String((withdrawal as any).id || (withdrawal as any)._id || index);
-                const cur = String((withdrawal as any).currency || '-');
+                const id = String(
+                  (withdrawal as any).id || (withdrawal as any)._id || index,
+                );
+                const cur = String((withdrawal as any).currency || "-");
                 const amt = Number((withdrawal as any).amount || 0);
-                const st = String((withdrawal as any).status || '-');
-                const dateRaw = String((withdrawal as any).createdAt || (withdrawal as any).date || '');
+                const st = String((withdrawal as any).status || "-");
+                const dateRaw = String(
+                  (withdrawal as any).createdAt ||
+                    (withdrawal as any).date ||
+                    "",
+                );
                 return (
-                  <tr key={id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/dashboard/withdrawals/${id}`)}>
+                  <tr
+                    key={id}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/dashboard/withdrawals/${id}`)}
+                  >
                     <td>{id}</td>
                     <td>{cur}</td>
-                    <td>{new Intl.NumberFormat('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amt)}</td>
+                    <td>
+                      {new Intl.NumberFormat("en-NG", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(amt)}
+                    </td>
                     <td>{st}</td>
-                    <td>{dateRaw ? new Date(dateRaw).toLocaleString() : '-'}</td>
+                    <td>
+                      {dateRaw ? new Date(dateRaw).toLocaleString() : "-"}
+                    </td>
                   </tr>
                 );
               })
@@ -279,11 +389,12 @@ const WithdrawalsPage: React.FC = () => {
         </table>
       </div>
 
-      <Pagination 
-        currentPage={currentPage} 
-        totalPages={totalPages} 
-        onPageChange={(p) => void load(p)} 
-        isLoading={loading} 
+      <Pagination
+        currentPage={currentPage}
+        total={totalPages}
+        limit={10}
+        onPageChange={(p) => setCurrentPage(p)}
+        isLoading={loading}
       />
     </main>
   );

@@ -7,25 +7,27 @@ const AdminTransactionsPage: React.FC = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(20);
+  const [total, setTotal] = useState(0);
 
-  const loadTransactions = async (page = 1) => {
+  const loadTransactions = async () => {
     setLoading(true);
-    const res = await adminApi.listTransactions({ page, limit: 20 });
+    const res = await adminApi.listTransactions({ page: currentPage, limit });
     if (res.success) {
       const data = res.data as any;
-      const list = Array.isArray(data) ? data : data.data || [];
+      // Support { transactions: [...] } or { data: [...] } or { items: [...] } or direct array
+      const list = data.transactions || data.items || (Array.isArray(data) ? data : data.data || []);
       setTransactions(list);
-      const meta = data.meta || data;
-      setTotalPages(meta.totalPages || meta.last_page || 1);
-      setCurrentPage(page);
+      
+      const meta = data.meta || data || {};
+      setTotal(meta.total || meta.totalCount || meta.total_count || 0);
     } else {
       toast.error('Failed to load transactions');
     }
     setLoading(false);
   };
 
-  useEffect(() => { void loadTransactions(currentPage); }, []);
+  useEffect(() => { void loadTransactions(); }, [currentPage]);
 
   const formatAmount = (val: any) => new Intl.NumberFormat('en-NG').format(Number(val || 0));
 
@@ -37,7 +39,7 @@ const AdminTransactionsPage: React.FC = () => {
           <p style={{ color: '#6b7a99', marginTop: 4 }}>Full ledger of all system transactions.</p>
         </div>
         <button 
-          onClick={() => void loadTransactions(currentPage)} 
+          onClick={() => void loadTransactions()}
           disabled={loading}
           style={{ 
             display: 'flex', 
@@ -109,8 +111,9 @@ const AdminTransactionsPage: React.FC = () => {
 
       <Pagination 
         currentPage={currentPage} 
-        totalPages={totalPages} 
-        onPageChange={(p) => void loadTransactions(p)} 
+        total={total} 
+        limit={limit}
+        onPageChange={(p) => setCurrentPage(p)} 
         isLoading={loading} 
       />
     </div>

@@ -484,40 +484,76 @@ const DashboardSidebar: React.FC = () => {
             </li>
 
             {isAdmin && (
-              <li className="nav-item">
-                <NavLink
-                  to="/dashboard/admin"
-                  className={({ isActive }) =>
-                    `nav-link ${isActive ? "active" : ""}`
-                  }
-                  onClick={close}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
+              <>
+                <li className="nav-item">
+                  <NavLink
+                    to="/dashboard/admin"
+                    className={({ isActive }) =>
+                      `nav-link ${isActive ? "active" : ""}`
+                    }
+                    onClick={close}
                   >
-                    <path
-                      d="M4 7h16l-2 14H6L4 7z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M7 7l5-4 5 4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M12 11v6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <span className="link-text">Admin</span>
-                  <span className="indicator-dot" />
-                </NavLink>
-              </li>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path
+                        d="M4 7h16l-2 14H6L4 7z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M7 7l5-4 5 4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12 11v6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <span className="link-text">Admin</span>
+                    <span className="indicator-dot" />
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink
+                    to="/dashboard/admin/withdrawals"
+                    className={({ isActive }) =>
+                      `nav-link ${isActive ? "active" : ""}`
+                    }
+                    onClick={close}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path
+                        d="M12 21V9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M7 14l5-5 5 5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M5 3h14"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <span className="link-text">Admin Withdrawals</span>
+                    <span className="indicator-dot" />
+                  </NavLink>
+                </li>
+              </>
             )}
 
             <li className="nav-item">

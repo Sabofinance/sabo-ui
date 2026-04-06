@@ -376,8 +376,9 @@ const ConversionsPage: React.FC = () => {
 
           {!loading && !error && conversions.length > 0 && (
             <Pagination
+              limit={10}
               currentPage={currentPage}
-              totalPages={totalPages}
+              total={totalPages}
               onPageChange={(p) => void loadConversions(p)}
               isLoading={loading}
             />

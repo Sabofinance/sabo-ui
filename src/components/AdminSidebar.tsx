@@ -50,6 +50,13 @@ const Icons = {
       <rect x="11" y="13.5" width="6" height="3" rx="1" />
     </Icon>
   ),
+  Withdrawals: () => (
+    <Icon>
+      <path d="M12 21V9" />
+      <path d="M7 14l5-5 5 5" />
+      <path d="M5 3h14" />
+    </Icon>
+  ),
   Disputes: () => (
     <Icon>
       <circle cx="12" cy="12" r="10" />
@@ -144,6 +151,7 @@ const AdminSidebar: React.FC = () => {
           {navLink("/dashboard/admin/users", "Users", Icons.Users)}
           {navLink("/dashboard/admin/kyc", "KYC", Icons.KYC)}
           {navLink("/dashboard/admin/deposits", "Deposits", Icons.Deposits)}
+          {navLink("/dashboard/admin/withdrawals", "Withdrawals", Icons.Withdrawals)}
           {navLink("/dashboard/admin/disputes", "Disputes", Icons.Disputes)}
           {navLink("/dashboard/admin/transactions", "Transactions", Icons.Transactions)}
           {/* {navLink("/dashboard/admin/analytics", "Analytics", Icons.Analytics)} */}

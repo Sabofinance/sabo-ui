@@ -31,10 +31,16 @@ export const authApi = {
 
   verifyOtp: async (data: OtpRequest): Promise<ApiEnvelope<AuthTokens>> => {
     try {
-      const response = await api.post<ApiEnvelope<{ accessToken: string; refreshToken: string; user?: unknown }>>("/auth/verify-otp", data);
+      const response = await api.post<ApiEnvelope<{ tokens: AuthTokens; accessToken?: string; refreshToken?: string; user?: unknown }>>("/auth/verify-otp", data);
       const d = response.data?.data;
+      
+      // Support both nested tokens and flat structure
+      if (d?.tokens) {
+        return normalizeSuccess<AuthTokens>(d.tokens);
+      }
+      
       return normalizeSuccess<AuthTokens>(
-        d?.accessToken ? { accessToken: d.accessToken, refreshToken: d.refreshToken } : null
+        d?.accessToken ? { accessToken: d.accessToken, refreshToken: d.refreshToken! } : null
       );
     } catch (error) {
       return normalizeError(error);

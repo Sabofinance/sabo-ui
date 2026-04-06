@@ -32,13 +32,14 @@ const AdminDepositsPage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState('');
   const [selectedDeposit, setSelectedDeposit] = useState<DepositRecord | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(20);
+  const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending review' | 'completed' | 'failed'>('pending review');
   const [rejectionReasonInput, setRejectionReasonInput] = useState('');
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
 
-  const load = async (page = 1) => {
+  const load = async () => {
     setLoading(true);
     try {
       // Map frontend filters to API expected values: approved, rejected, pending
@@ -49,8 +50,8 @@ const AdminDepositsPage: React.FC = () => {
 
       const res = await adminApi.listDeposits({ 
         status: apiStatus, 
-        page, 
-        limit: 20 
+        page: currentPage, 
+        limit 
       });
       if (res.success) {
         // Handle the specific data structure: res.data.deposits
@@ -58,9 +59,8 @@ const AdminDepositsPage: React.FC = () => {
         const list = data.deposits || extractArray(res.data);
         setDeposits(Array.isArray(list) ? (list as DepositRecord[]) : []);
         
-        const meta = data.meta || res.meta || {};
-        setTotalPages(meta.totalPages || meta.last_page || 1);
-        setCurrentPage(page);
+        const meta = data.meta || (res as any).meta || data || {};
+        setTotal(meta.total || 0);
       } else {
         toast.error(res.error?.message || 'Could not load deposits');
       }
@@ -70,8 +70,8 @@ const AdminDepositsPage: React.FC = () => {
   };
 
   useEffect(() => { 
-    void load(1); 
-  }, [statusFilter]);
+    void load(); 
+  }, [statusFilter, currentPage]);
 
   const onAction = async (id: string, approve: boolean) => {
     if (approve && !window.confirm('Are you sure you want to approve this deposit?')) return;
@@ -90,7 +90,7 @@ const AdminDepositsPage: React.FC = () => {
         setSelectedDeposit(null);
         setShowRejectConfirm(false);
         setRejectionReasonInput('');
-        void load(currentPage);
+        void load();
       } else {
         toast.error(res.error?.message || 'Action failed');
       }
@@ -106,7 +106,7 @@ const AdminDepositsPage: React.FC = () => {
       if (res.success) {
         toast.success('Transaction verified and credited!');
         setSelectedDeposit(null);
-        void load(currentPage);
+        void load();
       } else {
         toast.error(res.error?.message || 'Verification failed');
       }
@@ -182,7 +182,7 @@ const AdminDepositsPage: React.FC = () => {
             />
           </div>
           <button 
-            onClick={() => void load(currentPage)} 
+            onClick={() => void load()}
             disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#fff', color: '#0A1E28', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
           >
@@ -307,8 +307,9 @@ const AdminDepositsPage: React.FC = () => {
       <div style={{ marginTop: '24px' }}>
         <Pagination 
           currentPage={currentPage} 
-          totalPages={totalPages} 
-          onPageChange={(p) => void load(p)} 
+          total={total} 
+          limit={limit}
+          onPageChange={(p) => setCurrentPage(p)} 
           isLoading={loading} 
         />
       </div>

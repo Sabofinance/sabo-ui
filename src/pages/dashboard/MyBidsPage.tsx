@@ -263,12 +263,14 @@ const MyBidsPage: React.FC = () => {
         )}
       </div>
 
-      <Pagination 
-        currentPage={currentPage} 
-        totalPages={totalPages} 
-        onPageChange={(p) => void load(tab, p)} 
-        isLoading={loading} 
+      <Pagination
+        currentPage={currentPage}
+        total={totalPages}
+        limit={15}
+        onPageChange={(p) => void load(tab, p)}
+        isLoading={loading}
       />
+
     </main>
   );
 };
