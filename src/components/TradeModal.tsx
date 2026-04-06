@@ -42,20 +42,17 @@ const TradeModal: React.FC<Props> = ({ listing, onClose, onSuccess }) => {
     available > 0 ? (amountNum / available) * 100 : 0,
   );
 
-  const validate = () => {
+  const validate = (): boolean => {
     setInlineError("");
-    if (amountNum <= 0) return setInlineError("Enter a valid amount.");
-    if (amountNum > available)
-      return setInlineError(
-        `Cannot exceed available: ${available.toFixed(2)} ${listing.currency}`,
-      );
-    if (!pinOk) return setInlineError("PIN must be exactly 6 digits.");
+    if (amountNum <= 0) { setInlineError("Enter a valid amount."); return false; }
+    if (amountNum > available) { setInlineError(`Cannot exceed available: ${available.toFixed(2)} ${listing.currency}`); return false; }
+    if (!pinOk) { setInlineError("PIN must be exactly 6 digits."); return false; }
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const v = validate();
-    if (typeof v !== "undefined") return;
+    if (!validate()) return;
 
     setSubmitting(true);
     try {
@@ -300,10 +297,10 @@ const TradeModal: React.FC<Props> = ({ listing, onClose, onSuccess }) => {
                 </span>
                 <div className="tm-amount-wrap">
                   <span className="tm-amount-prefix">
-                    {listing.currency === "NGN" ? "₦" : listing.currency} :
+                    {listing.currency === "NGN" ? "₦" : listing.currency}
                   </span>
                   <input
-                    className="tm-amount-input pl-[10px]"
+                    className="tm-amount-input"
                     type="number"
                     min="0"
                     step="any"

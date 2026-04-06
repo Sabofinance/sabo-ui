@@ -72,6 +72,12 @@ const Icons = {
       <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
     </Icon>
   ),
+  Metrics: () => (
+    <Icon>
+      <path d="M3 3v18h18" />
+      <path d="M7 16l4-4 4 4 4-8" />
+    </Icon>
+  ),
   Logs: () => (
     <Icon>
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -124,11 +130,11 @@ const AdminSidebar: React.FC = () => {
 
       <div className="sidebar-header">
         <div className="brand-container">
-          <div className="sabo-logo-icon">
-            <span className="dot-outer" />
-            <span className="dot-inner" />
-          </div>
-          <h1 className="brand-name">sabo admin</h1>
+          <img
+            src="/Sabo logo.png"
+            alt="Sabo Finance"
+            style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
+          />
         </div>
       </div>
 
@@ -140,7 +146,8 @@ const AdminSidebar: React.FC = () => {
           {navLink("/dashboard/admin/deposits", "Deposits", Icons.Deposits)}
           {navLink("/dashboard/admin/disputes", "Disputes", Icons.Disputes)}
           {navLink("/dashboard/admin/transactions", "Transactions", Icons.Transactions)}
-          {navLink("/dashboard/admin/analytics", "Analytics", Icons.Analytics)}
+          {/* {navLink("/dashboard/admin/analytics", "Analytics", Icons.Analytics)} */}
+          {navLink("/dashboard/admin/analytics/metrics", "Metrics", Icons.Metrics)}
           {isSuperAdmin &&
             navLink("/dashboard/admin/admins", "Admins", Icons.Admins)}
           {isSuperAdmin && navLink("/dashboard/admin/logs", "Logs", Icons.Logs)}

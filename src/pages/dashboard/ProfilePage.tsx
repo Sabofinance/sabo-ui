@@ -50,7 +50,9 @@ const ProfilePage: React.FC = () => {
               year: "numeric",
             })
           : "N/A",
-        avatar: authUser.profile_picture_url || `https://i.pravatar.cc/300?u=${authUser.id || "user"}`,
+        avatar: authUser.profile_picture_url
+          ? `${authUser.profile_picture_url}?t=${authUser.updated_at || Date.now()}`
+          : `https://i.pravatar.cc/300?u=${authUser.id || "user"}`,
         kycStatus: authUser.kyc_status || 'unverified',
         isSuspended: !!authUser.is_suspended,
       });
@@ -61,6 +63,19 @@ const ProfilePage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Reset the input so the same file can be re-selected later
+    if (fileInputRef.current) fileInputRef.current.value = '';
+
+    const MAX_SIZE_MB = 10;
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      toast.error(`File is too large. Maximum size is ${MAX_SIZE_MB} MB.`);
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file (JPG, PNG, etc.).');
+      return;
+    }
+
     setUploading(true);
     const formData = new FormData();
     formData.append("file", file);
@@ -70,7 +85,7 @@ const ProfilePage: React.FC = () => {
       toast.success("Profile picture updated");
       await refreshUser();
     } catch (err: any) {
-      toast.error(err?.message || "Upload failed");
+      toast.error(err?.message || "Upload failed. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -98,12 +113,25 @@ const ProfilePage: React.FC = () => {
       <div className="combined-profile-card">
         <div className="profile-header">
           <div className="avatar-wrapper-large">
-            <img 
-              src={user.avatar} 
-              alt={user.name} 
-              className="profile-avatar-large" 
+            <img
+              src={user.avatar}
+              alt={user.name}
+              className="profile-avatar-large"
+              style={{ opacity: uploading ? 0.5 : 1, transition: 'opacity 0.2s' }}
             />
-            <button className="avatar-edit-btn" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+            {uploading && (
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(10,30,40,0.35)',
+              }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C8F032" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.8s linear infinite' }}>
+                  <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+                  <path d="M12 2a10 10 0 0 1 10 10" />
+                </svg>
+              </div>
+            )}
+            <button className="avatar-edit-btn" onClick={() => fileInputRef.current?.click()} disabled={uploading} title="Change profile picture">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                 <circle cx="12" cy="13" r="4" />

@@ -1,9 +1,12 @@
 import { apiRequest } from "./request";
 
 export const adminApi = {
-  // Admin dashboard
+  // Dashboard & Analytics
   getDashboard: () => apiRequest.get("/admin/dashboard"),
-  getAnalyticsImpact: (params?: Record<string, unknown>) => apiRequest.get("/admin/analytics/impact", params),
+  getAnalyticsImpact: (params?: Record<string, unknown>) =>
+    apiRequest.get("/admin/analytics/impact", params),
+  getAnalyticsMetrics: (params?: Record<string, unknown>) =>
+    apiRequest.get("/admin/analytics/metrics", params),
 
   // Users
   listUsers: (params?: Record<string, unknown>) => apiRequest.get("/admin/users", params),
@@ -14,36 +17,46 @@ export const adminApi = {
   // KYC
   listKyc: (params?: Record<string, unknown>) => apiRequest.get("/admin/kyc", params),
   approveKyc: (id: string) => apiRequest.post(`/admin/kyc/${id}/approve`),
-  rejectKyc: (id: string, reason: string) => apiRequest.post(`/admin/kyc/${id}/reject`, { reason }),
+  rejectKyc: (id: string, reason: string) =>
+    apiRequest.post(`/admin/kyc/${id}/reject`, { reason }),
 
   // Deposits
   listDeposits: (params?: Record<string, unknown>) => apiRequest.get("/admin/deposits", params),
   approveDeposit: (id: string) => apiRequest.post(`/admin/deposits/${id}/approve`),
-  rejectDeposit: (id: string, reason: string) => apiRequest.post(`/admin/deposits/${id}/reject`, { reason }),
-  verifyFlutterwave: (id: string) => apiRequest.post(`/admin/deposits/${id}/verify-flutterwave`),
+  rejectDeposit: (id: string, reason: string) =>
+    apiRequest.post(`/admin/deposits/${id}/reject`, { reason }),
+  verifyFlutterwave: (id: string) =>
+    apiRequest.post(`/admin/deposits/${id}/verify-flutterwave`),
 
   // Disputes
   listDisputes: (params?: Record<string, unknown>) => apiRequest.get("/admin/disputes", params),
+  resolveDispute: (id: string, resolution_note: string) =>
+    apiRequest.post(`/admin/disputes/${id}/resolve`, { resolution_note }),
 
-  // Transactions
-  listTransactions: (params?: Record<string, unknown>) => apiRequest.get("/admin/transactions", params),
+  // Trades & Transactions
+  listTrades: (params?: Record<string, unknown>) => apiRequest.get("/admin/trades", params),
+  listTransactions: (params?: Record<string, unknown>) =>
+    apiRequest.get("/admin/transactions", params),
 
   // Logs
   listLogs: (params?: Record<string, unknown>) => apiRequest.get("/admin/logs", params),
 
   // Profile
   getProfile: () => apiRequest.get("/admin/profile"),
-  updateProfilePicture: (formData: FormData) => apiRequest.post("/admin/profile/picture", formData),
+  updateProfilePicture: (formData: FormData) =>
+    apiRequest.post("/admin/profile/picture", formData, {
+      headers: { "Content-Type": undefined },
+    }),
 
-  // Super admin only
+  // Super-admin governance
   listAdmins: (params?: Record<string, unknown>) => apiRequest.get("/admin/admins", params),
-  createInvite: (email: string) => apiRequest.post("/admin/invites", { email }),
+  createInvite: (email: string, name: string) =>
+    apiRequest.post("/admin/invites", { email, name }),
   acceptInvite: (token: string) => apiRequest.get("/admin/invites/accept", { token }),
-  setupInvite: (payload: Record<string, unknown>) => apiRequest.post("/admin/invites/setup", payload),
+  setupInvite: (payload: Record<string, unknown>) =>
+    apiRequest.post("/admin/invites/setup", payload),
   removeAdmin: (id: string) => apiRequest.post(`/admin/admins/${id}/remove`),
   upgradeAdmin: (id: string) => apiRequest.post(`/admin/admins/${id}/upgrade`),
-  
 };
 
 export default adminApi;
-

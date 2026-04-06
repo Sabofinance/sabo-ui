@@ -155,6 +155,10 @@ body {
   height: 21px;
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .profile-header-info {
   flex: 1;
 }

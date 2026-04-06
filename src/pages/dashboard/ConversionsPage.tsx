@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { conversionsApi } from "../../lib/api";
+import { ledgerApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CurrencyConverter from "../../components/CurrencyConverter";
@@ -42,14 +42,16 @@ const ConversionsPage: React.FC = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await conversionsApi.list({ page, limit: 10 });
+      // The API does not have a dedicated /conversions list endpoint.
+      // We use the ledger to surface conversion-related entries instead.
+      const response = await ledgerApi.listEntries({ page, limit: 10 });
       if (response.success) {
         setConversions(extractArray(response.data));
         const meta = (response.data as any)?.meta || (response.data as any);
         setTotalPages(meta.totalPages || meta.last_page || 1);
         setCurrentPage(page);
       } else {
-        setError(response.error?.message || "Failed to load conversions");
+        setError(response.error?.message || "Failed to load conversion history");
       }
     } finally {
       setLoading(false);

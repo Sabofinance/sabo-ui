@@ -57,25 +57,19 @@ const BidModal: React.FC<Props> = ({
         })
       : null;
 
-  const validate = () => {
+  const validate = (): boolean => {
     setInlineError("");
-    if (amountNum <= 0) return setInlineError("Enter a valid bid amount.");
-    if (amountNum > available)
-      return setInlineError(
-        `Amount cannot exceed available: ${available.toFixed(2)} ${listing.currency}.`,
-      );
-    if (rateNum <= 0) return setInlineError("Enter a proposed rate in NGN.");
-    if (rateNum >= listingRate)
-      return setInlineError(
-        `Proposed rate must be lower than listing rate (${listingRate.toLocaleString()} NGN).`,
-      );
-    if (!pinOk) return setInlineError("PIN must be exactly 6 digits.");
+    if (amountNum <= 0) { setInlineError("Enter a valid bid amount."); return false; }
+    if (amountNum > available) { setInlineError(`Amount cannot exceed available: ${available.toFixed(2)} ${listing.currency}.`); return false; }
+    if (rateNum <= 0) { setInlineError("Enter a proposed rate in NGN."); return false; }
+    if (rateNum >= listingRate) { setInlineError(`Proposed rate must be lower than listing rate (${listingRate.toLocaleString()} NGN).`); return false; }
+    if (!pinOk) { setInlineError("PIN must be exactly 6 digits."); return false; }
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const v = validate();
-    if (typeof v !== "undefined") return;
+    if (!validate()) return;
 
     setSubmitting(true);
     try {

@@ -8,7 +8,7 @@ export const Footer = () => {
         <div className="footer-grid">
           {/* Left Column - Brand */}
           <div className="footer-brand">
-            <div className="footer-logo">sabo.</div>
+            <div className="footer-logo"><img src="/Sabo logo.png" alt="Sabo Finance" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} /></div>
             <p className="footer-tagline">
               Taking your finances global with Sabo.
             </p>

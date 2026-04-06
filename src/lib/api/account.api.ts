@@ -30,7 +30,9 @@ export const accountApi = {
   },
 
   updateProfilePicture: async (formData: FormData) => {
-    return apiClient.post<null>("/account/profile/picture", formData);
+    return apiClient.post<null>("/account/profile/picture", formData, {
+      headers: { "Content-Type": undefined },
+    });
   },
 };
 

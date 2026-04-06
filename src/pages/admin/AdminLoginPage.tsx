@@ -38,6 +38,11 @@ const AdminLoginPage: React.FC = () => {
 
           <div className="auth-form-section">
             <div className="auth-form-wrapper">
+              <img
+                src="/Sabo logo.png"
+                alt="Sabo Finance"
+                style={{ height: '40px', width: 'auto', objectFit: 'contain', marginBottom: '16px' }}
+              />
               <h2 className="auth-title">Admin Access</h2>
               <p className="auth-subtitle">
                 Secure login for moderators & compliance.

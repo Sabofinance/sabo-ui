@@ -41,11 +41,7 @@ const DashboardSidebar: React.FC = () => {
 
         <div className="sidebar-header">
           <div className="brand-container">
-            <div className="sabo-logo-icon">
-              <span className="dot-outer" />
-              <span className="dot-inner" />
-            </div>
-            <h1 className="brand-name">sabo</h1>
+            <img src="/Sabo logo.png" alt="Sabo Finance" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
           </div>
         </div>
 

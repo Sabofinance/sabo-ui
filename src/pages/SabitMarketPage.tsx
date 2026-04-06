@@ -190,7 +190,8 @@ const SabitMarketPage = () => {
             <div className="smp-section-title-group">
               <h2>Live Marketplace</h2>
               <span className="smp-live-dot">
-                ● Live · {formattedListings.length} listings
+                <span className="smp-live-pulse" />
+                Live · {loading ? '—' : formattedListings.length} listings
               </span>
             </div>
             <div className="market-filters">
@@ -240,55 +241,76 @@ const SabitMarketPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading && (
+                {loading ? (
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i} className="smp-skeleton-row">
+                      <td><div className="smp-skeleton-cell" style={{ width: '140px' }} /></td>
+                      <td><div className="smp-skeleton-cell" style={{ width: '70px' }} /></td>
+                      <td><div className="smp-skeleton-cell" style={{ width: '90px' }} /></td>
+                      <td><div className="smp-skeleton-cell" style={{ width: '100px' }} /></td>
+                      <td><div className="smp-skeleton-cell" style={{ width: '80px' }} /></td>
+                      <td><div className="smp-skeleton-cell" style={{ width: '60px' }} /></td>
+                    </tr>
+                  ))
+                ) : formattedListings.length === 0 ? (
                   <tr>
-                    <td colSpan={6}>Loading listings...</td>
-                  </tr>
-                )}
-                {!loading && formattedListings.map(l => {
-                  const initials = l.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-                  return (
-                    <tr key={l.id}>
-                      <td>
-                        <div className="smp-trader-cell">
-                          {l.avatar ? (
-                            <img src={l.avatar} alt={l.name} className="smp-avatar" />
-                          ) : (
-                            <div className="smp-avatar-initials">{initials}</div>
-                          )}
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span className="smp-trader-name">{l.name}</span>
-                            {l.username && <span className="smp-trader-username">@{l.username}</span>}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                      <span className={`smp-badge ${l.badge === 'SELL' ? 'sell' : 'buy'}`}>
-                        {l.badge} SABIT
-                      </span>
-                    </td>
-                    <td className="smp-offering">{l.sell}</td>
-                    <td className="smp-rate">{l.rate}</td>
-                    <td>
-                      <div className="smp-rep">
-                        <span className="smp-stars">★ {l.rating}</span>
-                        <span className="smp-trades">{l.trades} trades</span>
+                    <td colSpan={6}>
+                      <div className="smp-empty-state">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <rect x="2" y="3" width="20" height="18" rx="3" />
+                          <path d="M8 10h8M8 14h5" />
+                        </svg>
+                        <p>No listings available right now</p>
+                        <span>Check back soon or be the first to post a listing.</span>
                       </div>
                     </td>
-                    <td>
-                      <Link
-                        to={isAuthenticated ? `/dashboard/transaction/${l.id}` : '/signup'}
-                        className="smp-action-btn"
-                      >
-                        {l.badge === 'SELL' ? 'Buy' : 'Sell'}
-                      </Link>
-                    </td>
                   </tr>
-                ))}
+                ) : (
+                  formattedListings.map(l => {
+                    const initials = l.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                    return (
+                      <tr key={l.id}>
+                        <td>
+                          <div className="smp-trader-cell">
+                            {l.avatar ? (
+                              <img src={l.avatar} alt={l.name} className="smp-avatar" />
+                            ) : (
+                              <div className="smp-avatar-initials">{initials}</div>
+                            )}
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <span className="smp-trader-name">{l.name}</span>
+                              {l.username && <span className="smp-trader-username">@{l.username}</span>}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`smp-badge ${l.badge === 'SELL' ? 'sell' : 'buy'}`}>
+                            {l.badge} SABIT
+                          </span>
+                        </td>
+                        <td className="smp-offering">{l.sell}</td>
+                        <td className="smp-rate">{l.rate}</td>
+                        <td>
+                          <div className="smp-rep">
+                            <span className="smp-stars">★ {l.rating}</span>
+                            <span className="smp-trades">{l.trades} trades</span>
+                          </div>
+                        </td>
+                        <td>
+                          <Link
+                            to={isAuthenticated ? `/dashboard/transaction/${l.id}` : '/signup'}
+                            className="smp-action-btn"
+                          >
+                            {l.badge === 'SELL' ? 'Buy' : 'Sell'}
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
-          {/* Error handled by toast */}
           <div className="smp-table-cta">
             <Link to="/signup" className="smp-btn-primary">See all listings →</Link>
           </div>

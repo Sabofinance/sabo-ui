@@ -28,7 +28,7 @@ export const Header = () => {
       <div className="header-inner">
         {/* Logo linking to home */}
         <NavLink to="/" className="logo">
-          sabo<span>.</span>
+          <img src="/Sabo logo.png" alt="Sabo" style={{ height: '28px', width: 'auto', objectFit: 'contain', display: 'block' }} />
         </NavLink>
 
         <nav className="nav-pill">
@@ -74,7 +74,7 @@ export const Header = () => {
           <div className="mobile-menu-header">
             {/* Mobile logo linking to home */}
             <NavLink to="/" className="mobile-logo" onClick={closeMenu}>
-              sabo<span>.</span>
+              <img src="/Sabo logo.png" alt="Sabo" style={{ height: '26px', width: 'auto', objectFit: 'contain', display: 'block' }} />
             </NavLink>
           </div>
           

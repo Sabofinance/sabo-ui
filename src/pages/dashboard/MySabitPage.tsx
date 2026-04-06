@@ -11,7 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 interface MySabitListing {
   id: number | string;
   type: 'SELL' | 'BUY';
-  currency: 'NGN' | 'GBP' | 'USD' | 'EUR';
+  currency: 'NGN' | 'GBP' | 'USD' | 'CAD';
   amount: number;
   rate: number;
   total: number;
@@ -49,7 +49,6 @@ const MySabitPage: React.FC = () => {
     setLoading(true);
     setError('');
     const response = await sabitsApi.list({ mine: true, page, limit: 10 });
-    console.log(response)
     if (response.success) {
       const sabitList = extractArray(response.data);
       const mapped: MySabitListing[] = sabitList.map((item: Record<string, unknown>, idx: number) => {
@@ -137,7 +136,7 @@ const MySabitPage: React.FC = () => {
       case 'NGN': return '₦';
       case 'GBP': return '£';
       case 'USD': return '$';
-      case 'EUR': return '€';
+      case 'CAD': return 'CA$';
       default: return '';
     }
   };
@@ -201,187 +200,159 @@ const MySabitPage: React.FC = () => {
   return (
     <div className="my-sabit-wrapper">
       <main className="my-sabit-page">
-            <div className="page-header">
-              <div>
-                <h1 className="page-title">My Sabits</h1>
-                <p className="page-subtitle">Manage your BUY and SELL orders</p>
-              </div>
-              
-              <div style={{ display: 'flex', gap: 12 }}>
-                <button 
-                  className="create-listing-btn" 
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px',
-                    background: '#fff',
-                    color: '#0A1E28',
-                    border: '1px solid #e2e8f0'
-                  }} 
-                  onClick={() => void loadListings()}
-                  disabled={loading}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
-                    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-                  </svg>
-                  {loading ? 'Refreshing...' : 'Refresh'}
-                </button>
-                <button className="create-listing-btn" onClick={handleCreateListing}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="12" y1="5" x2="12" y2="19"/>
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  Create New Listing
-                </button>
-              </div>
-            </div>
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">My Sabits</h1>
+            <p className="page-subtitle">Manage your BUY and SELL listings</p>
+          </div>
+          <div className="ms-header-actions">
+            <button
+              className="ms-btn-refresh"
+              onClick={() => void loadListings(currentPage)}
+              disabled={loading}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+              </svg>
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </button>
+            <button className="ms-btn-create" onClick={handleCreateListing}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              New Listing
+            </button>
+          </div>
+        </div>
 
-            {/* Tabs */}
-            <div className="tabs-container">
-              <button 
-                className={`tab-btn ${activeTab === 'active' ? 'active' : ''}`}
-                onClick={() => setActiveTab('active')}
-              >
-                Active ({activeCount})
-              </button>
-              <button 
-                className={`tab-btn ${activeTab === 'completed' ? 'active' : ''}`}
-                onClick={() => setActiveTab('completed')}
-              >
-                Completed ({completedCount})
-              </button>
-              <button 
-                className={`tab-btn ${activeTab === 'cancelled' ? 'active' : ''}`}
-                onClick={() => setActiveTab('cancelled')}
-              >
-                Cancelled ({cancelledCount})
-              </button>
-            </div>
+        {/* Tabs */}
+        <div className="tabs-container">
+          <button className={`tab-btn ${activeTab === 'active' ? 'active' : ''}`} onClick={() => setActiveTab('active')}>
+            Active ({activeCount})
+          </button>
+          <button className={`tab-btn ${activeTab === 'completed' ? 'active' : ''}`} onClick={() => setActiveTab('completed')}>
+            Completed ({completedCount})
+          </button>
+          <button className={`tab-btn ${activeTab === 'cancelled' ? 'active' : ''}`} onClick={() => setActiveTab('cancelled')}>
+            Cancelled ({cancelledCount})
+          </button>
+        </div>
 
-            {loading && <p style={{ marginTop: '1rem' }}>Loading your sabits...</p>}
-            {error && !loading && <p style={{ marginTop: '1rem', color: 'red' }}>{error}</p>}
+        {error && !loading && (
+          <div className="ms-error-banner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            {error}
+          </div>
+        )}
 
-            {/* Listings Table */}
-            <div className="listings-table-container">
-              <table className="listings-table">
-                <thead>
-                  <tr>
-                    <th>TYPE</th>
-                    <th>CURRENCY</th>
-                    <th>AMOUNT</th>
-                    <th>RATE</th>
-                    <th>TOTAL (₦)</th>
-                    {activeTab === 'active' && <th>STATUS</th>}
-                    {activeTab === 'active' && <th>DATE</th>}
-                    {(activeTab === 'completed' || activeTab === 'cancelled') && <th>DATE</th>}
-                    {(activeTab === 'completed' || activeTab === 'cancelled') && <th>STATUS</th>}
-                    {activeTab === 'active' && <th>ACTIONS</th>}
+        {/* Listings Table */}
+        <div className="listings-table-container">
+          <table className="listings-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Currency</th>
+                <th>Amount</th>
+                <th>Rate</th>
+                <th>Total (₦)</th>
+                <th>Status</th>
+                <th>Date</th>
+                {activeTab === 'active' && <th>Actions</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <tr key={i} className="ms-skeleton-row">
+                    <td><div className="ms-skeleton-cell" style={{ width: 80 }} /></td>
+                    <td><div className="ms-skeleton-cell" style={{ width: 55 }} /></td>
+                    <td><div className="ms-skeleton-cell" style={{ width: 90 }} /></td>
+                    <td><div className="ms-skeleton-cell" style={{ width: 90 }} /></td>
+                    <td><div className="ms-skeleton-cell" style={{ width: 100 }} /></td>
+                    <td><div className="ms-skeleton-cell" style={{ width: 70 }} /></td>
+                    <td><div className="ms-skeleton-cell" style={{ width: 80 }} /></td>
+                    {activeTab === 'active' && <td><div className="ms-skeleton-cell" style={{ width: 140 }} /></td>}
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredListings.map((listing) => (
-                    <tr key={listing.id}>
-                      <td>
-                        <div className="type-cell">
-                          <span className={`type-indicator ${listing.type}`}>
-                            {listing.type === 'SELL' ? 'S' : 'B'}
-                          </span>
-                          <span className={`type-text ${listing.type}`}>
-                            {listing.type === 'SELL' ? 'SELL' : 'BUY'}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="currency-badge">{listing.currency}</span>
-                      </td>
-                      <td>
-                        <span className="amount-text">
-                          {getCurrencySymbol(listing.currency)}{formatNumber(listing.amount)}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="rate-text">
-                          {getCurrencySymbol('NGN')}{formatNumber(listing.rate)}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="total-text">{formatNumber(listing.total)}</span>
-                      </td>
-                      
-                      {/* Active Tab: Status then Date */}
+                ))
+              ) : filteredListings.length === 0 ? (
+                <tr>
+                  <td colSpan={activeTab === 'active' ? 8 : 7}>
+                    <div className="no-listings">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <rect x="2" y="3" width="20" height="18" rx="3" />
+                        <path d="M8 10h8M8 14h5" />
+                      </svg>
+                      <h3>No {activeTab} listings</h3>
+                      <p>
+                        {activeTab === 'active'
+                          ? 'Post a new listing to start trading.'
+                          : `Your ${activeTab} listings will appear here.`}
+                      </p>
                       {activeTab === 'active' && (
-                        <>
-                          <td>{getStatusBadge(listing.status)}</td>
-                          <td>
-                            <span className="date-text">{formatDate(listing.createdAt)}</span>
-                          </td>
-                        </>
+                        <button className="create-first-btn" onClick={handleCreateListing}>
+                          Create Listing
+                        </button>
                       )}
-                      
-                      {/* Completed/Cancelled Tab: Date then Status */}
-                      {(activeTab === 'completed' || activeTab === 'cancelled') && (
-                        <>
-                          <td>
-                            <span className="date-text">{formatDate(listing.createdAt)}</span>
-                          </td>
-                          <td>{getStatusBadge(listing.status)}</td>
-                        </>
-                      )}
-                      
-                      {/* Actions Column - Only for Active tab */}
-                      {activeTab === 'active' && (
-                        <td>
-                          <div className="actions-cell">
-                            <button 
-                              className="action-btn edit" 
-                              onClick={() => handleEdit(listing)}
-                            >
-                              EDIT
-                            </button>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredListings.map((listing) => (
+                  <tr key={listing.id}>
+                    <td>
+                      <span className={`type-badge ${listing.type}`}>{listing.type}</span>
+                    </td>
+                    <td>
+                      <span className="currency-badge">{listing.currency}</span>
+                    </td>
+                    <td>
+                      <span className="amount-text">
+                        {getCurrencySymbol(listing.currency)}{formatNumber(listing.amount)}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="rate-text">₦{formatNumber(listing.rate)}</span>
+                    </td>
+                    <td>
+                      <span className="total-text">₦{formatNumber(listing.total)}</span>
+                    </td>
+                    <td>{getStatusBadge(listing.status)}</td>
+                    <td>
+                      <span className="date-text">{formatDate(listing.createdAt)}</span>
+                    </td>
+                    {activeTab === 'active' && (
+                      <td>
+                        <div className="actions-cell">
+                          <button className="action-btn edit" onClick={() => handleEdit(listing)}>
+                            Edit
+                          </button>
                           {listing.type === 'SELL' && (
-                            <button
-                              className="action-btn delete"
-                              onClick={() => handleOpenReceivedBids(listing.id)}
-                              style={{ background: "rgba(14, 165, 233, 0.12)", borderColor: "rgba(14, 165, 233, 0.35)", color: "#0369a1" }}
-                            >
-                              RECEIVED BIDS
+                            <button className="action-btn bids" onClick={() => handleOpenReceivedBids(listing.id)}>
+                              Bids
                             </button>
                           )}
-                            <button 
-                              className="action-btn delete" 
-                              onClick={() => handleDelete(listing.id)}
-                            >
-                              DELETE
-                            </button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {filteredListings.length === 0 && (
-                <div className="no-listings">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="8" x2="12" y2="12"/>
-                    <line x1="12" y1="16" x2="12.01" y2="16"/>
-                  </svg>
-                  <h3>No listings found</h3>
-                  <p>Create your first sabit listing to get started</p>
-                  <button className="create-first-btn" onClick={handleCreateListing}>Create Listing</button>
-                </div>
+                          <button className="action-btn delete" onClick={() => handleDelete(listing.id)}>
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))
               )}
-            </div>
+            </tbody>
+          </table>
+        </div>
 
-            <Pagination 
-              currentPage={currentPage} 
-              totalPages={totalPages} 
-              onPageChange={(p) => void loadListings(p)} 
-              isLoading={loading} 
-            />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(p) => void loadListings(p)}
+          isLoading={loading}
+        />
       </main>
 
       {receivedModalOpen && receivedSabitId != null && (

@@ -78,7 +78,7 @@ const DashboardHeader: React.FC = () => {
       </button>
 
       {/* Brand name — mobile only, centred */}
-      <span className="header-brand-mobile">sabo</span>
+      <img src="/Sabo logo.png" alt="Sabo" className="header-brand-mobile" style={{ height: '24px', width: 'auto', objectFit: 'contain' }} />
 
       <div className="header-right">
 

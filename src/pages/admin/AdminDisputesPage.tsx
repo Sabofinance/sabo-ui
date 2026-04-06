@@ -61,8 +61,8 @@ const AdminDisputesPage: React.FC = () => {
         </button>
       </div>
 
-      <div style={{ background: '#fff', border: '1px solid #e3e8f0', borderRadius: 20, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div style={{ background: '#fff', border: '1px solid #e3e8f0', borderRadius: 20, overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
           <thead style={{ background: '#f4f6f9' }}>
             <tr>
               <th style={{ padding: 16, textAlign: 'left', fontSize: 12, color: '#98a5be', textTransform: 'uppercase' }}>ID</th>

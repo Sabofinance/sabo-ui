@@ -153,8 +153,8 @@ const AdminLogsPage: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div style={{ border: '1px solid #e5e9df', borderRadius: 14, overflow: 'hidden', background: '#fff' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+      <div style={{ border: '1px solid #e5e9df', borderRadius: 14, overflowX: 'auto', background: '#fff' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: '600px' }}>
           <thead>
             <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e5e9df' }}>
               {['Action', 'Target', 'Details', 'Admin ID', 'Time'].map((h) => (

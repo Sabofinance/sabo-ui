@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { sabitsApi } from "../lib/api";
 import { toast } from "react-toastify";
 
@@ -114,6 +115,7 @@ const S = {
 };
 
 const CreateSabitModal: React.FC<CreateSabitModalProps> = ({ onClose, onSuccess, editData }) => {
+  const navigate = useNavigate();
   const [type, setType] = useState<"sell" | "buy">(editData?.type.toLowerCase() as any || "sell");
   const [currency, setCurrency] = useState(editData?.currency || "GBP");
   const [amount, setAmount] = useState(editData?.amount?.toString() || "");
@@ -182,11 +184,11 @@ const CreateSabitModal: React.FC<CreateSabitModalProps> = ({ onClose, onSuccess,
               Your listing has been successfully posted to the marketplace.
             </p>
             <div style={{ display: 'flex', gap: 12 }}>
-              <button 
+              <button
                 style={{ ...S.submitBtn(false), background: '#0d1f1e', color: '#fff' }}
                 onClick={() => {
                   onSuccess();
-                  window.location.href = `/dashboard/active-sabits`;
+                  navigate('/dashboard/active-sabits');
                 }}
               >
                 View Listing
@@ -225,7 +227,6 @@ const CreateSabitModal: React.FC<CreateSabitModalProps> = ({ onClose, onSuccess,
             <select style={S.select} value={currency} onChange={(e) => setCurrency(e.target.value)}>
               <option value="GBP">GBP - British Pound</option>
               <option value="USD">USD - US Dollar</option>
-              <option value="EUR">EUR - Euro</option>
               <option value="CAD">CAD - Canadian Dollar</option>
             </select>
 

@@ -18,6 +18,7 @@ const WithdrawalsPage: React.FC = () => {
   const [currency, setCurrency] = useState<'NGN' | 'GBP' | 'USD' | 'CAD'>('NGN');
   const [beneficiaryId, setBeneficiaryId] = useState<string>('');
   const [amount, setAmount] = useState<string>('');
+  const [pin, setPin] = useState<string>('');
 
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -110,9 +111,13 @@ const WithdrawalsPage: React.FC = () => {
       setError(`Amount exceeds available balance (${availableBalance.toFixed(2)} ${currency}).`);
       return;
     }
+    if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+      setError('Please enter your 6-digit transaction PIN.');
+      return;
+    }
 
     setSubmitting(true);
-    const res = await withdrawalsApi.request({ beneficiary_id: beneficiaryId, amount: raw.toFixed(2) });
+    const res = await withdrawalsApi.request({ beneficiary_id: beneficiaryId, amount: raw.toFixed(2), pin });
     setSubmitting(false);
     if (!res.success) {
       setError(res.error?.message || 'Failed to request withdrawal.');
@@ -174,7 +179,7 @@ const WithdrawalsPage: React.FC = () => {
         </div>
       )}
 
-      <div className="filters-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 14 }}>
+      <div className="filters-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
         <div className="filter-group">
           <label>Currency</label>
           <select className="filter-select" value={currency} onChange={(e) => setCurrency(e.target.value as any)}>
@@ -211,8 +216,29 @@ const WithdrawalsPage: React.FC = () => {
         <div className="filter-group">
           <label>Amount</label>
           <input className="filter-select" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />
-          <button className="export-btn" style={{ marginTop: 10 }} disabled={submitting || !isVerified || filteredBeneficiaries.length === 0} onClick={() => void submitWithdrawal()}>
-            {submitting ? 'Submitting...' : 'Request withdrawal'}
+        </div>
+
+        <div className="filter-group">
+          <label>Transaction PIN</label>
+          <input
+            className="filter-select"
+            type="password"
+            inputMode="numeric"
+            maxLength={6}
+            value={pin}
+            onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            placeholder="••••••"
+          />
+        </div>
+
+        <div className="filter-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <button
+            className="export-btn"
+            style={{ width: '100%', justifyContent: 'center', background: '#0A1E28', color: '#C8F032' }}
+            disabled={submitting || !isVerified || filteredBeneficiaries.length === 0}
+            onClick={() => void submitWithdrawal()}
+          >
+            {submitting ? 'Submitting…' : 'Request Withdrawal'}
           </button>
         </div>
       </div>

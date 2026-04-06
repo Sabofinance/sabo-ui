@@ -38,11 +38,7 @@ const AppLoader: React.FC = () => {
 
         {/* Logo */}
         <div className="loader-logo">
-          <div className="loader-logo-icon">
-            <span className="loader-dot-outer" />
-            <span className="loader-dot-inner" />
-          </div>
-          <span className="loader-brand">sabo</span>
+          <img src="/Sabo logo.png" alt="Sabo Finance" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
         </div>
 
         {/* Tagline */}

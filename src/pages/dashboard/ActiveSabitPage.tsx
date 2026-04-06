@@ -22,7 +22,7 @@ interface SabitListing {
     verified: boolean;
   };
   type: 'sell' | 'buy';
-  currency: 'NGN' | 'GBP' | 'USD' | 'EUR';
+  currency: 'NGN' | 'GBP' | 'USD' | 'CAD';
   amount: number;
   rate: number;
   available: number;
@@ -81,7 +81,7 @@ const ActiveSabitPage: React.FC = () => {
       case 'NGN': return '₦';
       case 'GBP': return '£';
       case 'USD': return '$';
-      case 'EUR': return '€';
+      case 'CAD': return 'CA$';
       default: return '';
     }
   };
@@ -209,153 +209,187 @@ const ActiveSabitPage: React.FC = () => {
 
   return (
     <div className="active-sabit-wrapper">
-      <main className="active-sabit-padding">
-            <div className="page-header">
-              <div>
-                <h1 className="page-title">Active Sabit Marketplace</h1>
-                <p className="page-subtitle">Browse available offers from verified traders</p>
-              </div>
-              
-              <div className="header-stats">
-                <div className="stat-badge">
-                  <span className="stat-label">Total Listings</span>
-                  <span className="stat-value">{listings.length}</span>
-                </div>
-                <div className="stat-badge">
-                  <span className="stat-label">24h Volume</span>
-                  <span className="stat-value">—</span>
-                </div>
-              </div>
+      <main className="active-sabit-page">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Active Marketplace</h1>
+            <p className="page-subtitle">Browse available offers from verified traders</p>
+          </div>
+          <div className="header-stats">
+            <div className="stat-badge">
+              <span className="stat-label">Listings</span>
+              <span className="stat-value">{loading ? '—' : listings.length}</span>
             </div>
-
-            {!isVerified && (
-              <div style={{ padding: 16, borderRadius: 14, border: '1px solid #fde68a', background: '#fffbeb', marginBottom: 16 }}>
-                <div style={{ fontWeight: 900, marginBottom: 4 }}>KYC required</div>
-                <div style={{ color: '#6b7280', fontSize: 13, lineHeight: 1.5 }}>
-                  {isPending ? 'KYC is pending review. Trading unlocks once verified.' : 'Complete your KYC to start trading.'}
-                </div>
-                <button className="export-btn" style={{ marginTop: 12 }} onClick={() => navigate('/dashboard/kyc')}>
-                  Complete KYC
-                </button>
-              </div>
-            )}
-
-            {/* Filters */}
-            <div className="filters-section">
-              <div className="filter-group">
-                <label>Currency</label>
-                <div className="filter-buttons">
-                  <button 
-                    className={`filter-btn ${selectedCurrency === 'all' ? 'active' : ''}`}
-                    onClick={() => setSelectedCurrency('all')}
-                  >
-                    All
-                  </button>
-                  <button 
-                    className={`filter-btn ${selectedCurrency === 'NGN' ? 'active' : ''}`}
-                    onClick={() => setSelectedCurrency('NGN')}
-                  >
-                    🇳🇬 NGN
-                  </button>
-                  <button 
-                    className={`filter-btn ${selectedCurrency === 'GBP' ? 'active' : ''}`}
-                    onClick={() => setSelectedCurrency('GBP')}
-                  >
-                    🇬🇧 GBP
-                  </button>
-                  <button 
-                    className={`filter-btn ${selectedCurrency === 'USD' ? 'active' : ''}`}
-                    onClick={() => setSelectedCurrency('USD')}
-                  >
-                    🇺🇸 USD
-                  </button>
-                  <button 
-                    className={`filter-btn ${selectedCurrency === 'EUR' ? 'active' : ''}`}
-                    onClick={() => setSelectedCurrency('EUR')}
-                  >
-                    🇪🇺 EUR
-                  </button>
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <label>Type</label>
-                <div className="filter-buttons">
-                  <button 
-                    className={`filter-btn ${selectedType === 'all' ? 'active' : ''}`}
-                    onClick={() => setSelectedType('all')}
-                  >
-                    All
-                  </button>
-                  <button 
-                    className={`filter-btn sell ${selectedType === 'sell' ? 'active' : ''}`}
-                    onClick={() => setSelectedType('sell')}
-                  >
-                    Sell
-                  </button>
-                  <button 
-                    className={`filter-btn buy ${selectedType === 'buy' ? 'active' : ''}`}
-                    onClick={() => setSelectedType('buy')}
-                  >
-                    Buy
-                  </button>
-                </div>
-              </div>
-
-              <div className="filter-search">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"/>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <input type="text" placeholder="Search by seller or currency..." />
-              </div>
+            <div className="stat-badge">
+              <span className="stat-label">24h Volume</span>
+              <span className="stat-value">—</span>
             </div>
+          </div>
+        </div>
 
-            {/* Listings Grid */}
-            {loading && <p style={{ marginTop: '1rem' }}>Loading listings...</p>}
-            {error && !loading && <p style={{ marginTop: '1rem', color: 'red' }}>{error}</p>}
-            <div className="listings-grid">
-              {filteredListings.map((listing) => (
+        {!isVerified && (
+          <div className="kyc-banner">
+            <span className="kyc-banner-icon">⚠️</span>
+            <span className="kyc-banner-text">
+              <strong>{isPending ? 'KYC pending review' : 'KYC required'}</strong>
+              {' — '}
+              {isPending ? 'Trading unlocks once verified.' : 'Complete identity verification to trade.'}
+            </span>
+            <button className="kyc-banner-btn" onClick={() => navigate('/dashboard/kyc')}>
+              {isPending ? 'View Status' : 'Complete KYC'}
+            </button>
+          </div>
+        )}
+
+        {/* Filters */}
+        <div className="filters-section">
+
+          {/* Type toggle */}
+          <div className="filter-type-toggle">
+            {([
+              { value: 'all',  label: 'All' },
+              { value: 'sell', label: '↑ Sell' },
+              { value: 'buy',  label: '↓ Buy' },
+            ] as const).map(({ value, label }) => (
+              <button
+                key={value}
+                className={`filter-type-btn ${selectedType === value ? 'active' : ''}`}
+                onClick={() => setSelectedType(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Currency chips */}
+          <div className="filter-currency-group">
+            <button
+              className={`filter-currency-btn ${selectedCurrency === 'all' ? 'active' : ''}`}
+              onClick={() => setSelectedCurrency('all')}
+            >
+              All
+            </button>
+            {([
+              { value: 'NGN', flag: 'https://flagcdn.com/w20/ng.png' },
+              { value: 'GBP', flag: 'https://flagcdn.com/w20/gb.png' },
+              { value: 'USD', flag: 'https://flagcdn.com/w20/us.png' },
+              { value: 'CAD', flag: 'https://flagcdn.com/w20/ca.png' },
+            ] as const).map(({ value, flag }) => (
+              <button
+                key={value}
+                className={`filter-currency-btn ${selectedCurrency === value ? 'active' : ''}`}
+                onClick={() => setSelectedCurrency(value)}
+              >
+                <img src={flag} alt={value} className="filter-flag" />
+                {value}
+              </button>
+            ))}
+          </div>
+
+          {/* Search */}
+          <div className="filter-search">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" placeholder="Search traders..." />
+          </div>
+
+          {/* Clear — only when filters are active */}
+          {(selectedCurrency !== 'all' || selectedType !== 'all') && (
+            <button
+              className="filter-clear-btn"
+              onClick={() => { setSelectedCurrency('all'); setSelectedType('all'); }}
+            >
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              Clear
+            </button>
+          )}
+
+        </div>
+
+        {error && !loading && (
+          <div className="as-error-banner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            {error}
+          </div>
+        )}
+
+        {/* Listings Grid */}
+        <div className="listings-grid">
+          {loading ? (
+            [...Array(6)].map((_, i) => (
+              <div key={i} className="as-skeleton-card">
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 16 }}>
+                  <div className="as-skeleton-cell" style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0 }} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div className="as-skeleton-cell" style={{ height: 13, width: '60%' }} />
+                    <div className="as-skeleton-cell" style={{ height: 11, width: '40%' }} />
+                  </div>
+                </div>
+                <div className="as-skeleton-cell" style={{ height: 32, marginBottom: 12 }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div className="as-skeleton-cell" style={{ height: 12, width: '80%' }} />
+                  <div className="as-skeleton-cell" style={{ height: 12, width: '65%' }} />
+                  <div className="as-skeleton-cell" style={{ height: 12, width: '50%' }} />
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                  <div className="as-skeleton-cell" style={{ height: 38, flex: 1, borderRadius: 10 }} />
+                  <div className="as-skeleton-cell" style={{ height: 38, flex: 1, borderRadius: 10 }} />
+                </div>
+              </div>
+            ))
+          ) : filteredListings.length === 0 ? (
+            <div className="no-results" style={{ gridColumn: '1 / -1' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect x="2" y="3" width="20" height="18" rx="3" />
+                <path d="M8 10h8M8 14h5" />
+              </svg>
+              <h3>No listings found</h3>
+              <p>Try adjusting your filters or check back soon.</p>
+            </div>
+          ) : (
+            filteredListings.map((listing) => {
+              const initials = listing.seller.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const isOwn = listing.userId === user?.id;
+              return (
                 <div key={listing.id} className="listing-card">
                   <div className="card-header">
                     <div className="seller-info">
-                      {listing.seller.avatar || (listing.seller as any).profile_picture_url ? (
-                        <img 
-                          src={listing.seller.avatar || (listing.seller as any).profile_picture_url} 
-                          alt={listing.seller.name} 
-                          className="seller-avatar" 
-                        />
+                      {listing.seller.avatar ? (
+                        <img src={listing.seller.avatar} alt={listing.seller.name} className="seller-avatar" />
                       ) : (
-                        <div className="seller-avatar-initials">
-                          {listing.seller.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                        </div>
+                        <div className="seller-avatar-initials">{initials}</div>
                       )}
                       <div>
                         <div className="seller-name-row">
                           <h3 className="seller-name">{listing.seller.name}</h3>
                           {listing.seller.verified && (
-                            <svg className="verified-badge" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8F032" strokeWidth="2">
-                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeLinecap="round" strokeLinejoin="round"/>
-                              <polyline points="22 4 12 14.01 9 11.01" strokeLinecap="round" strokeLinejoin="round"/>
+                            <svg className="verified-badge" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeLinecap="round" strokeLinejoin="round" />
+                              <polyline points="22 4 12 14.01 9 11.01" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           )}
                         </div>
                         <div className="seller-rating">
-                          <span>⭐ {listing.seller.rating}</span>
-                          <span className="dot">•</span>
+                          <span>★ {listing.seller.rating}</span>
+                          <span className="dot">·</span>
                           <span>{listing.seller.completedTrades} trades</span>
                         </div>
                       </div>
                     </div>
                     <span className={`type-badge ${listing.type}`}>
-                      {listing.type === 'sell' ? 'SELLING' : 'BUYING'}
+                      {listing.type === 'sell' ? 'SELL' : 'BUY'}
                     </span>
                   </div>
 
                   <div className="card-content">
                     <div className="currency-rate">
-                      <span className="currency">{listing.currency}</span>
-                      <span className="rate">{getCurrencySymbol(listing.currency)}{formatNumber(listing.rate)}</span>
+                      <span className="currency">{listing.currency} rate</span>
+                      <span className="rate">₦{formatNumber(listing.rate)}</span>
                     </div>
 
                     <div className="amount-info">
@@ -363,45 +397,41 @@ const ActiveSabitPage: React.FC = () => {
                         <span className="label">Amount</span>
                         <span className="value">{getCurrencySymbol(listing.currency)}{formatNumber(listing.amount)}</span>
                       </div>
-                      <div className="amount-row">
-                        <span className="label">Available</span>
-                        <span className="value">{getCurrencySymbol(listing.currency)}{formatNumber(listing.available)}</span>
-                      </div>
+                      {listing.available > 0 && (
+                        <div className="amount-row">
+                          <span className="label">Available</span>
+                          <span className="value">{getCurrencySymbol(listing.currency)}{formatNumber(listing.available)}</span>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="payment-methods">
-                      <span className="label">Payment</span>
-                      <div className="method-tags">
-                        {listing.paymentMethods.map((method, index) => (
-                          <span key={index} className="method-tag">{method}</span>
-                        ))}
+                    {listing.paymentMethods.length > 0 && (
+                      <div className="payment-methods">
+                        <span className="label">Payment</span>
+                        <div className="method-tags">
+                          {listing.paymentMethods.map((method, idx) => (
+                            <span key={idx} className="method-tag">{method}</span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <div className="card-footer">
                       <div className="time-limit">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10"/>
-                          <polyline points="12 6 12 12 16 14"/>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
                         </svg>
                         <span>{listing.timeLimit}</span>
                       </div>
-                      <div style={{ display: "flex", gap: 10, width: "100%", marginTop: 14 }}>
-                        {listing.userId === user?.id ? (
+
+                      <div className="card-actions">
+                        {isOwn ? (
                           <>
-                            <button
-                              className="trade-btn"
-                              style={{ flex: 1, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", cursor: "pointer" }}
-                              onClick={() => navigate('/dashboard/my-sabits')}
-                            >
+                            <button className="trade-btn ghost" onClick={() => navigate('/dashboard/my-sabits')}>
                               Your Listing
                             </button>
                             {listing.type === 'sell' && (
-                              <button
-                                className="trade-btn"
-                                onClick={() => handleViewBids(listing)}
-                                style={{ flex: 1, background: "rgba(14, 165, 233, 0.12)", borderColor: "rgba(14, 165, 233, 0.35)", color: "#0369a1" }}
-                              >
+                              <button className="trade-btn info" onClick={() => handleViewBids(listing)}>
                                 View Bids
                               </button>
                             )}
@@ -409,8 +439,7 @@ const ActiveSabitPage: React.FC = () => {
                         ) : (
                           <>
                             <button
-                              className={`trade-btn ${listing.type}`}
-                              style={{ flex: 1 }}
+                              className={`trade-btn ${listing.type === 'sell' ? 'primary' : 'lime'}`}
                               onClick={() => handleTradeClick(listing)}
                               disabled={!isVerified || listing.status !== 'active'}
                             >
@@ -418,8 +447,7 @@ const ActiveSabitPage: React.FC = () => {
                             </button>
                             {listing.type === 'sell' && (
                               <button
-                                className="trade-btn"
-                                style={{ flex: 1, background: "#fef3c7", border: "1px solid rgba(199, 154, 0, 0.35)", color: "#92400e" }}
+                                className="trade-btn outline"
                                 onClick={() => handleMakeOffer(listing)}
                                 disabled={!isVerified || listing.status !== 'active'}
                               >
@@ -432,68 +460,58 @@ const ActiveSabitPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })
+          )}
+        </div>
 
-            {filteredListings.length === 0 && (
-              <div className="no-results">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                <h3>No listings found</h3>
-                <p>Try adjusting your filters</p>
-              </div>
-            )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(p) => void load(p)}
+          isLoading={loading}
+        />
 
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={(p) => void load(p)}
-              isLoading={loading}
-            />
+        {bidModalOpen && bidListing && (
+          <BidModal
+            listing={{
+              id: bidListing.id,
+              rate_ngn: bidListing.rate,
+              available: bidListing.available,
+              currency: bidListing.currency,
+            }}
+            onClose={() => {
+              setBidModalOpen(false);
+              setBidListing(null);
+            }}
+          />
+        )}
 
-            {bidModalOpen && bidListing && (
-              <BidModal
-                listing={{
-                  id: bidListing.id,
-                  rate_ngn: bidListing.rate,
-                  available: bidListing.available,
-                  currency: bidListing.currency,
-                }}
-                onClose={() => {
-                  setBidModalOpen(false);
-                  setBidListing(null);
-                }}
-              />
-            )}
+        {tradeModalOpen && tradeListing && (
+          <TradeModal
+            listing={{
+              id: tradeListing.id,
+              rate: tradeListing.rate,
+              available: tradeListing.available,
+              currency: tradeListing.currency,
+              type: tradeListing.type,
+            }}
+            onClose={() => {
+              setTradeModalOpen(false);
+              setTradeListing(null);
+            }}
+          />
+        )}
 
-            {tradeModalOpen && tradeListing && (
-              <TradeModal
-                listing={{
-                  id: tradeListing.id,
-                  rate: tradeListing.rate,
-                  available: tradeListing.available,
-                  currency: tradeListing.currency,
-                  type: tradeListing.type,
-                }}
-                onClose={() => {
-                  setTradeModalOpen(false);
-                  setTradeListing(null);
-                }}
-              />
-            )}
-
-            {receivedModalOpen && receivedSabitId != null && (
-              <ReceivedBidsModal
-                sabitId={receivedSabitId}
-                onClose={() => {
-                  setReceivedModalOpen(false);
-                  setReceivedSabitId(null);
-                }}
-              />
-            )}
+        {receivedModalOpen && receivedSabitId != null && (
+          <ReceivedBidsModal
+            sabitId={receivedSabitId}
+            onClose={() => {
+              setReceivedModalOpen(false);
+              setReceivedSabitId(null);
+            }}
+          />
+        )}
       </main>
     </div>
   );
