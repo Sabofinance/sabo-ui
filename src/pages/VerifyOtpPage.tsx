@@ -60,7 +60,7 @@ const VerifyOtpPage: React.FC = () => {
     setGeneralError("");
     setResending(true);
     try {
-     window.location.href = "/login";
+     navigate('/login');
     } catch (err: any) {
       setGeneralError(err?.message || "Failed to resend OTP.");
     } finally {

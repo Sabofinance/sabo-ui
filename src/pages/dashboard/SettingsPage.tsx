@@ -11,7 +11,7 @@ const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { refreshUser, logout } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'security' | 'notifications' | 'appearance' | 'account'>('security');
+  const [activeTab, setActiveTab] = useState<'security' |'account'>('security');
 
   // Security states
   const [twoFactor, setTwoFactor] = useState(false);
@@ -203,7 +203,7 @@ const SettingsPage: React.FC = () => {
               >
                 Security
               </button>
-              <button
+              {/* <button
                 className={`tab-button ${activeTab === 'notifications' ? 'active' : ''}`}
                 onClick={() => setActiveTab('notifications')}
               >
@@ -214,7 +214,7 @@ const SettingsPage: React.FC = () => {
                 onClick={() => setActiveTab('appearance')}
               >
                 Appearance
-              </button>
+              </button> */}
               <button
                 className={`tab-button ${activeTab === 'account' ? 'active' : ''}`}
                 onClick={() => setActiveTab('account')}
@@ -314,7 +314,7 @@ const SettingsPage: React.FC = () => {
                   </div>
                 </>
               )}
-
+{/* 
               {activeTab === 'notifications' && (
                 <>
                   <h3 className="settings-card-title">Notifications</h3>
@@ -411,7 +411,7 @@ const SettingsPage: React.FC = () => {
                     </div>
                   </div>
                 </>
-              )}
+              )} */}
 
               {activeTab === 'account' && (
                 <>
