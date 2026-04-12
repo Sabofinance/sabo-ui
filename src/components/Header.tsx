@@ -88,10 +88,10 @@ export const Header = () => {
 
           <div className="mobile-auth">
             <NavLink to="/login" onClick={closeMenu}>
-              <button className="mobile-login">Log in</button>
+              <button className="mobile-login w-full">Log in</button>
             </NavLink>
             <NavLink to="/signup" onClick={closeMenu}>
-              <button className="mobile-join">Join Us</button>
+              <button className="mobile-join w-full">Join Us</button>
             </NavLink>
           </div>
         </div>

@@ -9,7 +9,7 @@ import loginImage from "../assets/images/3d-illustration-login.png";
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, } = useAuth();
   
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginRequest>();
   const [showPassword, setShowPassword] = useState(false);
@@ -28,8 +28,10 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    setGeneralError('Google login is not connected yet. Please sign in with email/password.');
+  const handleGoogleSignIn = () => {
+    const apiBase =
+      import.meta.env.VITE_API_URL 
+    window.location.href = `${apiBase}/auth/google`;
   };
 
   return (
@@ -121,7 +123,7 @@ const LoginPage: React.FC = () => {
                 <span>or</span>
               </div>
 
-              <button className="google-btn" onClick={handleGoogleLogin}>
+              <button className="google-btn" onClick={handleGoogleSignIn}>
                 <svg viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"

@@ -14,9 +14,9 @@ interface SignupFormInputs extends RegisterRequest {
 const SignupPage: React.FC = () => {
   const navigate = useNavigate();
   const { register: registerAuth } = useAuth();
-  
+
   const { register, handleSubmit, watch, setError, formState: { errors, isSubmitting } } = useForm<SignupFormInputs>();
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [generalError, setGeneralError] = useState("");
@@ -28,6 +28,8 @@ const SignupPage: React.FC = () => {
 
   const passwordPolicy =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+
 
   const onSubmit = async (data: SignupFormInputs) => {
     setGeneralError("");
@@ -57,7 +59,8 @@ const SignupPage: React.FC = () => {
   };
 
   const handleGoogleSignup = () => {
-    setGeneralError('Google signup is not connected yet. Please sign up with email/password.');
+    const apiBaseUrl = import.meta.env.VITE_API_URL 
+    window.location.href = `${apiBaseUrl}/auth/google`;
   };
 
   return (
@@ -94,7 +97,7 @@ const SignupPage: React.FC = () => {
                   <input
                     type="email"
                     id="email"
-                    {...register("email", { 
+                    {...register("email", {
                       required: "Email is required",
                       pattern: { value: /\S+@\S+\.\S+/, message: "Email is invalid" }
                     })}
@@ -122,7 +125,7 @@ const SignupPage: React.FC = () => {
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
-                      {...register("password", { 
+                      {...register("password", {
                         required: "Password is required",
                         minLength: { value: 8, message: "Password must be at least 8 characters" },
                         validate: (v) =>
@@ -161,7 +164,7 @@ const SignupPage: React.FC = () => {
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       id="confirmPassword"
-                      {...register("confirmPassword", { 
+                      {...register("confirmPassword", {
                         required: "Please confirm your password",
                         validate: value => value === password || "Passwords do not match"
                       })}
@@ -190,9 +193,9 @@ const SignupPage: React.FC = () => {
                   {errors.confirmPassword && <span className="error-text">{errors.confirmPassword.message}</span>}
                 </div>
 
-                <button 
-                  type="submit" 
-                  className="auth-btn" 
+                <button
+                  type="submit"
+                  className="auth-btn"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Signing up..." : "Sign Up"}

@@ -11,10 +11,6 @@ import {
   CheckCircle, 
   XCircle, 
   Clock,
-  MessageSquare,
-  Hash,
-  User,
-  ExternalLink
 } from 'lucide-react';
 
 const AdminDisputesPage: React.FC = () => {

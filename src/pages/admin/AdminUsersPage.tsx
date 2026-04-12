@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { adminApi } from '../../lib/api';
 import { extractArray } from '../../lib/api/response';
 import Pagination from '../../components/Pagination';
-import { motion } from 'framer-motion';
+
 import { 
   Users, 
   Search, 
@@ -13,9 +13,7 @@ import {
   UserX, 
   Shield, 
   Mail, 
-  MoreVertical,
   ExternalLink,
-  Filter
 } from 'lucide-react';
 
 type UserRecord = Record<string, any>;

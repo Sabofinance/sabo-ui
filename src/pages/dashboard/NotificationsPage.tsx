@@ -144,7 +144,8 @@ const NotificationsPage: React.FC = () => {
 
             <Pagination 
               currentPage={currentPage} 
-              totalPages={totalPages} 
+              total={totalPages} 
+              limit={20}
               onPageChange={(p) => void load(p)} 
               isLoading={loading} 
             />

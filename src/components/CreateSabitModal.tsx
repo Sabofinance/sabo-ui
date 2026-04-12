@@ -139,9 +139,7 @@ const CreateSabitModal: React.FC<CreateSabitModalProps> = ({ onClose, onSuccess,
         rate_ngn: String(rate),
       };
 
-      const res = editData 
-        ? await sabitsApi.update(editData.id, payload)
-        : await sabitsApi.create(payload);
+      const res = await sabitsApi.create(payload);
 
       if (res.success) {
         const id = (res.data as any)?.id || editData?.id;

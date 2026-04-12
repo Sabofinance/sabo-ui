@@ -8,8 +8,10 @@ import { AdminAuthProvider } from './context/AdminAuthContext.tsx'
 import { ToastProvider } from './context/ToastContext'
 
 
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+
     <ToastProvider>
       <AuthProvider>
         <AdminAuthProvider>
@@ -20,5 +22,6 @@ createRoot(document.getElementById('root')!).render(
         </AdminAuthProvider>
       </AuthProvider>
     </ToastProvider>
+
   </StrictMode>,
 )

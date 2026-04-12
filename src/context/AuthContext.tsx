@@ -14,6 +14,7 @@ interface AuthContextType {
   verifyOtp: (data: OtpRequest) => Promise<void>;
   resendOtp: (data: { email: string }) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
+  handleGoogleCallback: () => Promise<boolean>;
   refreshUser: () => Promise<void>;
   logout: (opts?: { silent?: boolean }) => Promise<void>;
 }
@@ -50,7 +51,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authApi.getCurrentUser();
       if (response.success && response.data) {
-        // Robustly extract user object if nested under 'user' key
         const data = response.data as any;
         const nextUser = (data.user ? data.user : data) as User;
         
@@ -58,7 +58,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('user', JSON.stringify(nextUser));
         setIsAuthenticated(true);
       } else {
-        // If the token isn't valid (401/403), ensure we don't keep the user "authenticated".
         setIsAuthenticated(false);
         setUser(null);
         localStorage.removeItem('user');
@@ -66,22 +65,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (response.error?.status === 401 || response.error?.status === 403) {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
-          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-            window.location.assign('/login');
-          }
         }
       }
     } catch (err: any) {
-      // Session might be stale/expired; make it clear to the user.
       toast.error('Your session has expired. Please sign in again.');
       setIsAuthenticated(false);
       setUser(null);
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-        window.location.assign('/login');
-      }
     } finally {
       setIsLoading(false);
     }
@@ -127,12 +119,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authApi.verifyOtp(data);
       if (response.success && response.data) {
-        // response.data is AuthTokens now because of the fix in auth.api.ts
         const { accessToken: newAccess, refreshToken: newRefresh } = response.data;
         
-        // Scope axios token attachment to user session.
         localStorage.setItem('sessionType', 'user');
-        // Clear any admin session to avoid cross-contamination.
         localStorage.removeItem('adminAccessToken');
         localStorage.removeItem('adminRefreshToken');
         localStorage.removeItem('adminUser');
@@ -144,7 +133,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         sessionStorage.removeItem('pendingEmail');
         
-        // Fetch user immediately to populate state
         const userRes = await authApi.getCurrentUser();
         if (userRes.success && userRes.data) {
           const nextUser = userRes.data as User;
@@ -152,8 +140,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem('user', JSON.stringify(nextUser));
           setIsAuthenticated(true);
         } else {
-          // If we can't fetch the user, something is wrong with the token or the server.
-          // Clean up and throw an error so the UI can show it.
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           localStorage.removeItem('user');
@@ -191,6 +177,84 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // ==================== UPDATED GOOGLE CALLBACK ====================
+  const handleGoogleCallback = useCallback(async () => {
+    const params = new URLSearchParams(window.location.search);
+    const newAccessToken = params.get('accessToken');
+    const newRefreshToken = params.get('refreshToken');
+    const errorParam = params.get('error');
+
+    // Clear query params immediately for security
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    if (errorParam) {
+      toast.error('Google sign in failed. Please try again.');
+      return false;
+    }
+
+    if (!newAccessToken || !newRefreshToken) {
+      toast.error('Invalid Google callback data. Please try again.');
+      return false;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Save tokens
+      localStorage.setItem('accessToken', newAccessToken);
+      localStorage.setItem('refreshToken', newRefreshToken);
+      localStorage.setItem('sessionType', 'user');
+
+      // Clear any existing admin session
+      localStorage.removeItem('adminAccessToken');
+      localStorage.removeItem('adminRefreshToken');
+      localStorage.removeItem('adminUser');
+
+      setAccessToken(newAccessToken);
+      setRefreshToken(newRefreshToken);
+
+      // Fetch user profile (consistent with verifyOtp)
+      const userRes = await authApi.getCurrentUser();
+
+      if (userRes.success && userRes.data) {
+        const data = userRes.data as any;
+        const nextUser = (data.user ? data.user : data) as User;
+
+        setUser(nextUser);
+        localStorage.setItem('user', JSON.stringify(nextUser));
+        setIsAuthenticated(true);
+
+        toast.success('Successfully signed in with Google!');
+        return true;
+      }
+
+      throw new Error(userRes.error?.message || 'Failed to fetch user profile after Google login');
+    } catch (err: any) {
+      console.error('Google callback error:', err);
+
+      const errorMsg = err.message || 'Failed to complete Google sign in. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
+
+      // Clean up on failure
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('sessionType');
+
+      setAccessToken(null);
+      setRefreshToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
+
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+  // =================================================================
+
   const register = async (data: RegisterRequest) => {
     setIsLoading(true);
     setError(null);
@@ -198,8 +262,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await authApi.registerUser(data);
       if (response.success && response.data) {
         toast.success('Registration successful! Please log in to continue.');
-        // The user is created, but not logged in. No tokens are issued here.
-        // The API returns the created user object, which we don't need to store at this stage.
       } else {
         const code = String(response.error?.code || "");
         const errorMessage = response.error?.message || "Registration failed. Please try again.";
@@ -247,6 +309,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         verifyOtp,
         resendOtp,
         register,
+        handleGoogleCallback,        // ← Added here
         refreshUser: fetchCurrentUser,
         logout,
       }}

@@ -4,15 +4,13 @@ import ActivityChart from '../../components/ActivityChart';
 import type { ActivityChartPoint } from '../../components/ActivityChart';
 import Pagination from '../../components/Pagination';
 import { toast } from 'react-toastify';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Calendar, 
   Download, 
   RefreshCw, 
-  BarChart3, 
   TrendingUp, 
   Users, 
-  ShieldCheck, 
   ArrowUpRight, 
   ArrowDownRight,
   PieChart,
@@ -76,7 +74,7 @@ const AdminAnalyticsPage: React.FC = () => {
   const [impactData, setImpactData] = useState<AnyRecord | null>(null);
   const [dashboardData, setDashboardData] = useState<AnyRecord | null>(null);
   const [users, setUsers] = useState<AnyRecord[]>([]);
-  const [kycSubmissions, setKycSubmissions] = useState<AnyRecord[]>([]);
+  // const [kycSubmissions, setKycSubmissions] = useState<AnyRecord[]>([]);
   const [activeDisputes, setActiveDisputes] = useState<AnyRecord[]>([]);
   const [timeframe, setTimeframe] = useState<'day' | 'month' | 'year'>('month');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
@@ -86,27 +84,30 @@ const AdminAnalyticsPage: React.FC = () => {
 
   const loadAnalytics = async () => {
     setLoading(true);
+    
     try {
-      console.log('[Analytics] Fetching with:', { timeframe, ...dateRange });
-      
-      const [impactRes, dashRes, txRes, usersRes, kycRes, disputesRes] = await Promise.allSettled([
-        adminApi.getAnalyticsImpact({ timeframe, ...dateRange }),
-        adminApi.getDashboard(),
-        adminApi.listTransactions({ page, limit: 10 }),
-        adminApi.listUsers(),
-        adminApi.listKyc(),
-        adminApi.listDisputes({ status: 'open', limit: 10 })
-      ]);
+      console.log("[Analytics] Fetching with:", { timeframe, ...dateRange });
 
-      if (impactRes.status === 'fulfilled' && impactRes.value.success) {
+      // @ts-ignore
+      const [impactRes, dashRes, txRes, usersRes, kycRes, disputesRes] =
+        await Promise.allSettled([
+          adminApi.getAnalyticsImpact({ timeframe, ...dateRange }),
+          adminApi.getDashboard(),
+          adminApi.listTransactions({ page, limit: 10 }),
+          adminApi.listUsers(),
+          adminApi.listKyc(),
+          adminApi.listDisputes({ status: "open", limit: 10 }),
+        ]);
+
+      if (impactRes.status === "fulfilled" && impactRes.value.success) {
         setImpactData(impactRes.value.data as AnyRecord);
       }
 
-      if (dashRes.status === 'fulfilled' && dashRes.value.success) {
+      if (dashRes.status === "fulfilled" && dashRes.value.success) {
         setDashboardData(dashRes.value.data as AnyRecord);
       }
 
-      if (txRes.status === 'fulfilled' && txRes.value.success) {
+      if (txRes.status === "fulfilled" && txRes.value.success) {
         const data = txRes.value.data as any;
         const list = Array.isArray(data) ? data : data.data || [];
         setRecentActivities(list);
@@ -114,16 +115,24 @@ const AdminAnalyticsPage: React.FC = () => {
         setTotalPages(meta.totalPages || meta.last_page || 1);
       }
 
-      if (usersRes.status === 'fulfilled' && usersRes.value.success) {
-        setUsers(Array.isArray(usersRes.value.data) ? usersRes.value.data : (usersRes.value.data as any).data || []);
+      if (usersRes.status === "fulfilled" && usersRes.value.success) {
+        setUsers(
+          Array.isArray(usersRes.value.data)
+            ? usersRes.value.data
+            : (usersRes.value.data as any).data || [],
+        );
       }
 
-      if (kycRes.status === 'fulfilled' && kycRes.value.success) {
-        setKycSubmissions(Array.isArray(kycRes.value.data) ? kycRes.value.data : (kycRes.value.data as any).data || []);
-      }
+      // if (kycRes.status === 'fulfilled' && kycRes.value.success) {
+      //   setKycSubmissions(Array.isArray(kycRes.value.data) ? kycRes.value.data : (kycRes.value.data as any).data || []);
+      // }
 
-      if (disputesRes.status === 'fulfilled' && disputesRes.value.success) {
-        setActiveDisputes(Array.isArray(disputesRes.value.data) ? disputesRes.value.data : (disputesRes.value.data as any).data || []);
+      if (disputesRes.status === "fulfilled" && disputesRes.value.success) {
+        setActiveDisputes(
+          Array.isArray(disputesRes.value.data)
+            ? disputesRes.value.data
+            : (disputesRes.value.data as any).data || [],
+        );
       }
     } catch (err) {
       console.error('[Analytics] Fetch Error:', err);

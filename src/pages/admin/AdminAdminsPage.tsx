@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { adminApi } from '../../lib/api';
 import Pagination from '../../components/Pagination';
-import { motion } from 'framer-motion';
+
 import { 
   ShieldAlert, 
   UserPlus, 
@@ -11,7 +11,7 @@ import {
   Trash2, 
   ArrowUpCircle,
   RefreshCw,
-  Search,
+
   Lock
 } from 'lucide-react';
 

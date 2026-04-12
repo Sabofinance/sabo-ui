@@ -7,11 +7,14 @@ import loginImage from "../assets/images/3d-illustration-login.png";
 
 const VerifyOtpPage: React.FC = () => {
   const navigate = useNavigate();
+  // @ts-ignore
   const { verifyOtp, resendOtp } = useAuth();
   const [generalError, setGeneralError] = useState("");
   const [email, setEmail] = useState("");
 
-  const [digits, setDigits] = useState<string[]>(() => Array.from({ length: 6 }, () => ""));
+  const [digits, setDigits] = useState<string[]>(() =>
+    Array.from({ length: 6 }, () => ""),
+  );
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
   const [secondsLeft, setSecondsLeft] = useState(60);
@@ -21,9 +24,9 @@ const VerifyOtpPage: React.FC = () => {
   const otp = useMemo(() => digits.join(""), [digits]);
 
   useEffect(() => {
-    const pendingEmail = sessionStorage.getItem('pendingEmail');
+    const pendingEmail = sessionStorage.getItem("pendingEmail");
     if (!pendingEmail) {
-      navigate('/login');
+      navigate("/login");
     } else {
       setEmail(pendingEmail);
     }
@@ -47,7 +50,7 @@ const VerifyOtpPage: React.FC = () => {
       }
       setSubmitting(true);
       await verifyOtp({ email, otp });
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (error: any) {
       setGeneralError(error.message || "Invalid OTP. Please try again.");
     } finally {
@@ -60,7 +63,7 @@ const VerifyOtpPage: React.FC = () => {
     setGeneralError("");
     setResending(true);
     try {
-     navigate('/login');
+      navigate("/login");
     } catch (err: any) {
       setGeneralError(err?.message || "Failed to resend OTP.");
     } finally {
@@ -115,7 +118,11 @@ const VerifyOtpPage: React.FC = () => {
       <div className="auth-page">
         <div className="auth-main">
           <div className="auth-image-section">
-            <img src={loginImage} alt="SABO illustration" className="auth-image" />
+            <img
+              src={loginImage}
+              alt="SABO illustration"
+              className="auth-image"
+            />
           </div>
 
           <div className="auth-form-section">
@@ -125,14 +132,21 @@ const VerifyOtpPage: React.FC = () => {
                 Enter the one-time password sent to {email}.
               </p>
 
-              {generalError && <div className="general-error">{generalError}</div>}
+              {generalError && (
+                <div className="general-error">{generalError}</div>
+              )}
 
               <form onSubmit={onSubmit} className="auth-form">
                 <div className="form-group">
-                  <label className="form-label">
-                    OTP Code
-                  </label>
-                  <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 10 }}>
+                  <label className="form-label">OTP Code</label>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                      justifyContent: "center",
+                      marginTop: 10,
+                    }}
+                  >
                     {digits.map((d, i) => (
                       <input
                         key={i}
@@ -159,31 +173,42 @@ const VerifyOtpPage: React.FC = () => {
                       />
                     ))}
                   </div>
-                  <div style={{ marginTop: 10, textAlign: "center", color: "#64748B", fontSize: 13 }}>
+                  <div
+                    style={{
+                      marginTop: 10,
+                      textAlign: "center",
+                      color: "#64748B",
+                      fontSize: 13,
+                    }}
+                  >
                     {secondsLeft > 0 ? (
-                    <>You can request a new OTP in {secondsLeft}s</>
+                      <>You can request a new OTP in {secondsLeft}s</>
                     ) : (
-                    <div>
-                      <button
-                        type="button"
-                        className="auth-btn"
-                        style={{ width: "auto", padding: "8px 16px", marginTop: 8 }}
-                        onClick={handleResend}
-                        disabled={resending}
-                      >
-                        {resending ? "Resending..." : "Resend OTP"}
-                      </button>
-                      <div style={{ marginTop: 6 }}>
-                        Didn’t get a code? Resend OTP to {email}.
+                      <div>
+                        <button
+                          type="button"
+                          className="auth-btn"
+                          style={{
+                            width: "auto",
+                            padding: "8px 16px",
+                            marginTop: 8,
+                          }}
+                          onClick={handleResend}
+                          disabled={resending}
+                        >
+                          {resending ? "Resending..." : "Resend OTP"}
+                        </button>
+                        <div style={{ marginTop: 6 }}>
+                          Didn’t get a code? Resend OTP to {email}.
+                        </div>
                       </div>
-                    </div>
                     )}
                   </div>
                 </div>
 
-                <button 
-                  type="submit" 
-                  className="auth-btn" 
+                <button
+                  type="submit"
+                  className="auth-btn"
                   disabled={submitting || otp.length !== 6}
                 >
                   {submitting ? "Verifying..." : "Verify OTP"}
@@ -191,7 +216,9 @@ const VerifyOtpPage: React.FC = () => {
               </form>
 
               <p className="auth-switch">
-                <Link to="/login" className="auth-link">Back to Login</Link>
+                <Link to="/login" className="auth-link">
+                  Back to Login
+                </Link>
               </p>
             </div>
           </div>

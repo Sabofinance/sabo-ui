@@ -5,7 +5,6 @@ import {
   ShieldOff,
   ArrowUpRight,
   ArrowDownLeft,
-  ChevronRight,
   Layers,
   CheckCircle2,
   BarChart3,
@@ -26,8 +25,6 @@ import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import PinDotsInput from "../../components/PinDotsInput";
 import Pagination from "../../components/Pagination";
-
-import { useMemo, useCallback } from "react";
 
 
 type TradeStatus =

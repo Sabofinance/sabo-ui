@@ -61,7 +61,8 @@ const DashboardHeader: React.FC = () => {
   const displayRole = (activeUser as any)?.role ? String((activeUser as any)?.role) : '';
 
   const profileLink = isAdminAuthenticated ? "/dashboard/admin/profile" : "/dashboard/profile";
-  const avatarUrl = (activeUser as any)?.profile_picture_url || `https://i.pravatar.cc/150?u=${displayEmail || 'user'}`;
+  // const avatarKey = (activeUser as any)?.id || displayEmail || (activeUser as any)?.username || 'user';
+  const avatarUrl = (activeUser as any)?.profile_picture_url || `/default.jpg`;
 
   return (
     <header className="dashboard-header">

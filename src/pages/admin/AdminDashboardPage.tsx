@@ -7,10 +7,10 @@ import { AdminSkeleton } from './AdminSkelenton';
 type AnyRecord = Record<string, unknown>;
 
 /* ─── helpers ─────────────────────────────────────────────── */
-const toDateMs = (v: unknown): number | null => {
-  const t = new Date(String(v || '')).getTime();
-  return Number.isFinite(t) ? t : null;
-};
+// const toDateMs = (v: unknown): number | null => {
+//   const t = new Date(String(v || '')).getTime();
+//   return Number.isFinite(t) ? t : null;
+// };
 const fmt = (n: number) => new Intl.NumberFormat('en-NG').format(n);
 
 /* ─── global styles ───────────────────────────────────────── */
@@ -363,34 +363,34 @@ const Donut: React.FC<{ segments: { label: string; value: number; color: string 
 };
 
 /* ─── Inline SVG sparkline ────────────────────────────────── */
-const SparkLine: React.FC<{ points: { day: string; value: number }[]; color: string; height?: number }> = ({ points, color, height = 72 }) => {
-  const W = 300, H = height, padX = 12, padY = 10;
-  const cW = W - padX * 2, cH = H - padY * 2;
-  const max = Math.max(...points.map(p => p.value), 1);
-  const toX = (i: number) => padX + (points.length <= 1 ? cW / 2 : (i / (points.length - 1)) * cW);
-  const toY = (v: number) => padY + (1 - v / max) * cH;
-  const polyPts = points.map((p, i) => `${toX(i).toFixed(1)},${toY(p.value).toFixed(1)}`).join(' ');
-  const areaClose = `${toX(points.length - 1).toFixed(1)},${(padY + cH).toFixed(1)} ${toX(0).toFixed(1)},${(padY + cH).toFixed(1)}`;
+// const SparkLine: React.FC<{ points: { day: string; value: number }[]; color: string; height?: number }> = ({ points, color, height = 72 }) => {
+//   const W = 300, H = height, padX = 12, padY = 10;
+//   const cW = W - padX * 2, cH = H - padY * 2;
+//   const max = Math.max(...points.map(p => p.value), 1);
+//   const toX = (i: number) => padX + (points.length <= 1 ? cW / 2 : (i / (points.length - 1)) * cW);
+//   const toY = (v: number) => padY + (1 - v / max) * cH;
+//   const polyPts = points.map((p, i) => `${toX(i).toFixed(1)},${toY(p.value).toFixed(1)}`).join(' ');
+//   const areaClose = `${toX(points.length - 1).toFixed(1)},${(padY + cH).toFixed(1)} ${toX(0).toFixed(1)},${(padY + cH).toFixed(1)}`;
 
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <linearGradient id={`g-${color.replace('#', '')}`} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity=".18" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon points={`${polyPts} ${areaClose}`} fill={`url(#g-${color.replace('#', '')})`} />
-      <polyline points={polyPts} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      {points.map((p, i) => (
-        <circle key={i} cx={toX(i)} cy={toY(p.value)} r="3.5" fill={color} stroke="white" strokeWidth="1.5" />
-      ))}
-      {points.map((p, i) => (
-        <text key={`l${i}`} x={toX(i)} y={H - 2} textAnchor="middle" fontSize="9.5" fill="#98a5be" fontFamily="DM Sans, system-ui">{p.day}</text>
-      ))}
-    </svg>
-  );
-};
+//   return (
+//     <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" aria-hidden="true">
+//       <defs>
+//         <linearGradient id={`g-${color.replace('#', '')}`} x1="0" x2="0" y1="0" y2="1">
+//           <stop offset="0%" stopColor={color} stopOpacity=".18" />
+//           <stop offset="100%" stopColor={color} stopOpacity="0" />
+//         </linearGradient>
+//       </defs>
+//       <polygon points={`${polyPts} ${areaClose}`} fill={`url(#g-${color.replace('#', '')})`} />
+//       <polyline points={polyPts} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+//       {points.map((p, i) => (
+//         <circle key={i} cx={toX(i)} cy={toY(p.value)} r="3.5" fill={color} stroke="white" strokeWidth="1.5" />
+//       ))}
+//       {points.map((p, i) => (
+//         <text key={`l${i}`} x={toX(i)} y={H - 2} textAnchor="middle" fontSize="9.5" fill="#98a5be" fontFamily="DM Sans, system-ui">{p.day}</text>
+//       ))}
+//     </svg>
+//   );
+// };
 
 /* ════════════════════════════════════════════════════════════
    MAIN COMPONENT
@@ -399,30 +399,58 @@ const AdminDashboardPage: React.FC = () => {
   const { fetchNotifications } = useNotifications();
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [users, setUsers] = useState<AnyRecord[]>([]);
   const [selectedUser, setSelectedUser] = useState<AnyRecord | null>(null);
-  const [selectedDeposit, setSelectedDeposit] = useState<AnyRecord | null>(null);
-  const [userDetailsLoading, setUserDetailsLoading] = useState(false);
+  const [selectedDeposit, setSelectedDeposit] = useState<AnyRecord | null>(
+    null,
+  );
+  // const [userDetailsLoading, setUserDetailsLoading] = useState(false);
   const [kycSubmissions, setKycSubmissions] = useState<AnyRecord[]>([]);
   const [pendingDeposits, setPendingDeposits] = useState<AnyRecord[]>([]);
+  // @ts-ignore
   const [adminTransactions, setAdminTransactions] = useState<AnyRecord[]>([]);
   const [disputes, setDisputes] = useState<AnyRecord[]>([]);
   const [dashboardData, setDashboardData] = useState<AnyRecord | null>(null);
-  const [analyticsImpact, setAnalyticsImpact] = useState<AnyRecord | null>(null);
-  const [depositsActionLoadingId, setDepositsActionLoadingId] = useState('');
-  const [kycActionLoadingId, setKycActionLoadingId] = useState('');
-  const [userActionLoadingId, setUserActionLoadingId] = useState('');
+  // @ts-ignore
+  const [analyticsImpact, setAnalyticsImpact] = useState<AnyRecord | null>(
+    null,
+  );
+  // @ts-ignore
+  const [depositsActionLoadingId, setDepositsActionLoadingId] = useState("");
+  // @ts-ignore
+  const [kycActionLoadingId, setKycActionLoadingId] = useState("");
+  // @ts-ignore
+  const [userActionLoadingId, setUserActionLoadingId] = useState("");
 
   const userStatusValue = (u: AnyRecord) =>
-    String(u.status || u.state || u.accountStatus || (u.isSuspended ? 'suspended' : '') || '').toLowerCase();
-  const isSuspended = (u: AnyRecord) => userStatusValue(u).includes('suspend');
+    String(
+      u.status ||
+        u.state ||
+        u.accountStatus ||
+        (u.isSuspended ? "suspended" : "") ||
+        "",
+    ).toLowerCase();
+  const isSuspended = (u: AnyRecord) => userStatusValue(u).includes("suspend");
 
   const safeList = (value: unknown): AnyRecord[] => {
     if (Array.isArray(value)) return value as AnyRecord[];
-    if (!value || typeof value !== 'object') return [];
+    if (!value || typeof value !== "object") return [];
     const obj = value as Record<string, unknown>;
-    const candidates = ['users', 'submissions', 'deposits', 'transactions', 'disputes', 'recentKyc', 'items', 'results', 'rows', 'records', 'list', 'data'];
+    const candidates = [
+      "users",
+      "submissions",
+      "deposits",
+      "transactions",
+      "disputes",
+      "recentKyc",
+      "items",
+      "results",
+      "rows",
+      "records",
+      "list",
+      "data",
+    ];
     for (const key of candidates) {
       if (Array.isArray(obj[key])) return obj[key] as AnyRecord[];
     }
@@ -430,69 +458,91 @@ const AdminDashboardPage: React.FC = () => {
   };
 
   const listAll = async () => {
-    setLoading(true); setError(''); setSelectedUser(null); setSelectedDeposit(null);
+    setLoading(true);
+    setError("");
+    setSelectedUser(null);
+    setSelectedDeposit(null);
     try {
       const [dashRes, txRes, impactRes] = await Promise.allSettled([
-        adminApi.getDashboard(), 
+        adminApi.getDashboard(),
         adminApi.listTransactions({ limit: 30 }),
-        adminApi.getAnalyticsImpact()
+        adminApi.getAnalyticsImpact(),
       ]);
-      console.log('AdminDashboard responses:', { dashRes, txRes, impactRes });
-      
-      if (dashRes.status === 'fulfilled' && dashRes.value.success) {
-        setDashboardData(dashRes.value.data as AnyRecord ?? null);
-      } else if (dashRes.status === 'fulfilled' && !dashRes.value.success) {
-        toast.error(dashRes.value.error?.message || 'Failed to load dashboard overview');
+      console.log("AdminDashboard responses:", { dashRes, txRes, impactRes });
+
+      if (dashRes.status === "fulfilled" && dashRes.value.success) {
+        setDashboardData((dashRes.value.data as AnyRecord) ?? null);
+      } else if (dashRes.status === "fulfilled" && !dashRes.value.success) {
+        toast.error(
+          dashRes.value.error?.message || "Failed to load dashboard overview",
+        );
       }
 
-      if (txRes.status === 'fulfilled' && txRes.value.success) {
+      if (txRes.status === "fulfilled" && txRes.value.success) {
         setAdminTransactions(safeList(txRes.value.data));
       }
 
-      if (impactRes.status === 'fulfilled' && impactRes.value.success) {
-        setAnalyticsImpact(impactRes.value.data as AnyRecord ?? null);
+      if (impactRes.status === "fulfilled" && impactRes.value.success) {
+        setAnalyticsImpact((impactRes.value.data as AnyRecord) ?? null);
       }
 
       const [usersRes, kycRes, depRes, disputesRes] = await Promise.allSettled([
         adminApi.listUsers(),
         adminApi.listKyc(),
-        adminApi.listDeposits({ status: 'pending' }),
-        adminApi.listDisputes({ status: 'open', limit: 10 })
+        adminApi.listDeposits({ status: "pending" }),
+        adminApi.listDisputes({ status: "open", limit: 10 }),
       ]);
 
-      if (usersRes.status === 'fulfilled' && usersRes.value.success) {
+      if (usersRes.status === "fulfilled" && usersRes.value.success) {
         setUsers(safeList(usersRes.value.data));
       }
-      if (kycRes.status === 'fulfilled' && kycRes.value.success) {
+      if (kycRes.status === "fulfilled" && kycRes.value.success) {
         setKycSubmissions(safeList(kycRes.value.data));
       }
-      if (depRes.status === 'fulfilled' && depRes.value.success) {
+      if (depRes.status === "fulfilled" && depRes.value.success) {
         setPendingDeposits(safeList(depRes.value.data));
       }
-      if (disputesRes.status === 'fulfilled' && disputesRes.value.success) {
+      if (disputesRes.status === "fulfilled" && disputesRes.value.success) {
         setDisputes(safeList(disputesRes.value.data));
       }
     } catch (err: any) {
-      const msg = err?.message || 'Failed to load admin dashboard';
-      setError(msg); toast.error(msg);
+      const msg = err?.message || "Failed to load admin dashboard";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { void listAll(); }, []);
+  useEffect(() => {
+    void listAll();
+  }, []);
 
   /* Derived counts */
-  const usersSummary = dashboardData?.users && typeof dashboardData.users === 'object' ? (dashboardData.users as AnyRecord) : null;
-  const kycSummary = dashboardData?.kyc && typeof dashboardData.kyc === 'object' ? (dashboardData.kyc as AnyRecord) : null;
+  const usersSummary =
+    dashboardData?.users && typeof dashboardData.users === "object"
+      ? (dashboardData.users as AnyRecord)
+      : null;
+  const kycSummary =
+    dashboardData?.kyc && typeof dashboardData.kyc === "object"
+      ? (dashboardData.kyc as AnyRecord)
+      : null;
 
-  const totalUsers = Number(usersSummary?.total ?? usersSummary?.usersCount ?? users.length);
+  const totalUsers = Number(
+    usersSummary?.total ?? usersSummary?.usersCount ?? users.length,
+  );
   const suspendedUsers = useMemo(() => {
-    if (typeof usersSummary?.suspended === 'number') return usersSummary.suspended;
-    if (typeof usersSummary?.suspended === 'string') return Number(usersSummary.suspended) || 0;
-    return users.filter(u => isSuspended(u)).length;
+    if (typeof usersSummary?.suspended === "number")
+      return usersSummary.suspended;
+    if (typeof usersSummary?.suspended === "string")
+      return Number(usersSummary.suspended) || 0;
+    return users.filter((u) => isSuspended(u)).length;
   }, [users, usersSummary]);
-  const activeUsers = Number(usersSummary?.active ?? usersSummary?.activeUsers ?? Math.max(0, totalUsers - suspendedUsers));
+  const activeUsers = Number(
+    usersSummary?.active ??
+      usersSummary?.activeUsers ??
+      Math.max(0, totalUsers - suspendedUsers),
+  );
 
   const kycCounts = useMemo(() => {
     if (kycSummary) {
@@ -504,192 +554,254 @@ const AdminDashboardPage: React.FC = () => {
     }
     const c = { pending: 0, verified: 0, rejected: 0 };
     for (const s of kycSubmissions) {
-      const st = String(s.status || s.state || '').toLowerCase();
-      if (st.includes('pending') || st === 'submitted' || st === 'unverified') c.pending++;
-      else if (st.includes('verify') || st.includes('approved') || st.includes('verified')) c.verified++;
-      else if (st.includes('reject') || st.includes('denied')) c.rejected++;
+      const st = String(s.status || s.state || "").toLowerCase();
+      if (st.includes("pending") || st === "submitted" || st === "unverified")
+        c.pending++;
+      else if (
+        st.includes("verify") ||
+        st.includes("approved") ||
+        st.includes("verified")
+      )
+        c.verified++;
+      else if (st.includes("reject") || st.includes("denied")) c.rejected++;
     }
     return c;
   }, [kycSubmissions]);
 
   /* Trend data */
+  // @ts-ignore
   const make7Buckets = () => {
-    const now = new Date(), dayMs = 86400000;
+    const now = new Date(),
+      dayMs = 86400000;
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(now.getTime() - (6 - i) * dayMs);
       const start = new Date(d.toDateString()).getTime();
-      return { start, end: start + dayMs, label: d.toLocaleDateString('en-GB', { weekday: 'short' }), value: 0 };
+      return {
+        start,
+        end: start + dayMs,
+        label: d.toLocaleDateString("en-GB", { weekday: "short" }),
+        value: 0,
+      };
     });
   };
 
-  const kycTrendPoints = useMemo(() => {
-    const chartsData = dashboardData?.charts as AnyRecord | undefined;
-    const dashboardTrend = Array.isArray(chartsData?.kycSubmissions)
-      ? chartsData.kycSubmissions as AnyRecord[]
-      : Array.isArray(dashboardData?.kycTrend)
-        ? dashboardData.kycTrend as AnyRecord[]
-        : [];
-    if (dashboardTrend.length > 0) {
-      return dashboardTrend.map((p) => ({
-        day: String(p.day || p.label || '?'),
-        value: Number(p.value || p.count || 0),
-      }));
-    }
+  // const kycTrendPoints = useMemo(() => {
+  //   const chartsData = dashboardData?.charts as AnyRecord | undefined;
+  //   const dashboardTrend = Array.isArray(chartsData?.kycSubmissions)
+  //     ? chartsData.kycSubmissions as AnyRecord[]
+  //     : Array.isArray(dashboardData?.kycTrend)
+  //       ? dashboardData.kycTrend as AnyRecord[]
+  //       : [];
+  //   if (dashboardTrend.length > 0) {
+  //     return dashboardTrend.map((p) => ({
+  //       day: String(p.day || p.label || '?'),
+  //       value: Number(p.value || p.count || 0),
+  //     }));
+  //   }
 
-    const b = make7Buckets();
-    for (const k of kycSubmissions) {
-      const t = toDateMs((k as AnyRecord).createdAt ?? (k as AnyRecord).created_at ?? (k as AnyRecord).date ?? (k as AnyRecord).timestamp);
-      if (t == null) continue;
-      const bk = b.find(x => t >= x.start && t < x.end);
-      if (bk) bk.value++;
-    }
-    return b.map(x => ({ day: x.label, value: x.value }));
-  }, [kycSubmissions, dashboardData]);
+  //   const b = make7Buckets();
+  //   for (const k of kycSubmissions) {
+  //     const t = toDateMs((k as AnyRecord).createdAt ?? (k as AnyRecord).created_at ?? (k as AnyRecord).date ?? (k as AnyRecord).timestamp);
+  //     if (t == null) continue;
+  //     const bk = b.find(x => t >= x.start && t < x.end);
+  //     if (bk) bk.value++;
+  //   }
+  //   return b.map(x => ({ day: x.label, value: x.value }));
+  // }, [kycSubmissions, dashboardData]);
 
-  const depositTrendPoints = useMemo(() => {
-    const chartsData = dashboardData?.charts as AnyRecord | undefined;
-    const dashboardTrend = Array.isArray(chartsData?.deposits)
-      ? chartsData.deposits as AnyRecord[]
-      : Array.isArray(dashboardData?.depositTrend)
-        ? dashboardData.depositTrend as AnyRecord[]
-        : [];
-    if (dashboardTrend.length > 0) {
-      return dashboardTrend.map((p) => ({
-        day: String(p.day || p.label || '?'),
-        value: Number(p.value || p.count || 0),
-      }));
-    }
+  // const depositTrendPoints = useMemo(() => {
+  //   const chartsData = dashboardData?.charts as AnyRecord | undefined;
+  //   const dashboardTrend = Array.isArray(chartsData?.deposits)
+  //     ? chartsData.deposits as AnyRecord[]
+  //     : Array.isArray(dashboardData?.depositTrend)
+  //       ? dashboardData.depositTrend as AnyRecord[]
+  //       : [];
+  //   if (dashboardTrend.length > 0) {
+  //     return dashboardTrend.map((p) => ({
+  //       day: String(p.day || p.label || '?'),
+  //       value: Number(p.value || p.count || 0),
+  //     }));
+  //   }
 
-    const b = make7Buckets();
-    for (const d of pendingDeposits) {
-      const t = toDateMs((d as AnyRecord).createdAt ?? (d as AnyRecord).created_at ?? (d as AnyRecord).date ?? (d as AnyRecord).timestamp);
-      if (t == null) continue;
-      const bk = b.find(x => t >= x.start && t < x.end);
-      if (bk) bk.value++;
-    }
-    return b.map(x => ({ day: x.label, value: x.value }));
-  }, [pendingDeposits, dashboardData]);
+  //   const b = make7Buckets();
+  //   for (const d of pendingDeposits) {
+  //     const t = toDateMs((d as AnyRecord).createdAt ?? (d as AnyRecord).created_at ?? (d as AnyRecord).date ?? (d as AnyRecord).timestamp);
+  //     if (t == null) continue;
+  //     const bk = b.find(x => t >= x.start && t < x.end);
+  //     if (bk) bk.value++;
+  //   }
+  //   return b.map(x => ({ day: x.label, value: x.value }));
+  // }, [pendingDeposits, dashboardData]);
 
   /* Actions */
-  const fetchUserDetails = async (userId: string) => {
-    setUserDetailsLoading(true);
-    try {
-      const res = await adminApi.getUserById(userId);
-      if (res.success && res.data) setSelectedUser(res.data as AnyRecord);
-      else toast.error(res.error?.message || 'Failed to load user details');
-    } finally { setUserDetailsLoading(false); }
-  };
+  // const fetchUserDetails = async (userId: string) => {
+  //   setUserDetailsLoading(true);
+  //   try {
+  //     const res = await adminApi.getUserById(userId);
+  //     if (res.success && res.data) setSelectedUser(res.data as AnyRecord);
+  //     else toast.error(res.error?.message || 'Failed to load user details');
+  //   } finally { setUserDetailsLoading(false); }
+  // };
 
-  const handleToggleSuspend = async (user: AnyRecord) => {
-    const userId = String(user.id || user.userId || '');
-    if (!userId) return;
-    setUserActionLoadingId(userId);
-    try {
-      const res = isSuspended(user)
-        ? await adminApi.reinstateUser(userId)
-        : await adminApi.suspendUser(userId);
-      if (!res.success) { toast.error(res.error?.message || 'Failed to update user status'); return; }
-      toast.success(isSuspended(user) ? 'User reinstated successfully' : 'User suspended successfully');
-      await listAll();
-    } finally { setUserActionLoadingId(''); }
-  };
+  // const handleToggleSuspend = async (user: AnyRecord) => {
+  //   const userId = String(user.id || user.userId || '');
+  //   if (!userId) return;
+  //   setUserActionLoadingId(userId);
+  //   try {
+  //     const res = isSuspended(user)
+  //       ? await adminApi.reinstateUser(userId)
+  //       : await adminApi.suspendUser(userId);
+  //     if (!res.success) { toast.error(res.error?.message || 'Failed to update user status'); return; }
+  //     toast.success(isSuspended(user) ? 'User reinstated successfully' : 'User suspended successfully');
+  //     await listAll();
+  //   } finally { setUserActionLoadingId(''); }
+  // };
 
   const handleApproveKyc = async (kycId: string) => {
     setKycActionLoadingId(kycId);
     try {
       const res = await adminApi.approveKyc(kycId);
-      if (!res.success) { toast.error('Failed to approve KYC'); return; }
-      toast.success('KYC approved'); fetchNotifications(); await listAll();
-    } finally { setKycActionLoadingId(''); }
+      if (!res.success) {
+        toast.error("Failed to approve KYC");
+        return;
+      }
+      toast.success("KYC approved");
+      fetchNotifications();
+      await listAll();
+    } finally {
+      setKycActionLoadingId("");
+    }
   };
 
   const handleRejectKyc = async (kycId: string) => {
     setKycActionLoadingId(kycId);
     try {
-      const reason = prompt('Enter rejection reason:') || 'Incomplete or invalid documents';
+      const reason =
+        prompt("Enter rejection reason:") || "Incomplete or invalid documents";
       const res = await adminApi.rejectKyc(kycId, reason);
-      if (!res.success) { toast.error('Failed to reject KYC'); return; }
-      toast.success('KYC rejected'); fetchNotifications(); await listAll();
-    } finally { setKycActionLoadingId(''); }
+      if (!res.success) {
+        toast.error("Failed to reject KYC");
+        return;
+      }
+      toast.success("KYC rejected");
+      fetchNotifications();
+      await listAll();
+    } finally {
+      setKycActionLoadingId("");
+    }
   };
 
   const handleApproveDeposit = async (depositId: string) => {
     setDepositsActionLoadingId(depositId);
     try {
       const res = await adminApi.approveDeposit(depositId);
-      if (!res.success) { toast.error(res.error?.message || 'Failed to approve deposit'); return; }
-      toast.success('Deposit approved'); await listAll();
-    } finally { setDepositsActionLoadingId(''); }
+      if (!res.success) {
+        toast.error(res.error?.message || "Failed to approve deposit");
+        return;
+      }
+      toast.success("Deposit approved");
+      await listAll();
+    } finally {
+      setDepositsActionLoadingId("");
+    }
   };
 
   const handleRejectDeposit = async (depositId: string) => {
     setDepositsActionLoadingId(depositId);
     try {
-      const res = await adminApi.rejectDeposit(depositId, 'Admin rejection');
-      if (!res.success) { toast.error(res.error?.message || 'Failed to reject deposit'); return; }
-      toast.success('Deposit rejected'); await listAll();
-    } finally { setDepositsActionLoadingId(''); }
+      const res = await adminApi.rejectDeposit(depositId, "Admin rejection");
+      if (!res.success) {
+        toast.error(res.error?.message || "Failed to reject deposit");
+        return;
+      }
+      toast.success("Deposit rejected");
+      await listAll();
+    } finally {
+      setDepositsActionLoadingId("");
+    }
   };
-
+  // @ts-ignore
   const handleVerifyFlutterwave = async (depositId: string) => {
     setDepositsActionLoadingId(depositId);
     try {
       const res = await adminApi.verifyFlutterwave(depositId);
       if (!res.success) {
-        toast.error(res.error?.message || 'Verification failed');
+        toast.error(res.error?.message || "Verification failed");
         return;
       }
-      toast.success('Transaction verified and credited!');
+      toast.success("Transaction verified and credited!");
       await listAll();
     } finally {
-      setDepositsActionLoadingId('');
+      setDepositsActionLoadingId("");
     }
   };
-
-  const initials = (name: string) => name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
+  // @ts-ignore
+  const initials = (name: string) =>
+    name
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "?";
+  // @ts-ignore
   const kycStatusTag = (status: string) => {
     const st = status.toLowerCase();
-    if (st.includes('verified') || st.includes('approved')) return <span className="adm-tag adm-tag-green">{status}</span>;
-    if (st.includes('reject') || st.includes('denied')) return <span className="adm-tag adm-tag-red">{status}</span>;
-    return <span className="adm-tag adm-tag-amber">{status || 'Pending'}</span>;
+    if (st.includes("verified") || st.includes("approved"))
+      return <span className="adm-tag adm-tag-green">{status}</span>;
+    if (st.includes("reject") || st.includes("denied"))
+      return <span className="adm-tag adm-tag-red">{status}</span>;
+    return <span className="adm-tag adm-tag-amber">{status || "Pending"}</span>;
   };
 
   /* ── Loading skeleton ── */
- if (loading) {
-   return (
-     <div className="adm">
-       <style>{CSS}</style>
-       <div className="adm-page">
-         <div className="adm-header">
-           <div>
-             <h1>Admin Dashboard</h1>
-             <p>Users, KYC, and deposit approvals</p>
-           </div>
-         </div>
-         <AdminSkeleton />
-       </div>
-     </div>
-   );
- }
+  if (loading) {
+    return (
+      <div className="adm">
+        <style>{CSS}</style>
+        <div className="adm-page">
+          <div className="adm-header">
+            <div>
+              <h1>Admin Dashboard</h1>
+              <p>Users, KYC, and deposit approvals</p>
+            </div>
+          </div>
+          <AdminSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   /* ── Main render ── */
   return (
     <div className="adm">
       <style>{CSS}</style>
       <div className="adm-container">
-        
         {/* Header */}
         <header className="adm-header">
           <div>
             <h1>Admin Dashboard</h1>
             <p>System overview, user management, and transaction approvals.</p>
           </div>
-          <button className="adm-btn-refresh" onClick={() => void listAll()} disabled={loading}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+          <button
+            className="adm-btn-refresh"
+            onClick={() => void listAll()}
+            disabled={loading}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
               <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
             </svg>
-            {loading ? 'Refreshing...' : 'Refresh'}
+            {loading ? "Refreshing..." : "Refresh"}
           </button>
         </header>
 
@@ -698,52 +810,99 @@ const AdminDashboardPage: React.FC = () => {
         {/* Stats Row */}
         <div className="adm-stats-grid">
           {[
-            { label: 'Total Users', value: totalUsers, sub: 'Registered accounts', color: '#3b82f6' },
-            { label: 'Active Users', value: activeUsers, sub: 'In good standing', color: '#10b981' },
-            { label: 'Suspended', value: suspendedUsers, sub: 'Access restricted', color: '#ef4444' },
-            { label: 'KYC Pending', value: kycCounts.pending, sub: 'Needs review', color: '#f59e0b' },
-          ].map(s => (
+            {
+              label: "Total Users",
+              value: totalUsers,
+              sub: "Registered accounts",
+              color: "#3b82f6",
+            },
+            {
+              label: "Active Users",
+              value: activeUsers,
+              sub: "In good standing",
+              color: "#10b981",
+            },
+            {
+              label: "Suspended",
+              value: suspendedUsers,
+              sub: "Access restricted",
+              color: "#ef4444",
+            },
+            {
+              label: "KYC Pending",
+              value: kycCounts.pending,
+              sub: "Needs review",
+              color: "#f59e0b",
+            },
+          ].map((s) => (
             <div key={s.label} className="adm-stat-card">
               <div className="adm-stat-label">{s.label}</div>
-              <div className="adm-stat-value" style={{ color: s.color }}>{s.value}</div>
+              <div className="adm-stat-value" style={{ color: s.color }}>
+                {s.value}
+              </div>
               <div className="adm-stat-footer">{s.sub}</div>
             </div>
           ))}
         </div>
 
         {/* Status Breakdown Section */}
-        <section className="adm-card" style={{ marginBottom: '32px' }}>
+        <section className="adm-card" style={{ marginBottom: "32px" }}>
           <div className="adm-card-header">
             <h3>Status Breakdown</h3>
           </div>
-          <div className="adm-chart-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+          <div
+            className="adm-chart-container"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "32px",
+            }}
+          >
             <Donut
               total={totalUsers}
               label="Users"
               segments={[
-                { label: 'Active', value: activeUsers, color: 'var(--green)' },
-                { label: 'Suspended', value: suspendedUsers, color: 'var(--red)' },
+                { label: "Active", value: activeUsers, color: "var(--green)" },
+                {
+                  label: "Suspended",
+                  value: suspendedUsers,
+                  color: "var(--red)",
+                },
               ]}
             />
             <Donut
               total={kycSubmissions.length}
               label="KYC"
               segments={[
-                { label: 'Verified', value: kycCounts.verified, color: 'var(--green)' },
-                { label: 'Pending', value: kycCounts.pending, color: 'var(--amber)' },
-                { label: 'Rejected', value: kycCounts.rejected, color: 'var(--red)' },
+                {
+                  label: "Verified",
+                  value: kycCounts.verified,
+                  color: "var(--green)",
+                },
+                {
+                  label: "Pending",
+                  value: kycCounts.pending,
+                  color: "var(--amber)",
+                },
+                {
+                  label: "Rejected",
+                  value: kycCounts.rejected,
+                  color: "var(--red)",
+                },
               ]}
             />
           </div>
         </section>
 
         {/* Main Content Area */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           {/* Pending Deposits */}
           <section className="adm-card">
             <div className="adm-card-header">
               <h3>Pending Deposits</h3>
-              <span className="adm-tag adm-tag-warning">{pendingDeposits.length} Pending</span>
+              <span className="adm-tag adm-tag-warning">
+                {pendingDeposits.length} Pending
+              </span>
             </div>
             <div className="adm-card-content">
               <table className="adm-table">
@@ -758,16 +917,42 @@ const AdminDashboardPage: React.FC = () => {
                 </thead>
                 <tbody>
                   {pendingDeposits.length === 0 ? (
-                    <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--muted)', padding: '40px' }}>No pending deposits</td></tr>
+                    <tr>
+                      <td
+                        colSpan={5}
+                        style={{
+                          textAlign: "center",
+                          color: "var(--muted)",
+                          padding: "40px",
+                        }}
+                      >
+                        No pending deposits
+                      </td>
+                    </tr>
                   ) : (
                     pendingDeposits.map((d, i) => (
                       <tr key={String(d.id || i)}>
-                        <td style={{ fontWeight: 600 }}>#{String(d.id || '-').slice(0, 8)}</td>
-                        <td style={{ fontWeight: 700 }}>{fmt(Number(d.amount || 0))}</td>
-                        <td><span className="adm-tag adm-tag-info">{String(d.currency || 'NGN')}</span></td>
-                        <td style={{ color: 'var(--muted)' }}>{String(d.provider || 'Flutterwave')}</td>
+                        <td style={{ fontWeight: 600 }}>
+                          #{String(d.id || "-").slice(0, 8)}
+                        </td>
+                        <td style={{ fontWeight: 700 }}>
+                          {fmt(Number(d.amount || 0))}
+                        </td>
                         <td>
-                          <button className="adm-btn-action" onClick={() => setSelectedDeposit(d)}>View</button>
+                          <span className="adm-tag adm-tag-info">
+                            {String(d.currency || "NGN")}
+                          </span>
+                        </td>
+                        <td style={{ color: "var(--muted)" }}>
+                          {String(d.provider || "Flutterwave")}
+                        </td>
+                        <td>
+                          <button
+                            className="adm-btn-action"
+                            onClick={() => setSelectedDeposit(d)}
+                          >
+                            View
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -781,7 +966,9 @@ const AdminDashboardPage: React.FC = () => {
           <section className="adm-card">
             <div className="adm-card-header">
               <h3>KYC Submissions</h3>
-              <span className="adm-tag adm-tag-info">{kycSubmissions.length} Total</span>
+              <span className="adm-tag adm-tag-info">
+                {kycSubmissions.length} Total
+              </span>
             </div>
             <div className="adm-card-content">
               <table className="adm-table">
@@ -795,34 +982,59 @@ const AdminDashboardPage: React.FC = () => {
                 </thead>
                 <tbody>
                   {kycSubmissions.length === 0 ? (
-                    <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--muted)', padding: '40px' }}>No KYC submissions</td></tr>
+                    <tr>
+                      <td
+                        colSpan={4}
+                        style={{
+                          textAlign: "center",
+                          color: "var(--muted)",
+                          padding: "40px",
+                        }}
+                      >
+                        No KYC submissions
+                      </td>
+                    </tr>
                   ) : (
                     kycSubmissions.slice(0, 10).map((k, i) => {
-                      const status = String(k.status || 'pending').toLowerCase();
+                      const status = String(
+                        k.status || "pending",
+                      ).toLowerCase();
                       return (
                         <tr key={String(k.id || i)}>
-                          <td style={{ fontWeight: 600 }}>{String(k.userEmail || k.user || '-')}</td>
+                          <td style={{ fontWeight: 600 }}>
+                            {String(k.userEmail || k.user || "-")}
+                          </td>
                           <td>
-                            <span className={`adm-tag ${status.includes('approved') ? 'adm-tag-success' : status.includes('rejected') ? 'adm-tag-error' : 'adm-tag-warning'}`}>
+                            <span
+                              className={`adm-tag ${status.includes("approved") ? "adm-tag-success" : status.includes("rejected") ? "adm-tag-error" : "adm-tag-warning"}`}
+                            >
                               {status}
                             </span>
                           </td>
-                          <td style={{ color: 'var(--muted)' }}>
-                            {k.createdAt ? new Date(String(k.createdAt)).toLocaleDateString() : '-'}
+                          <td style={{ color: "var(--muted)" }}>
+                            {k.createdAt
+                              ? new Date(
+                                  String(k.createdAt),
+                                ).toLocaleDateString()
+                              : "-"}
                           </td>
                           <td>
-                            <div style={{ display: 'flex', gap: 8 }}>
-                              <button 
-                                className="adm-btn-action" 
-                                style={{ color: 'var(--green)' }}
-                                onClick={() => void handleApproveKyc(String(k.id))}
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <button
+                                className="adm-btn-action"
+                                style={{ color: "var(--green)" }}
+                                onClick={() =>
+                                  void handleApproveKyc(String(k.id))
+                                }
                               >
                                 Approve
                               </button>
-                              <button 
-                                className="adm-btn-action" 
-                                style={{ color: 'var(--red)' }}
-                                onClick={() => void handleRejectKyc(String(k.id))}
+                              <button
+                                className="adm-btn-action"
+                                style={{ color: "var(--red)" }}
+                                onClick={() =>
+                                  void handleRejectKyc(String(k.id))
+                                }
                               >
                                 Reject
                               </button>
@@ -841,7 +1053,9 @@ const AdminDashboardPage: React.FC = () => {
           <section className="adm-card">
             <div className="adm-card-header">
               <h3>Open Disputes</h3>
-              <span className="adm-tag adm-tag-error">{disputes.length} Open</span>
+              <span className="adm-tag adm-tag-error">
+                {disputes.length} Open
+              </span>
             </div>
             <div className="adm-card-content">
               <table className="adm-table">
@@ -856,15 +1070,36 @@ const AdminDashboardPage: React.FC = () => {
                 </thead>
                 <tbody>
                   {disputes.length === 0 ? (
-                    <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--muted)', padding: '40px' }}>No open disputes</td></tr>
+                    <tr>
+                      <td
+                        colSpan={5}
+                        style={{
+                          textAlign: "center",
+                          color: "var(--muted)",
+                          padding: "40px",
+                        }}
+                      >
+                        No open disputes
+                      </td>
+                    </tr>
                   ) : (
                     disputes.slice(0, 10).map((d, i) => (
                       <tr key={String(d.id || i)}>
-                        <td style={{ fontWeight: 600 }}>#{String(d.id || '-').slice(0, 8)}</td>
-                        <td>{String(d.userEmail || d.user || '-')}</td>
-                        <td style={{ color: 'var(--muted)' }}>{String(d.reason || d.subject || 'No reason')}</td>
-                        <td>{d.createdAt ? new Date(String(d.createdAt)).toLocaleDateString() : '-'}</td>
-                        <td><span className="adm-tag adm-tag-warning">Open</span></td>
+                        <td style={{ fontWeight: 600 }}>
+                          #{String(d.id || "-").slice(0, 8)}
+                        </td>
+                        <td>{String(d.userEmail || d.user || "-")}</td>
+                        <td style={{ color: "var(--muted)" }}>
+                          {String(d.reason || d.subject || "No reason")}
+                        </td>
+                        <td>
+                          {d.createdAt
+                            ? new Date(String(d.createdAt)).toLocaleDateString()
+                            : "-"}
+                        </td>
+                        <td>
+                          <span className="adm-tag adm-tag-warning">Open</span>
+                        </td>
                       </tr>
                     ))
                   )}
@@ -878,57 +1113,199 @@ const AdminDashboardPage: React.FC = () => {
       {/* Deposit detail modal */}
       {selectedDeposit && (
         <div className="adm-overlay" onClick={() => setSelectedDeposit(null)}>
-          <div className="adm-modal" onClick={e => e.stopPropagation()}>
+          <div className="adm-modal" onClick={(e) => e.stopPropagation()}>
             <div className="adm-modal-header">
-              <h2 style={{ margin: 0, fontFamily: 'Bricolage Grotesque', fontSize: '20px' }}>Deposit Details</h2>
-              <button style={{ border: 'none', background: 'none', fontSize: '24px', cursor: 'pointer', color: 'var(--muted)' }} onClick={() => setSelectedDeposit(null)}>×</button>
+              <h2
+                style={{
+                  margin: 0,
+                  fontFamily: "Bricolage Grotesque",
+                  fontSize: "20px",
+                }}
+              >
+                Deposit Details
+              </h2>
+              <button
+                style={{
+                  border: "none",
+                  background: "none",
+                  fontSize: "24px",
+                  cursor: "pointer",
+                  color: "var(--muted)",
+                }}
+                onClick={() => setSelectedDeposit(null)}
+              >
+                ×
+              </button>
             </div>
             <div className="adm-modal-body">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "20px",
+                  marginBottom: "24px",
+                }}
+              >
                 {[
-                  { label: 'ID', value: String(selectedDeposit.id || selectedDeposit.depositId || '-') },
-                  { label: 'User', value: String(selectedDeposit.userEmail || selectedDeposit.email || selectedDeposit.user || '-') },
-                  { label: 'Amount', value: `${fmt(Number(selectedDeposit.amount || 0))} ${String(selectedDeposit.currency || '-')}` },
-                  { label: 'Provider', value: String(selectedDeposit.provider || selectedDeposit.gateway || '-') },
-                  { label: 'Status', value: String(selectedDeposit.status || 'Pending') },
-                  { label: 'Date', value: String(selectedDeposit.createdAt || selectedDeposit.date ? new Date(String(selectedDeposit.createdAt || selectedDeposit.date)).toLocaleString() : '-') },
-                ].map(f => (
+                  {
+                    label: "ID",
+                    value: String(
+                      selectedDeposit.id || selectedDeposit.depositId || "-",
+                    ),
+                  },
+                  {
+                    label: "User",
+                    value: String(
+                      selectedDeposit.userEmail ||
+                        selectedDeposit.email ||
+                        selectedDeposit.user ||
+                        "-",
+                    ),
+                  },
+                  {
+                    label: "Amount",
+                    value: `${fmt(Number(selectedDeposit.amount || 0))} ${String(selectedDeposit.currency || "-")}`,
+                  },
+                  {
+                    label: "Provider",
+                    value: String(
+                      selectedDeposit.provider ||
+                        selectedDeposit.gateway ||
+                        "-",
+                    ),
+                  },
+                  {
+                    label: "Status",
+                    value: String(selectedDeposit.status || "Pending"),
+                  },
+                  {
+                    label: "Date",
+                    value: String(
+                      selectedDeposit.createdAt || selectedDeposit.date
+                        ? new Date(
+                            String(
+                              selectedDeposit.createdAt || selectedDeposit.date,
+                            ),
+                          ).toLocaleString()
+                        : "-",
+                    ),
+                  },
+                ].map((f) => (
                   <div key={f.label}>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{f.label}</label>
-                    <div style={{ fontWeight: 700, marginTop: 4, fontSize: '15px' }}>{f.value}</div>
+                    <label
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "var(--muted)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      {f.label}
+                    </label>
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        marginTop: 4,
+                        fontSize: "15px",
+                      }}
+                    >
+                      {f.value}
+                    </div>
                   </div>
                 ))}
               </div>
-              
+
               {/* Proof of Payment */}
               {(() => {
-                const proofUrl = String(selectedDeposit.proof || selectedDeposit.proof_url || selectedDeposit.documentUrl || "");
+                const proofUrl = String(
+                  selectedDeposit.proof ||
+                    selectedDeposit.proof_url ||
+                    selectedDeposit.documentUrl ||
+                    "",
+                );
                 if (!proofUrl) return null;
                 return (
                   <div style={{ marginTop: 24 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>Proof of Payment</label>
-                      <a href={proofUrl} download target="_blank" rel="noreferrer" className="adm-btn-action" style={{ textDecoration: 'none' }}>Download</a>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 12,
+                      }}
+                    >
+                      <label
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          color: "var(--muted)",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Proof of Payment
+                      </label>
+                      <a
+                        href={proofUrl}
+                        download
+                        target="_blank"
+                        rel="noreferrer"
+                        className="adm-btn-action"
+                        style={{ textDecoration: "none" }}
+                      >
+                        Download
+                      </a>
                     </div>
-                    <div style={{ border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
-                      <img src={proofUrl} alt="Proof" style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', background: '#f8fafc' }} />
+                    <div
+                      style={{
+                        border: "1px solid var(--border)",
+                        borderRadius: "12px",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <img
+                        src={proofUrl}
+                        alt="Proof"
+                        style={{
+                          width: "100%",
+                          maxHeight: "300px",
+                          objectFit: "contain",
+                          background: "#f8fafc",
+                        }}
+                      />
                     </div>
                   </div>
                 );
               })()}
             </div>
             <div className="adm-modal-footer">
-              <button 
-                className="adm-btn-action" 
-                style={{ padding: '10px 20px', color: 'var(--red)', borderColor: 'var(--red)', fontWeight: 700 }}
-                onClick={() => { void handleRejectDeposit(String(selectedDeposit.id)); setSelectedDeposit(null); }}
+              <button
+                className="adm-btn-action"
+                style={{
+                  padding: "10px 20px",
+                  color: "var(--red)",
+                  borderColor: "var(--red)",
+                  fontWeight: 700,
+                }}
+                onClick={() => {
+                  void handleRejectDeposit(String(selectedDeposit.id));
+                  setSelectedDeposit(null);
+                }}
               >
                 Reject
               </button>
-              <button 
-                className="adm-btn-action" 
-                style={{ padding: '10px 20px', background: 'var(--text)', color: 'white', fontWeight: 700 }}
-                onClick={() => { void handleApproveDeposit(String(selectedDeposit.id)); setSelectedDeposit(null); }}
+              <button
+                className="adm-btn-action"
+                style={{
+                  padding: "10px 20px",
+                  background: "var(--text)",
+                  color: "white",
+                  fontWeight: 700,
+                }}
+                onClick={() => {
+                  void handleApproveDeposit(String(selectedDeposit.id));
+                  setSelectedDeposit(null);
+                }}
               >
                 Approve (Manual)
               </button>
@@ -940,36 +1317,120 @@ const AdminDashboardPage: React.FC = () => {
       {/* User detail modal */}
       {selectedUser && (
         <div className="adm-overlay" onClick={() => setSelectedUser(null)}>
-          <div className="adm-modal" onClick={e => e.stopPropagation()}>
+          <div className="adm-modal" onClick={(e) => e.stopPropagation()}>
             <div className="adm-modal-header">
-              <h2 style={{ margin: 0, fontFamily: 'Bricolage Grotesque', fontSize: '20px' }}>User Details</h2>
-              <button style={{ border: 'none', background: 'none', fontSize: '24px', cursor: 'pointer', color: 'var(--muted)' }} onClick={() => setSelectedUser(null)}>×</button>
+              <h2
+                style={{
+                  margin: 0,
+                  fontFamily: "Bricolage Grotesque",
+                  fontSize: "20px",
+                }}
+              >
+                User Details
+              </h2>
+              <button
+                style={{
+                  border: "none",
+                  background: "none",
+                  fontSize: "24px",
+                  cursor: "pointer",
+                  color: "var(--muted)",
+                }}
+                onClick={() => setSelectedUser(null)}
+              >
+                ×
+              </button>
             </div>
             <div className="adm-modal-body">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "20px",
+                  marginBottom: "24px",
+                }}
+              >
                 {[
-                  { label: 'Name', value: String(selectedUser.name || [selectedUser.firstName, selectedUser.lastName].filter(Boolean).join(' ') || '—') },
-                  { label: 'Email', value: String(selectedUser.email || '—') },
-                  { label: 'Role', value: String(selectedUser.role || '—') },
-                  { label: 'Status', value: isSuspended(selectedUser) ? 'Suspended' : 'Active' },
-                  { label: 'Phone', value: String(selectedUser.phone || selectedUser.phoneNumber || '—') },
-                  { label: 'KYC Status', value: String(selectedUser.kyc_status || selectedUser.kycStatus || '—') },
-                ].map(f => (
+                  {
+                    label: "Name",
+                    value: String(
+                      selectedUser.name ||
+                        [selectedUser.firstName, selectedUser.lastName]
+                          .filter(Boolean)
+                          .join(" ") ||
+                        "—",
+                    ),
+                  },
+                  { label: "Email", value: String(selectedUser.email || "—") },
+                  { label: "Role", value: String(selectedUser.role || "—") },
+                  {
+                    label: "Status",
+                    value: isSuspended(selectedUser) ? "Suspended" : "Active",
+                  },
+                  {
+                    label: "Phone",
+                    value: String(
+                      selectedUser.phone || selectedUser.phoneNumber || "—",
+                    ),
+                  },
+                  {
+                    label: "KYC Status",
+                    value: String(
+                      selectedUser.kyc_status || selectedUser.kycStatus || "—",
+                    ),
+                  },
+                ].map((f) => (
                   <div key={f.label}>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{f.label}</label>
-                    <div style={{ fontWeight: 700, marginTop: 4, fontSize: '15px' }}>{f.value}</div>
+                    <label
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "var(--muted)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      {f.label}
+                    </label>
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        marginTop: 4,
+                        fontSize: "15px",
+                      }}
+                    >
+                      {f.value}
+                    </div>
                   </div>
                 ))}
               </div>
               <div style={{ marginTop: 20 }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.6px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>Raw JSON</div>
-                <pre className="adm-modal-pre">{JSON.stringify(selectedUser, null, 2)}</pre>
+                <div
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    letterSpacing: ".6px",
+                    textTransform: "uppercase",
+                    color: "var(--muted)",
+                    marginBottom: 6,
+                  }}
+                >
+                  Raw JSON
+                </div>
+                <pre className="adm-modal-pre">
+                  {JSON.stringify(selectedUser, null, 2)}
+                </pre>
               </div>
             </div>
             <div className="adm-modal-footer">
               <button
                 className="adm-btn-action"
-                style={{ padding: '10px 20px', background: 'var(--text)', color: 'white', fontWeight: 700 }}
+                style={{
+                  padding: "10px 20px",
+                  background: "var(--text)",
+                  color: "white",
+                  fontWeight: 700,
+                }}
                 onClick={() => setSelectedUser(null)}
               >
                 Close

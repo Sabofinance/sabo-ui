@@ -237,6 +237,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  width: 100%;
 }
 
 .mobile-login:hover {
@@ -255,6 +256,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  width: 100%;
 }
 
 .mobile-join:hover {

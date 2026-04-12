@@ -22,13 +22,13 @@ const SettingsPage: React.FC = () => {
   });
 
   // Notification states
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(false);
-  const [marketingEmails, setMarketingEmails] = useState(false);
+  // const [emailNotifications, setEmailNotifications] = useState(true);
+  // const [pushNotifications, setPushNotifications] = useState(false);
+  // const [marketingEmails, setMarketingEmails] = useState(false);
 
   // Appearance states
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('light');
-  const [accentColor, setAccentColor] = useState('#C8F032');
+  // const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('light');
+  // const [accentColor, setAccentColor] = useState('#C8F032');
   const [passwordMessage, setPasswordMessage] = useState('');
 
   // Email change flow (2-step)

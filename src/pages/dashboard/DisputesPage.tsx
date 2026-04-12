@@ -454,7 +454,8 @@ const DisputesPage: React.FC = () => {
           <div style={{ marginTop: 24 }}>
             <Pagination
               currentPage={currentPage}
-              totalPages={totalPages}
+              total={totalPages}
+              limit={10}
               onPageChange={(p) => void load(p)}
               isLoading={loading}
             />

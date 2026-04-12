@@ -38,21 +38,22 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (authUser) {
+
       setUser({
         name: authUser.name || "",
         username: authUser.username || "",
         email: authUser.email || "",
         phone: authUser.phone || authUser.phoneNumber || "",
-        joined: authUser.created_at || authUser.createdAt
-          ? new Date(authUser.created_at || authUser.createdAt).toLocaleDateString("en-US", {
+        joined: authUser.createdAt || authUser.createdAt
+          ? new Date(authUser.createdAt || authUser.createdAt).toLocaleDateString("en-US", {
               month: "long",
               day: "numeric",
               year: "numeric",
             })
           : "N/A",
         avatar: authUser.profile_picture_url
-          ? `${authUser.profile_picture_url}?t=${authUser.updated_at || Date.now()}`
-          : `https://i.pravatar.cc/300?u=${authUser.id || "user"}`,
+          ? `${authUser.profile_picture_url}?t=${authUser.updatedAt || Date.now()}`
+          : `/default.jpg`,
         kycStatus: authUser.kyc_status || 'unverified',
         isSuspended: !!authUser.is_suspended,
       });

@@ -14,9 +14,7 @@ import {
   Clock,
   User,
   FileText,
-  Calendar,
   ExternalLink,
-  ChevronRight
 } from 'lucide-react';
 
 type KycRecord = Record<string, any>;

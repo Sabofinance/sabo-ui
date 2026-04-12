@@ -10,13 +10,21 @@ interface UserProtectedRouteProps {
 
 const UserProtectedRoute: React.FC<UserProtectedRouteProps> = ({ children }) => {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const { isAdminAuthenticated, isAdminLoading } = useAdminAuth();
+  const { isAdminLoading } = useAdminAuth();
   const location = useLocation();
 
   if (isLoading || isAdminLoading) return <AppLoader />;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  const kycStatus = String(user?.kyc_status || "").toLowerCase();
+  const isVerified = kycStatus === "verified";
+  const isKycRoute = location.pathname === "/dashboard/kyc";
+
+  if (!isVerified && !isKycRoute) {
+    return <Navigate to="/dashboard/kyc" replace />;
   }
 
   return <>{children}</>;

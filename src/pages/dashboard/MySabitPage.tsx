@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import '../../assets/css/MySabitPage.css';
 import { sabitsApi } from '../../lib/api';
 import { extractArray } from '../../lib/api/response';
@@ -24,7 +23,7 @@ interface MySabitListing {
 }
 
 const MySabitPage: React.FC = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { user } = useAuth();
 
   // Debugging logs for status tracing

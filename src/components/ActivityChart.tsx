@@ -19,7 +19,7 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ points, loading, error })
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const safePoints = Array.isArray(points) ? points : [];
   const maxVolume = safePoints.length ? Math.max(...safePoints.map((d) => d.volume)) : 0;
-  const maxTrades = safePoints.length ? Math.max(...safePoints.map((d) => d.trades)) : 0;
+  // const maxTrades = safePoints.length ? Math.max(...safePoints.map((d) => d.trades)) : 0;
 
   const formatCurrency = (value: number): string => {
     if (value >= 1000000) return `₦${(value / 1000000).toFixed(1)}M`;
@@ -27,10 +27,10 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ points, loading, error })
     return `₦${value.toLocaleString()}`;
   };
 
-  const totalTrades = safePoints.reduce((sum, d) => sum + d.trades, 0);
+  // const totalTrades = safePoints.reduce((sum, d) => sum + d.trades, 0);
   const totalVolume = safePoints.reduce((sum, d) => sum + d.volume, 0);
-  const avgPerTrade = totalTrades > 0 ? totalVolume / totalTrades : 0;
-  const activeTraders = totalTrades > 0 ? Math.max(1, Math.round(totalTrades / 6)) : 0;
+  // const avgPerTrade = totalTrades > 0 ? totalVolume / totalTrades : 0;
+  // const activeTraders = totalTrades > 0 ? Math.max(1, Math.round(totalTrades / 6)) : 0;
 
   if (loading) {
     return (

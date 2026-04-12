@@ -24,6 +24,7 @@ const ContactPage     = lazy(() => import('./pages/ContactPage').then(m => ({ de
 const LoginPage       = lazy(() => import('./pages/LoginPage'));
 const SignupPage      = lazy(() => import('./pages/SignupPage'));
 const AccountDeletedPage = lazy(() => import('./pages/AccountDeletedPage'));
+const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage'));
 
 /* ── New Public Pages ── */
 const SabitMarketPage = lazy(() => import('./pages/SabitMarketPage'));
@@ -92,7 +93,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const AdminPublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const {  isLoading } = useAuth();
   const { isAdminAuthenticated, isAdminLoading } = useAdminAuth();
 
   if (isLoading || isAdminLoading) return <AppLoader />;
@@ -119,71 +120,415 @@ function App() {
       <Router>
         <Suspense fallback={<AppLoader />}>
           <Routes>
-          {/* Public Routes */}
-          <Route path="/"          element={<HomePage />}         />
-          <Route path="/about"     element={<AboutPage />}        />
-          <Route path="/features"  element={<FeaturesPage />}     />
-          <Route path="/faq"       element={<FaqPage />}          />
-          <Route path="/contact"   element={<ContactPage />}      />
-          <Route path="/login"     element={<PublicRoute><LoginPage /></PublicRoute>} />
-          <Route path="/signup"    element={<PublicRoute><SignupPage /></PublicRoute>} />
-          <Route path="/verify-otp" element={<PublicRoute><VerifyOtpPage /></PublicRoute>} />
-          <Route path="/verify-email" element={<PublicRoute><VerifyEmailPage /></PublicRoute>} />
-          <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
-          <Route path="/reset-password"  element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
-          <Route path="/account-deleted" element={<PublicRoute><AccountDeletedPage /></PublicRoute>} />
+            {/* Public Routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/features" element={<FeaturesPage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <LoginPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/signup"
+              element={
+                <PublicRoute>
+                  <SignupPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/verify-otp"
+              element={
+                <PublicRoute>
+                  <VerifyOtpPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/verify-email"
+              element={
+                <PublicRoute>
+                  <VerifyEmailPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <PublicRoute>
+                  <ForgotPasswordPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/reset-password"
+              element={
+                <PublicRoute>
+                  <ResetPasswordPage />
+                </PublicRoute>
+              }
+            />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
+            <Route
+              path="/account-deleted"
+              element={
+                <PublicRoute>
+                  <AccountDeletedPage />
+                </PublicRoute>
+              }
+            />
 
-          {/* Admin auth routes */}
-          <Route path="/admin/login" element={<AdminPublicRoute><AdminLoginPage /></AdminPublicRoute>} />
-          <Route path="/admin/verify-otp" element={<AdminPublicRoute><AdminVerifyOtpPage /></AdminPublicRoute>} />
-          <Route path="/admin/accept-invite" element={<AdminPublicRoute><AdminAcceptInvitePage /></AdminPublicRoute>} />
+            {/* Admin auth routes */}
+            <Route
+              path="/admin/login"
+              element={
+                <AdminPublicRoute>
+                  <AdminLoginPage />
+                </AdminPublicRoute>
+              }
+            />
+            <Route
+              path="/admin/verify-otp"
+              element={
+                <AdminPublicRoute>
+                  <AdminVerifyOtpPage />
+                </AdminPublicRoute>
+              }
+            />
+            <Route
+              path="/admin/accept-invite"
+              element={
+                <AdminPublicRoute>
+                  <AdminAcceptInvitePage />
+                </AdminPublicRoute>
+              }
+            />
 
-          <Route path="/p2p"       element={<SabitMarketPage />}  />
-          <Route path="/business"  element={<SaboBusinessPage />} />
+            <Route path="/p2p" element={<SabitMarketPage />} />
+            <Route path="/business" element={<SaboBusinessPage />} />
 
-          {/* Dashboard Routes (Protected) */}
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<UserProtectedRoute><DashboardPage /></UserProtectedRoute>} />
-            <Route path="active-sabits"   element={<UserProtectedRoute><ActiveSabitPage /></UserProtectedRoute>} />
-            <Route path="my-sabits"       element={<UserProtectedRoute><MySabitPage /></UserProtectedRoute>} />
-            <Route path="history"         element={<UserProtectedRoute><HistoryPage /></UserProtectedRoute>} />
-            <Route path="chat"            element={<UserProtectedRoute><ChatPage /></UserProtectedRoute>} />
-            <Route path="profile"         element={<UserProtectedRoute><ProfilePage /></UserProtectedRoute>} />
-            <Route path="settings"        element={<UserProtectedRoute><SettingsPage /></UserProtectedRoute>} />
-            <Route path="transaction-pin" element={<UserProtectedRoute><TransactionPinPage /></UserProtectedRoute>} />
-            <Route path="transaction/:id" element={<UserProtectedRoute><TransactionPage /></UserProtectedRoute>} />
-            <Route path="wallets"         element={<UserProtectedRoute><WalletsPage /></UserProtectedRoute>} />
-            <Route path="wallets/:currency" element={<UserProtectedRoute><WalletDetailPage /></UserProtectedRoute>} />
-            <Route path="ledger"          element={<UserProtectedRoute><LedgerPage /></UserProtectedRoute>} />
-            <Route path="deposits"        element={<UserProtectedRoute><DepositsPage /></UserProtectedRoute>} />
-            <Route path="deposits/callback" element={<UserProtectedRoute><DepositDetailPage /></UserProtectedRoute>} />
-            <Route path="deposits/:id"    element={<UserProtectedRoute><DepositDetailPage /></UserProtectedRoute>} />
-            <Route path="deposit"         element={<UserProtectedRoute><DepositPage /></UserProtectedRoute>} />
-            <Route path="deposit-pending" element={<UserProtectedRoute><DepositPendingPage /></UserProtectedRoute>} />
-            <Route path="withdrawals"     element={<UserProtectedRoute><WithdrawalsPage /></UserProtectedRoute>} />
-            <Route path="withdrawals/:id" element={<UserProtectedRoute><WithdrawalDetailPage /></UserProtectedRoute>} />
-            <Route path="beneficiaries"   element={<UserProtectedRoute><BeneficiariesPage /></UserProtectedRoute>} />
-            <Route path="conversions"     element={<UserProtectedRoute><ConversionsPage /></UserProtectedRoute>} />
-            <Route path="trades"          element={<UserProtectedRoute><TradesPage /></UserProtectedRoute>} />
-            <Route path="bids"            element={<UserProtectedRoute><MyBidsPage /></UserProtectedRoute>} />
-            <Route path="trade/:id"       element={<UserProtectedRoute><TradeDetailPage /></UserProtectedRoute>} />
-            <Route path="disputes"        element={<UserProtectedRoute><DisputesPage /></UserProtectedRoute>} />
-            <Route path="notifications"   element={<UserProtectedRoute><NotificationsPage /></UserProtectedRoute>} />
-            <Route path="kyc"             element={<UserProtectedRoute><KycPage /></UserProtectedRoute>} />
-            <Route path="admin" element={<AdminProtectedRoute><AdminDashboardPage /></AdminProtectedRoute>} />
-            <Route path="admin/users" element={<AdminProtectedRoute><AdminUsersPage /></AdminProtectedRoute>} />
-            <Route path="admin/users/:id" element={<AdminProtectedRoute><AdminUserDetailsPage /></AdminProtectedRoute>} />
-            <Route path="admin/kyc" element={<AdminProtectedRoute><AdminKycPage /></AdminProtectedRoute>} />
-            <Route path="admin/deposits" element={<AdminProtectedRoute><AdminDepositsPage /></AdminProtectedRoute>} />
-            <Route path="admin/withdrawals" element={<AdminProtectedRoute><AdminWithdrawalsPage /></AdminProtectedRoute>} />
-            <Route path="admin/disputes" element={<AdminProtectedRoute><AdminDisputesPage /></AdminProtectedRoute>} />
-            <Route path="admin/transactions" element={<AdminProtectedRoute><AdminTransactionsPage /></AdminProtectedRoute>} />
-            {/* <Route path="admin/analytics" element={<AdminProtectedRoute><AdminAnalyticsPage /></AdminProtectedRoute>} /> */}
-            <Route path="admin/analytics/metrics" element={<AdminProtectedRoute><AdminMetricsPage /></AdminProtectedRoute>} />
-            <Route path="admin/profile" element={<AdminProtectedRoute><AdminProfilePage /></AdminProtectedRoute>} />
-            <Route path="admin/admins" element={<AdminProtectedRoute allowedRoles={["super_admin"]}><AdminAdminsPage /></AdminProtectedRoute>} />
-            <Route path="admin/logs" element={<AdminProtectedRoute allowedRoles={["super_admin"]}><AdminLogsPage /></AdminProtectedRoute>} />
-          </Route>
+            {/* Dashboard Routes (Protected) */}
+            <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route
+                index
+                element={
+                  <UserProtectedRoute>
+                    <DashboardPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="active-sabits"
+                element={
+                  <UserProtectedRoute>
+                    <ActiveSabitPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="my-sabits"
+                element={
+                  <UserProtectedRoute>
+                    <MySabitPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="history"
+                element={
+                  <UserProtectedRoute>
+                    <HistoryPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="chat"
+                element={
+                  <UserProtectedRoute>
+                    <ChatPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="profile"
+                element={
+                  <UserProtectedRoute>
+                    <ProfilePage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="settings"
+                element={
+                  <UserProtectedRoute>
+                    <SettingsPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="transaction-pin"
+                element={
+                  <UserProtectedRoute>
+                    <TransactionPinPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="transaction/:id"
+                element={
+                  <UserProtectedRoute>
+                    <TransactionPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="wallets"
+                element={
+                  <UserProtectedRoute>
+                    <WalletsPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="wallets/:currency"
+                element={
+                  <UserProtectedRoute>
+                    <WalletDetailPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="ledger"
+                element={
+                  <UserProtectedRoute>
+                    <LedgerPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="deposits"
+                element={
+                  <UserProtectedRoute>
+                    <DepositsPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="deposits/callback"
+                element={
+                  <UserProtectedRoute>
+                    <DepositDetailPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="deposits/:id"
+                element={
+                  <UserProtectedRoute>
+                    <DepositDetailPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="deposit"
+                element={
+                  <UserProtectedRoute>
+                    <DepositPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="deposit-pending"
+                element={
+                  <UserProtectedRoute>
+                    <DepositPendingPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="withdrawals"
+                element={
+                  <UserProtectedRoute>
+                    <WithdrawalsPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="withdrawals/:id"
+                element={
+                  <UserProtectedRoute>
+                    <WithdrawalDetailPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="beneficiaries"
+                element={
+                  <UserProtectedRoute>
+                    <BeneficiariesPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="conversions"
+                element={
+                  <UserProtectedRoute>
+                    <ConversionsPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="trades"
+                element={
+                  <UserProtectedRoute>
+                    <TradesPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="bids"
+                element={
+                  <UserProtectedRoute>
+                    <MyBidsPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="trade/:id"
+                element={
+                  <UserProtectedRoute>
+                    <TradeDetailPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="disputes"
+                element={
+                  <UserProtectedRoute>
+                    <DisputesPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="notifications"
+                element={
+                  <UserProtectedRoute>
+                    <NotificationsPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="kyc"
+                element={
+                  <UserProtectedRoute>
+                    <KycPage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="admin"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminDashboardPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/users"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminUsersPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/users/:id"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminUserDetailsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/kyc"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminKycPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/deposits"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminDepositsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/withdrawals"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminWithdrawalsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/disputes"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminDisputesPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/transactions"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminTransactionsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              {/* <Route path="admin/analytics" element={<AdminProtectedRoute><AdminAnalyticsPage /></AdminProtectedRoute>} /> */}
+              <Route
+                path="admin/analytics/metrics"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminMetricsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/profile"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminProfilePage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/admins"
+                element={
+                  <AdminProtectedRoute allowedRoles={["super_admin"]}>
+                    <AdminAdminsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/logs"
+                element={
+                  <AdminProtectedRoute allowedRoles={["super_admin"]}>
+                    <AdminLogsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+            </Route>
           </Routes>
         </Suspense>
       </Router>

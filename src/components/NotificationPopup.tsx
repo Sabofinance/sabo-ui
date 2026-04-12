@@ -3,6 +3,7 @@ import '../assets/css/NotificationPopup.css';
 import { useNotifications } from '../context/NotificationContext';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+// import { X } from 'lucide-react';
 
 interface NotificationPopupProps {
   onClose: () => void;
@@ -99,7 +100,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
   return (
     <>
       <div className="notification-overlay" onClick={onClose}></div>
-      
+
       <div className="notification-panel">
         <div className="panel-header">
           <div className="header-title">
@@ -108,21 +109,72 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
               <span className="unread-count">{unreadCount}</span>
             )}
           </div>
-          <button className="close-btn" onClick={onClose}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
+          <button
+            onClick={onClose}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color:"#ffffff",
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              border: "none",
+              background: "rgba(255,255,255,0.15)",
+              cursor: "pointer",
+              transition: "background 0.15s ease",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.25)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.15)")
+            }
+          >
+            X
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            >
+              <line x1="3" y1="3" x2="13" y2="13" />
+              <line x1="13" y1="3" x2="3" y2="13" />
             </svg>
           </button>
         </div>
 
         <div className="panel-actions">
-          <button className="mark-read-btn" onClick={() => { onClose(); navigate('/dashboard/notifications'); }}>
+          <button
+            className="mark-read-btn"
+            onClick={() => {
+              onClose();
+              navigate("/dashboard/notifications");
+            }}
+          >
             View all notifications
           </button>
-          <button className="mark-read-btn" onClick={handleMarkAllRead} disabled={notifications.length === 0}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round"/>
+          <button
+            className="mark-read-btn"
+            onClick={handleMarkAllRead}
+            disabled={notifications.length === 0}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <polyline
+                points="20 6 9 17 4 12"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             Mark all as read
           </button>
@@ -130,12 +182,20 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
 
         <div className="panel-list">
           {notifications.length === 0 ? (
-            <p style={{ color: '#64748B', textAlign: 'center', margin: '1rem 0' }}>No notifications.</p>
+            <p
+              style={{
+                color: "#64748B",
+                textAlign: "center",
+                margin: "1rem 0",
+              }}
+            >
+              No notifications.
+            </p>
           ) : (
             notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`list-item ${notification.status === 'unread' ? 'unread' : ''}`}
+                className={`list-item ${notification.status === "unread" ? "unread" : ""}`}
                 onClick={() => void handleNotificationClick(notification.id)}
               >
                 <div className="item-icon">
@@ -150,11 +210,14 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ onClose }) => {
                       <h4>{notification.title}</h4>
                     </div>
                     <span className="item-time">
-                      {new Date(notification.createdAt || (notification as any).created_at).toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                      {new Date(
+                        notification.createdAt ||
+                          (notification as any).created_at,
+                      ).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                     </span>
                   </div>
