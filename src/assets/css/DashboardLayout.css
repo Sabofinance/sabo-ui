@@ -106,3 +106,83 @@
     width: 100% !important;
   }
 }
+
+/* ── KYC blur overlay ── */
+.kyc-blur-wrapper {
+  position: relative;
+  min-height: 60vh;
+}
+
+.kyc-blur-content {
+  filter: blur(6px);
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+}
+
+.kyc-blur-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 1.5rem;
+}
+
+.kyc-blur-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 12px 48px rgba(10, 30, 40, 0.18), 0 2px 8px rgba(10, 30, 40, 0.08);
+  max-width: 400px;
+  width: 100%;
+}
+
+.kyc-blur-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f4f7f6;
+  margin-bottom: 1.25rem;
+}
+
+.kyc-blur-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0A1E28;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.kyc-blur-desc {
+  font-size: 0.95rem;
+  color: #5f6f7a;
+  line-height: 1.6;
+  margin: 0 0 1.75rem;
+}
+
+.kyc-blur-btn {
+  background: #0A1E28;
+  color: #C8F032;
+  border: none;
+  padding: 0.9rem 2rem;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: opacity 0.2s ease;
+  width: 100%;
+}
+
+.kyc-blur-btn:hover {
+  opacity: 0.88;
+}

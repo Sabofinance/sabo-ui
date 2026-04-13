@@ -7,6 +7,13 @@ import { SidebarProvider } from '../context/SidebarContext';
 import { useAuth } from '../context/AuthContext';
 import '../assets/css/DashboardLayout.css';
 
+const KYC_UNRESTRICTED_PATHS = [
+  '/dashboard/profile',
+  '/dashboard/settings',
+  '/dashboard/kyc',
+  '/dashboard/notifications',
+];
+
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -17,6 +24,11 @@ const DashboardLayout: React.FC = () => {
   const isVerified = kycStatus === 'verified';
   const isPending = kycStatus === 'pending';
   const showKycBanner = !isAdminRoute && !isVerified;
+
+  const isDashboardHome = location.pathname === '/dashboard';
+  const isUnrestricted =
+    isDashboardHome || KYC_UNRESTRICTED_PATHS.some((p) => location.pathname.startsWith(p));
+  const shouldBlur = !isAdminRoute && !isVerified && !isUnrestricted;
 
   return (
     <SidebarProvider>
@@ -46,7 +58,35 @@ const DashboardLayout: React.FC = () => {
           )}
           <DashboardHeader />
           <div className="dashboard-content">
-            <Outlet />
+            {shouldBlur ? (
+              <div className="kyc-blur-wrapper">
+                <div className="kyc-blur-content">
+                  <Outlet />
+                </div>
+                <div className="kyc-blur-overlay">
+                  <div className="kyc-blur-card">
+                    <div className="kyc-blur-icon-wrap">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0A1E28" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </div>
+                    <h3 className="kyc-blur-title">KYC Verification Required</h3>
+                    <p className="kyc-blur-desc">
+                      You need to complete your identity verification before you can access this feature.
+                    </p>
+                    <button
+                      className="kyc-blur-btn"
+                      onClick={() => navigate('/dashboard/kyc')}
+                    >
+                      Complete KYC
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Outlet />
+            )}
           </div>
         </div>
       </div>

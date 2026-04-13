@@ -7,6 +7,40 @@ import type { RegisterRequest } from "../modules/auth/types/type";
 import "../assets/css/AuthPage.css";
 import signupImage from "../assets/images/3d-illustration.png";
 
+const COUNTRY_CODES = [
+  { flag: '🇳🇬', name: 'Nigeria', code: '+234' },
+  { flag: '🇺🇸', name: 'United States', code: '+1' },
+  { flag: '🇬🇧', name: 'United Kingdom', code: '+44' },
+  { flag: '🇨🇦', name: 'Canada', code: '+1' },
+  { flag: '🇬🇭', name: 'Ghana', code: '+233' },
+  { flag: '🇰🇪', name: 'Kenya', code: '+254' },
+  { flag: '🇿🇦', name: 'South Africa', code: '+27' },
+  { flag: '🇹🇿', name: 'Tanzania', code: '+255' },
+  { flag: '🇺🇬', name: 'Uganda', code: '+256' },
+  { flag: '🇷🇼', name: 'Rwanda', code: '+250' },
+  { flag: '🇪🇹', name: 'Ethiopia', code: '+251' },
+  { flag: '🇸🇳', name: 'Senegal', code: '+221' },
+  { flag: '🇨🇮', name: "Côte d'Ivoire", code: '+225' },
+  { flag: '🇨🇲', name: 'Cameroon', code: '+237' },
+  { flag: '🇿🇲', name: 'Zambia', code: '+260' },
+  { flag: '🇿🇼', name: 'Zimbabwe', code: '+263' },
+  { flag: '🇩🇪', name: 'Germany', code: '+49' },
+  { flag: '🇫🇷', name: 'France', code: '+33' },
+  { flag: '🇮🇹', name: 'Italy', code: '+39' },
+  { flag: '🇪🇸', name: 'Spain', code: '+34' },
+  { flag: '🇵🇹', name: 'Portugal', code: '+351' },
+  { flag: '🇳🇱', name: 'Netherlands', code: '+31' },
+  { flag: '🇸🇪', name: 'Sweden', code: '+46' },
+  { flag: '🇳🇴', name: 'Norway', code: '+47' },
+  { flag: '🇦🇪', name: 'UAE', code: '+971' },
+  { flag: '🇸🇦', name: 'Saudi Arabia', code: '+966' },
+  { flag: '🇮🇳', name: 'India', code: '+91' },
+  { flag: '🇨🇳', name: 'China', code: '+86' },
+  { flag: '🇯🇵', name: 'Japan', code: '+81' },
+  { flag: '🇧🇷', name: 'Brazil', code: '+55' },
+  { flag: '🇦🇺', name: 'Australia', code: '+61' },
+];
+
 interface SignupFormInputs extends RegisterRequest {
   confirmPassword?: string;
 }
@@ -20,6 +54,7 @@ const SignupPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [generalError, setGeneralError] = useState("");
+  const [phoneCode, setPhoneCode] = useState('+234');
 
   const togglePassword = () => setShowPassword((prev) => !prev);
   const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
@@ -37,7 +72,7 @@ const SignupPage: React.FC = () => {
       await registerAuth({
         name: data.name,
         email: data.email,
-        phone: data.phone || "",
+        phone: data.phone ? `${phoneCode}${data.phone}` : "",
         password: data.password,
       });
       // Registration successful
@@ -109,13 +144,27 @@ const SignupPage: React.FC = () => {
 
                 <div className="form-group">
                   <label htmlFor="phone" className="form-label">Phone Number</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    {...register("phone", { required: "Phone number is required" })}
-                    className={`form-input ${errors.phone ? "error" : ""}`}
-                    placeholder="Enter your phone number"
-                  />
+                  <div className={`phone-input-group ${errors.phone ? "error" : ""}`}>
+                    <select
+                      className="phone-code-select"
+                      value={phoneCode}
+                      onChange={(e) => setPhoneCode(e.target.value)}
+                      aria-label="Country code"
+                    >
+                      {COUNTRY_CODES.map((c) => (
+                        <option key={`${c.code}-${c.name}`} value={c.code}>
+                          {c.flag} {c.code}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      id="phone"
+                      {...register("phone", { required: "Phone number is required" })}
+                      className="phone-number-input"
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
                   {errors.phone && <span className="error-text">{errors.phone.message}</span>}
                 </div>
 
