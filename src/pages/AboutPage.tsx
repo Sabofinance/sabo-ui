@@ -8,11 +8,19 @@ import originStoryImg from '../assets/images/our-origin-story.png'; // Your orig
 
 export const AboutPage = () => {
   const teamMembers = [
-    { name: 'Busoye', role: 'Founder & CEO', avatarId: 101 },
-    { name: 'Akin', role: 'Head of Product', avatarId: 102 },
-    { name: 'Maritha', role: 'Customer Experience Lead', avatarId: 103 },
-    { name: 'Mrs. Akingbade', role: 'Operations Director', avatarId: 104 }
+    { name: 'Elubosoye Fadiora', role: 'Founder & CEO' },
+    { name: 'Nnamdi Onyia', role: 'Head of Product' },
+    { name: 'Rotimi Fawumi', role: 'Chief Data Officer' },
+    { name: 'Ifeoluwa Success', role: 'Platform Reliability Engineer' },
   ];
+
+  const GenericAvatar = () => (
+    <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="50" fill="#e8edf0" />
+      <circle cx="50" cy="38" r="18" fill="#b0bec5" />
+      <ellipse cx="50" cy="85" rx="28" ry="22" fill="#b0bec5" />
+    </svg>
+  );
 
   return (
     <div className="about-page">
@@ -145,7 +153,7 @@ export const AboutPage = () => {
           {teamMembers.map((member, index) => (
             <div className="team-card" key={index}>
               <div className="team-avatar">
-                <img src={`https://i.pravatar.cc/150?u=${member.avatarId}`} alt={member.name} />
+                <GenericAvatar />
               </div>
               <h4>{member.name}</h4>
               <p>{member.role}</p>
