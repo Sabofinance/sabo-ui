@@ -48,6 +48,15 @@ export const adminApi = {
 
   listWithdrawals: (params?: Record<string, unknown>) =>
     apiRequest.get("/admin/withdrawals", params),
+
+  // Company rates management
+  listCompanyRates: (params?: Record<string, unknown>) =>
+    apiRequest.get("/admin/company-rates", params),
+  getCompanyRate: (currency: string) =>
+    apiRequest.get(`/admin/company-rates/${encodeURIComponent(currency)}`),
+  saveCompanyRate: (payload: { currency: string; rate_ngn: string }) =>
+    apiRequest.post("/admin/company-rates", payload),
+
   // Correct version based on official documentation
   approveWithdrawal: (id: string) =>
     apiRequest.post(`/admin/withdrawals/${id}/approve`), // No body

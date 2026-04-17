@@ -59,6 +59,7 @@ const KycPage         = lazy(() => import('./pages/dashboard/KycPage'));
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminUserDetailsPage = lazy(() => import('./pages/admin/AdminUserDetailsPage'));
+const AdminCompanyRatesPage = lazy(() => import('./pages/admin/AdminCompanyRatesPage'));
 const AdminKycPage = lazy(() => import('./pages/admin/AdminKycPage'));
 const AdminDepositsPage = lazy(() => import('./pages/admin/AdminDepositsPage'));
 const AdminWithdrawalsPage = lazy(() => import('./pages/admin/AdminWithdrawalsPage'));
@@ -444,6 +445,14 @@ function App() {
                 element={
                   <AdminProtectedRoute>
                     <AdminUsersPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/company-rates"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminCompanyRatesPage />
                   </AdminProtectedRoute>
                 }
               />

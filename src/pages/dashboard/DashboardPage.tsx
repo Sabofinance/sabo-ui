@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   walletsApi,
-  ratesApi,
+  companyRatesApi,
   ledgerApi,
   tradesApi,
   bidsApi,
@@ -377,7 +377,7 @@ export default function DashboardPage() {
     try {
       const [walletsRes, ratesRes, ledgerRes, tradesRes, bidsRecRes, bidsSentRes] = await Promise.allSettled([
         walletsApi.list(),
-        ratesApi.list(),
+        companyRatesApi.list(),
         ledgerApi.listEntries({ limit: 5 }),
         tradesApi.list({ limit: 100 }),
         bidsApi.listReceived({ status: 'pending' }),
@@ -393,10 +393,26 @@ export default function DashboardPage() {
       }
 
       if (ratesRes.status === 'fulfilled' && ratesRes.value.success) {
-        const r: Rate[] = extractArray(ratesRes.value.data);
-        setRates(r);
-        if (r.length > 0) {
-          const latest = new Date(r[0].created_at);
+        const data = ratesRes.value.data as any;
+        const items = (Array.isArray(data?.rates) ? data.rates : extractArray(data)) as any[];
+        const mappedRates: Rate[] = items
+          .map((item) => {
+            const currency = String(item?.currency || item?.code || '').toUpperCase();
+            const rateValue = String(item?.rate_ngn ?? item?.rate ?? item?.rateNgn ?? '0');
+            return {
+              pair: `${currency}/NGN`,
+              rate: rateValue,
+              created_at: item?.updated_at || item?.created_at || new Date().toISOString(),
+            };
+          })
+          .filter((item) => ['GBP/NGN', 'USD/NGN', 'CAD/NGN'].includes(item.pair));
+
+        setRates(mappedRates);
+        if (mappedRates.length > 0) {
+          const latest = mappedRates.reduce<Date>((latestDate, item) => {
+            const itemDate = new Date(item.created_at);
+            return itemDate > latestDate ? itemDate : latestDate;
+          }, new Date(mappedRates[0].created_at));
           const diffMins = Math.floor((Date.now() - latest.getTime()) / 60000);
           setRatesUpdatedAt(diffMins < 1 ? 'Just now' : `${diffMins} min${diffMins > 1 ? 's' : ''} ago`);
         }

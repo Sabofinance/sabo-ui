@@ -69,6 +69,15 @@ const Icons = {
       <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
     </Icon>
   ),
+  Rates: () => (
+    <Icon>
+      <path d="M4 18h16" />
+      <path d="M7 14v-4" />
+      <path d="M12 14v-6" />
+      <path d="M17 14v-5" />
+      <path d="M8 10h8" />
+    </Icon>
+  ),
   Analytics: () => (
     <Icon>
       <path d="M18 20V10M12 20V4M6 20v-6" />
@@ -154,6 +163,7 @@ const AdminSidebar: React.FC = () => {
           {navLink("/dashboard/admin/withdrawals", "Withdrawals", Icons.Withdrawals)}
           {navLink("/dashboard/admin/disputes", "Disputes", Icons.Disputes)}
           {navLink("/dashboard/admin/transactions", "Transactions", Icons.Transactions)}
+          {navLink("/dashboard/admin/company-rates", "Company Rates", Icons.Rates)}
           {/* {navLink("/dashboard/admin/analytics", "Analytics", Icons.Analytics)} */}
           {navLink("/dashboard/admin/analytics/metrics", "Metrics", Icons.Metrics)}
           {isSuperAdmin &&

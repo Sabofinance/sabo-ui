@@ -13,6 +13,7 @@ export { default as ratingsApi } from "./ratings.api";
 export { default as disputesApi } from "./disputes.api";
 export { default as kycApi } from "./kyc.api";
 export { default as ratesApi } from "./rates.api";
+export { default as companyRatesApi } from "./companyRates.api";
 export { default as adminApi } from "./admin.api";
 export { accountApi } from "./account.api";
 export { default as chatApi } from "./chat.api";

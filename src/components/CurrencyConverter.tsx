@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { conversionsApi } from "../lib/api";
-import { toast } from "react-toastify";
+import React, { useState, useRef, useEffect } from "react";
+import { companyRatesApi } from "../lib/api";
+import { extractArray } from "../lib/api/response";
+import "../assets/css/CurrencyConverter.css";
 
-/* ─── types ────────────────────────────────────────────────────────── */
 interface Currency {
   code: string;
   name: string;
@@ -37,13 +37,43 @@ const CURRENCIES: Currency[] = [
   },
 ];
 
-const fmt = (n: number, decimals = 2) =>
+const NGN_RATES: Record<string, number> = {
+  NGN: 1,
+  GBP: 1650,
+  USD: 1300,
+  CAD: 960,
+};
+
+interface CurrencyConverterProps {
+  onSuccess?: () => void;
+}
+
+const FLAT_FEES: Record<string, number> = {
+  GBP: 1,
+  USD: 1.5,
+  CAD: 2,
+  NGN: 1500,
+};
+
+const convertAmount = (
+  amount: number,
+  from: string,
+  to: string,
+  rates: Record<string, number>,
+): number => {
+  if (from === to) return amount;
+  const fromRate = rates[from] ?? NGN_RATES[from] ?? 1;
+  const toRate = rates[to] ?? NGN_RATES[to] ?? 1;
+  return (amount * fromRate) / toRate;
+};
+
+const fmt = (n: number, decimals = 2): string =>
   n.toLocaleString("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
 
-/* ─── dropdown ─────────────────────────────────────────────────────── */
+/* ── Dropdown ── */
 interface DropdownProps {
   selected: Currency;
   onSelect: (c: Currency) => void;
@@ -59,120 +89,58 @@ const CurrencyDropdown: React.FC<DropdownProps> = ({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const h = (e: MouseEvent) => {
+    const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node))
         setOpen(false);
     };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   return (
-    <div style={{ position: "relative" }} ref={ref}>
+    <div className="cc-select-wrap" ref={ref}>
       <button
-        type="button"
+        className="cc-select-btn"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-label="Select currency"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "10px 14px",
-          borderRadius: 12,
-          border: `2px solid ${open ? "#C8F135" : "#e0ebe9"}`,
-          background: "#f5f9f8",
-          cursor: "pointer",
-          transition: "border-color 0.15s ease",
-          fontFamily: "inherit",
-        }}
+        type="button"
       >
         <img
           src={selected.flag}
           alt={selected.code}
-          style={{ width: 22, height: 16, borderRadius: 3, objectFit: "cover" }}
+          className="cc-select-flag"
         />
-        <span
-          style={{
-            fontWeight: 800,
-            fontSize: 14,
-            color: "#0d1f1e",
-            letterSpacing: "0.02em",
-          }}
-        >
-          {selected.code}
-        </span>
+        <span className="cc-select-code">{selected.code}</span>
         <svg
-          width="12"
-          height="12"
+          className={`cc-chevron ${open ? "open" : ""}`}
+          width="14"
+          height="14"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#7a9c99"
+          stroke="currentColor"
           strokeWidth="2.5"
           strokeLinecap="round"
-          style={{
-            transform: open ? "rotate(180deg)" : "none",
-            transition: "transform 0.15s ease",
-          }}
         >
           <path d="M6 9l6 6 6-6" />
         </svg>
       </button>
+
       {open && (
-        <div
-          style={{
-            position: "absolute",
-            top: "calc(100% + 6px)",
-            right: 0,
-            zIndex: 50,
-            background: "#fff",
-            border: "1px solid #e0ebe9",
-            borderRadius: 14,
-            boxShadow: "0 8px 28px rgba(13,31,30,0.12)",
-            overflow: "hidden",
-            minWidth: 180,
-          }}
-        >
+        <div className="cc-dropdown">
           {CURRENCIES.filter((c) => c.code !== exclude).map((c) => (
             <button
               key={c.code}
               type="button"
+              className={`cc-dropdown-item ${c.code === selected.code ? "is-selected" : ""}`}
               onClick={() => {
                 onSelect(c);
                 setOpen(false);
               }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                width: "100%",
-                padding: "12px 16px",
-                border: "none",
-                background:
-                  c.code === selected.code
-                    ? "rgba(200,241,53,0.1)"
-                    : "transparent",
-                cursor: "pointer",
-                fontFamily: "inherit",
-                borderBottom: "1px solid #f0f7f6",
-              }}
             >
-              <img
-                src={c.flag}
-                alt={c.code}
-                style={{
-                  width: 22,
-                  height: 16,
-                  borderRadius: 3,
-                  objectFit: "cover",
-                }}
-              />
-              <span style={{ fontWeight: 800, fontSize: 13, color: "#0d1f1e" }}>
-                {c.code}
-              </span>
-              <span style={{ fontSize: 12, color: "#7a9c99", fontWeight: 500 }}>
-                {c.name}
-              </span>
+              <img src={c.flag} alt={c.code} className="cc-select-flag" />
+              <span className="cc-select-code">{c.code}</span>
+              <span className="cc-dropdown-name">{c.name}</span>
             </button>
           ))}
         </div>
@@ -181,575 +149,165 @@ const CurrencyDropdown: React.FC<DropdownProps> = ({
   );
 };
 
-/* ─── main converter ───────────────────────────────────────────────── */
-interface CurrencyConverterProps {
-  onSuccess?: () => void;
-}
-
+/* ── Main converter ── */
 const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
-  const [collapsed, setCollapsed] = useState(true);
   const [rawAmount, setRawAmount] = useState("30");
-  const [rawRate, setRawRate] = useState("");
-  const [rawFee, setRawFee] = useState("");
   const [sendCurrency, setSendCurrency] = useState<Currency>(CURRENCIES[0]); // GBP
   const [recvCurrency, setRecvCurrency] = useState<Currency>(CURRENCIES[3]); // NGN
-  const [executing, setExecuting] = useState(false);
+  const [companyRates, setCompanyRates] = useState<Record<string, number>>({ NGN: 1 });
+  const [ratesLoading, setRatesLoading] = useState(false);
+  const [ratesError, setRatesError] = useState("");
+
+  useEffect(() => {
+    const loadRates = async () => {
+      setRatesLoading(true);
+      setRatesError("");
+
+      try {
+        const response = await companyRatesApi.list();
+        if (response.success && response.data) {
+          const data = response.data as any;
+          const items = (Array.isArray(data?.rates) ? data.rates : extractArray(data)) as any[];
+          const mappedRates = items.reduce<Record<string, number>>((acc, item) => {
+            const currencyCode = String(item?.currency || item?.code || "").toUpperCase();
+            const rateValue = Number(item?.rate ?? item?.rate_ngn ?? item?.rateNgn);
+            if (currencyCode && !Number.isNaN(rateValue)) {
+              acc[currencyCode] = rateValue;
+            }
+            return acc;
+          }, { NGN: 1 });
+
+          if (!mappedRates.NGN) mappedRates.NGN = 1;
+          setCompanyRates(mappedRates);
+          onSuccess?.();
+        } else {
+          setRatesError(response.error?.message || "Could not load company rates.");
+        }
+      } finally {
+        setRatesLoading(false);
+      }
+    };
+
+    void loadRates();
+  }, []);
 
   const amount = Math.max(0, parseFloat(rawAmount) || 0);
-  const manualRate = Math.max(0, parseFloat(rawRate) || 0);
-  const feeAmount = Math.max(0, parseFloat(rawFee) || 0);
-
-  const receivedAmount = useMemo(() => {
-    if (sendCurrency.code === recvCurrency.code) return amount;
-    if (amount <= 0 || manualRate <= 0) return null;
-    return amount * manualRate;
-  }, [amount, manualRate, sendCurrency.code, recvCurrency.code]);
-
-  const totalAmount = amount + feeAmount;
+  const fee = FLAT_FEES[sendCurrency.code] ?? 1;
+  const received = convertAmount(amount, sendCurrency.code, recvCurrency.code, companyRates);
+  const total = amount + fee;
+  const rate = convertAmount(1, sendCurrency.code, recvCurrency.code, companyRates);
 
   const handleSwap = () => {
     setSendCurrency(recvCurrency);
     setRecvCurrency(sendCurrency);
-    setRawRate("");
   };
+
   const handleSendChange = (c: Currency) => {
     setSendCurrency(c);
     if (c.code === recvCurrency.code) setRecvCurrency(sendCurrency);
-    setRawRate("");
   };
+
   const handleRecvChange = (c: Currency) => {
     setRecvCurrency(c);
     if (c.code === sendCurrency.code) setSendCurrency(recvCurrency);
-    setRawRate("");
-  };
-
-  const canExecute =
-    !executing && amount > 0 && receivedAmount !== null && receivedAmount > 0;
-
-  const handleExecute = async () => {
-    if (!canExecute) return;
-    setExecuting(true);
-    try {
-      const res = await conversionsApi.execute({
-        from: sendCurrency.code,
-        to: recvCurrency.code,
-        amount,
-      });
-      if (res.success) {
-        toast.success("Conversion successful!");
-        setRawAmount("");
-        setRawRate("");
-        setRawFee("");
-        if (onSuccess) onSuccess();
-      } else {
-        toast.error(res.error?.message || "Conversion failed");
-      }
-    } catch (err: any) {
-      toast.error(err?.message || "An unexpected error occurred");
-    } finally {
-      setExecuting(false);
-    }
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "14px 16px",
-    borderRadius: 12,
-    border: "2px solid #e0ebe9",
-    background: "#f5f9f8",
-    fontSize: 20,
-    fontWeight: 800,
-    color: "#0d1f1e",
-    outline: "none",
-    fontFamily: "inherit",
-    letterSpacing: "-0.3px",
-    transition: "border-color 0.15s ease",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: "block",
-    fontSize: 11,
-    fontWeight: 700,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase",
-    color: "#7a9c99",
-    marginBottom: 8,
-  };
-
-  const panelStyle: React.CSSProperties = {
-    background: "#fff",
-    border: "1px solid #e0ebe9",
-    borderRadius: 16,
-    padding: "18px 18px 16px",
   };
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
-        .cc-wrap * { font-family: 'DM Sans', -apple-system, sans-serif; box-sizing: border-box; }
-        .cc-wrap input:focus { border-color: #C8F135 !important; }
-        .cc-wrap input[type=number]::-webkit-inner-spin-button,
-        .cc-wrap input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        .cc-wrap input[type=number] { -moz-appearance: textfield; }
-        @keyframes ccSpin { to { transform: rotate(360deg); } }
-        .cc-spinner { width: 16px; height: 16px; border: 2.5px solid rgba(13,31,30,0.2); border-top-color: #0d1f1e; border-radius: 50%; animation: ccSpin 0.7s linear infinite; display: inline-block; }
-        .cc-body { overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease; }
-        .cc-body.open { max-height: 900px; opacity: 1; }
-        .cc-body.closed { max-height: 0; opacity: 0; }
-        .cc-chevron { transition: transform 0.25s ease; }
-        .cc-chevron.open { transform: rotate(180deg); }
-        .cc-toggle:hover { background: #111f1e !important; }
-      `}</style>
-
-      <div
-        className="cc-wrap"
-        style={{
-          background: "#f5f9f8",
-          border: "1px solid #e0ebe9",
-          borderRadius: 20,
-          overflow: "hidden",
-          boxShadow: "0 4px 24px rgba(13,31,30,0.07)",
-        }}
-      >
-        {/* ── HEADER (always visible, click to collapse) ── */}
-        <button
-          type="button"
-          className="cc-toggle"
-          onClick={() => setCollapsed((c) => !c)}
-          aria-expanded={!collapsed}
-          style={{
-            width: "100%",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            background: "#0d1f1e",
-            padding: "20px 22px",
-            border: "none",
-            cursor: "pointer",
-            textAlign: "left",
-            transition: "background 0.15s ease",
-          }}
-        >
-          <div
-            style={{
-              width: 4,
-              height: 32,
-              background: "#C8F135",
-              borderRadius: 2,
-              flexShrink: 0,
-            }}
-          />
-
-          <div style={{ flex: 1 }}>
-            <p
-              style={{
-                margin: 0,
-                fontSize: 15,
-                fontWeight: 800,
-                color: "#fff",
-                letterSpacing: "-0.3px",
-              }}
-            >
-              Currency Conversion
-            </p>
-
-            {/* Collapsed summary line */}
-            {collapsed ? (
-              <p
-                style={{
-                  margin: "3px 0 0",
-                  fontSize: 12,
-                  color: "#C8F135",
-                  fontWeight: 600,
-                }}
-              >
-                {amount > 0
-                  ? `${sendCurrency.symbol}${fmt(amount)} ${sendCurrency.code} → ${recvCurrency.code}${receivedAmount != null ? ` · ${recvCurrency.symbol}${fmt(receivedAmount)}` : ""}`
-                  : `${sendCurrency.code} → ${recvCurrency.code} · tap to expand`}
-              </p>
-            ) : (
-              <p
-                style={{
-                  margin: "3px 0 0",
-                  fontSize: 12,
-                  color: "#b0ccc9",
-                  fontWeight: 500,
-                }}
-              >
-                Enter the exchange rate manually to calculate
-              </p>
-            )}
+    <div className="cc-card">
+      {/* YOU'RE SENDING */}
+      <div className="cc-panel">
+        <span className="cc-panel-label">You're sending</span>
+        <div className="cc-panel-body">
+          <div className="cc-amount-group">
+            <span className="cc-symbol">{sendCurrency.symbol}</span>
+            <input
+              className="cc-input"
+              type="number"
+              min="0"
+              step="any"
+              value={rawAmount}
+              onChange={(e) => setRawAmount(e.target.value)}
+              placeholder="0.00"
+              aria-label="Amount to send"
+            />
           </div>
+          <CurrencyDropdown
+            selected={sendCurrency}
+            onSelect={handleSendChange}
+            exclude={recvCurrency.code}
+          />
+        </div>
+      </div>
 
-          {/* Chevron */}
+      {/* SWAP BUTTON — large visible arrow circle like Figma */}
+      <div className="cc-swap-row">
+        <div className="cc-divider-line" />
+        <button
+          className="cc-swap-btn"
+          onClick={handleSwap}
+          aria-label="Swap currencies"
+          type="button"
+        >
+          {/* Down arrow — clearly visible, matches Figma */}
           <svg
-            className={`cc-chevron ${collapsed ? "" : "open"}`}
             width="18"
             height="18"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#b0ccc9"
+            stroke="currentColor"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            style={{ flexShrink: 0 }}
           >
-            <path d="M6 9l6 6 6-6" />
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <polyline points="19 12 12 19 5 12" />
           </svg>
         </button>
+        <div className="cc-divider-line" />
+      </div>
 
-        {/* ── BODY (collapsible) ── */}
-        <div className={`cc-body ${collapsed ? "closed" : "open"}`}>
-          <div
-            style={{
-              padding: "22px 22px 24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-            }}
-          >
-            {/* YOU'RE SENDING */}
-            <div style={panelStyle}>
-              <span style={labelStyle}>You're sending</span>
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <div style={{ position: "relative", flex: 1 }}>
-                  <span
-                    style={{
-                      position: "absolute",
-                      left: 14,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      fontSize: 16,
-                      fontWeight: 800,
-                      color: "#0d1f1e",
-                      pointerEvents: "none",
-                      zIndex: 1,
-                    }}
-                  >
-                    {sendCurrency.symbol}
-                  </span>
-                  <input
-                    style={{ ...inputStyle, paddingLeft: 36 }}
-                    type="number"
-                    min="0"
-                    step="any"
-                    value={rawAmount}
-                    onChange={(e) => setRawAmount(e.target.value)}
-                    placeholder="0.00"
-                    aria-label="Amount to send"
-                  />
-                </div>
-                <CurrencyDropdown
-                  selected={sendCurrency}
-                  onSelect={handleSendChange}
-                  exclude={recvCurrency.code}
-                />
-              </div>
-            </div>
-
-            {/* SWAP */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ flex: 1, height: 1, background: "#e0ebe9" }} />
-              <button
-                type="button"
-                onClick={handleSwap}
-                aria-label="Swap currencies"
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: "50%",
-                  background: "#0d1f1e",
-                  border: "none",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  transition: "transform 0.2s ease",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.transform = "rotate(180deg)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.transform = "rotate(0deg)")
-                }
-              >
-                <img src="/gemini-svg.svg" alt="" width={20} />
-              </button>
-              <div style={{ flex: 1, height: 1, background: "#e0ebe9" }} />
-            </div>
-
-            {/* MANUAL RATE */}
-            <div
-              style={{
-                ...panelStyle,
-                border: "2px solid #C8F135",
-                background: "rgba(200,241,53,0.04)",
-              }}
-            >
-              <span style={labelStyle}>
-                Exchange rate — {sendCurrency.symbol}1 {sendCurrency.code} =
-              </span>
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <div style={{ position: "relative", flex: 1 }}>
-                  <span
-                    style={{
-                      position: "absolute",
-                      left: 14,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      fontSize: 16,
-                      fontWeight: 800,
-                      color: "#0d1f1e",
-                      pointerEvents: "none",
-                      zIndex: 1,
-                    }}
-                  >
-                    {recvCurrency.symbol}
-                  </span>
-                  <input
-                    style={{ ...inputStyle, paddingLeft: 36 }}
-                    type="number"
-                    min="0"
-                    step="any"
-                    value={rawRate}
-                    onChange={(e) => setRawRate(e.target.value)}
-                    placeholder="Enter rate e.g. 2050"
-                    aria-label="Exchange rate"
-                  />
-                </div>
-                <div
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: 12,
-                    background: "#f5f9f8",
-                    border: "2px solid #e0ebe9",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    flexShrink: 0,
-                  }}
-                >
-                  <img
-                    src={recvCurrency.flag}
-                    alt={recvCurrency.code}
-                    style={{
-                      width: 22,
-                      height: 16,
-                      borderRadius: 3,
-                      objectFit: "cover",
-                    }}
-                  />
-                  <span
-                    style={{ fontWeight: 800, fontSize: 14, color: "#0d1f1e" }}
-                  >
-                    {recvCurrency.code}
-                  </span>
-                </div>
-              </div>
-              {rawRate && manualRate > 0 && (
-                <div
-                  style={{
-                    marginTop: 8,
-                    fontSize: 12,
-                    color: "#4a7a00",
-                    fontWeight: 600,
-                  }}
-                >
-                  ✓ Rate set: {sendCurrency.symbol}1 = {recvCurrency.symbol}
-                  {fmt(manualRate)}
-                </div>
-              )}
-            </div>
-
-            {/* RECIPIENT GETS */}
-            <div style={panelStyle}>
-              <span style={labelStyle}>Recipient gets</span>
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <div
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "14px 16px",
-                    borderRadius: 12,
-                    background: "#f5f9f8",
-                    border: "2px solid #e0ebe9",
-                  }}
-                >
-                  <span
-                    style={{ fontSize: 16, fontWeight: 800, color: "#7a9c99" }}
-                  >
-                    {recvCurrency.symbol}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 22,
-                      fontWeight: 800,
-                      color: "#0d1f1e",
-                      letterSpacing: "-0.5px",
-                    }}
-                  >
-                    {receivedAmount == null ? "—" : fmt(receivedAmount)}
-                  </span>
-                </div>
-                <CurrencyDropdown
-                  selected={recvCurrency}
-                  onSelect={handleRecvChange}
-                  exclude={sendCurrency.code}
-                />
-              </div>
-            </div>
-
-            {/* FEE */}
-            <div style={panelStyle}>
-              <span style={labelStyle}>Fee (optional)</span>
-              <div style={{ position: "relative" }}>
-                <span
-                  style={{
-                    position: "absolute",
-                    left: 14,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    fontSize: 15,
-                    fontWeight: 800,
-                    color: "#7a9c99",
-                    pointerEvents: "none",
-                    zIndex: 1,
-                  }}
-                >
-                  {sendCurrency.symbol}
-                </span>
-                <input
-                  style={{ ...inputStyle, paddingLeft: 34, fontSize: 16 }}
-                  type="number"
-                  min="0"
-                  step="any"
-                  value={rawFee}
-                  onChange={(e) => setRawFee(e.target.value)}
-                  placeholder="0.00"
-                  aria-label="Fee amount"
-                />
-              </div>
-            </div>
-
-            {/* RATE + FEE SUMMARY */}
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <span
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: 20,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  background: "rgba(200,241,53,0.15)",
-                  color: "#4a7a00",
-                  border: "1px solid rgba(200,241,53,0.4)",
-                }}
-              >
-                {sendCurrency.symbol}1 = {recvCurrency.symbol}
-                {manualRate > 0 ? fmt(manualRate) : "—"}
-              </span>
-              <span
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: 20,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  background: "rgba(176,204,201,0.15)",
-                  color: "#3a6060",
-                  border: "1px solid rgba(176,204,201,0.4)",
-                }}
-              >
-                Fee ={" "}
-                {feeAmount > 0
-                  ? `${sendCurrency.symbol}${fmt(feeAmount)}`
-                  : "—"}
-              </span>
-            </div>
-
-            {/* TOTAL */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "14px 16px",
-                borderRadius: 12,
-                background: "#0d1f1e",
-                border: "1px solid #0d1f1e",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: "#b0ccc9",
-                  letterSpacing: "0.02em",
-                }}
-              >
-                Total to be sent
-              </span>
-              <span
-                style={{
-                  fontSize: 18,
-                  fontWeight: 800,
-                  color: "#fff",
-                  letterSpacing: "-0.4px",
-                }}
-              >
-                {sendCurrency.symbol} {fmt(totalAmount)}
-              </span>
-            </div>
-
-            {/* EXECUTE */}
-            <button
-              type="button"
-              onClick={handleExecute}
-              disabled={!canExecute}
-              style={{
-                width: "100%",
-                padding: "16px",
-                borderRadius: 14,
-                border: "none",
-                background: canExecute ? "#C8F135" : "#e0ebe9",
-                color: canExecute ? "#0d1f1e" : "#7a9c99",
-                fontSize: 15,
-                fontWeight: 800,
-                letterSpacing: "-0.2px",
-                cursor: canExecute ? "pointer" : "not-allowed",
-                fontFamily: "inherit",
-                transition: "all 0.15s ease",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-              onMouseEnter={(e) => {
-                if (canExecute) {
-                  e.currentTarget.style.transform = "translateY(-1px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 8px 24px rgba(200,241,53,0.35)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "none";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              {executing ? (
-                <>
-                  <span className="cc-spinner" /> Processing…
-                </>
-              ) : (
-                `Convert to ${recvCurrency.code} →`
-              )}
-            </button>
+      {/* RECIPIENT GETS */}
+      <div className="cc-panel">
+        <span className="cc-panel-label">Recipient gets</span>
+        <div className="cc-panel-body">
+          <div className="cc-amount-group">
+            <span className="cc-symbol">{recvCurrency.symbol}</span>
+            <span className="cc-output">{fmt(received)}</span>
           </div>
+          <CurrencyDropdown
+            selected={recvCurrency}
+            onSelect={handleRecvChange}
+            exclude={sendCurrency.code}
+          />
         </div>
       </div>
-    </>
+
+      {/* RATE + FEE BADGES */}
+      <div className="cc-badges-row">
+        <span className="cc-badge cc-badge--rate">
+          {sendCurrency.symbol}1 = {recvCurrency.symbol}
+          {fmt(rate)}
+        </span>
+        <span className="cc-badge cc-badge--fee">
+          Fee = {sendCurrency.symbol}
+          {fmt(fee)}
+        </span>
+      </div>
+
+      {(ratesLoading || ratesError) && (
+        <div style={{ marginTop: 12, fontSize: 12, color: ratesError ? '#dc2626' : '#64748b' }}>
+          {ratesLoading ? 'Loading company rates...' : ratesError}
+        </div>
+      )}
+
+      {/* TOTAL */}
+      <div className="cc-total-row">
+        <span className="cc-total-label">Total amount to be sent</span>
+        <span className="cc-total-value">
+          {sendCurrency.symbol} {fmt(total)}
+        </span>
+      </div>
+    </div>
   );
 };
 
