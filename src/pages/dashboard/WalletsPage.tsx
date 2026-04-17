@@ -459,7 +459,7 @@ const WalletsPage: React.FC = () => {
                         {String(selected.currency)} Wallet
                       </p>
                       <p className="wlt-detail-sub">
-                        Account information and banking details
+                        Account information
                       </p>
                     </div>
                   </div>

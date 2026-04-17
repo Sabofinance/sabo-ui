@@ -5,7 +5,8 @@ import { Header } from "../components/Header";
 import { useAuth } from "../context/AuthContext";
 import type { RegisterRequest } from "../modules/auth/types/type";
 import "../assets/css/AuthPage.css";
-import signupImage from "../assets/images/3d-illustration.png";
+import maskImage from "../assets/images/Mask group.png";
+import assetImage from "../assets/images/Asset 8@4x 1.png";
 
 const COUNTRY_CODES = [
   { flag: '🇳🇬', name: 'Nigeria', code: '+234' },
@@ -104,7 +105,8 @@ const SignupPage: React.FC = () => {
       <div className="auth-page">
         <div className="auth-main">
           <div className="auth-image-section">
-            <img src={signupImage} alt="SABO illustration" className="auth-image" />
+            <img src={maskImage} alt="Background mask" className="auth-mask-bg" />
+            <img src={assetImage} alt="SABO illustration" className="auth-image" />
           </div>
 
           <div className="auth-form-section">
@@ -127,45 +129,46 @@ const SignupPage: React.FC = () => {
                   {errors.name && <span className="error-text">{errors.name.message}</span>}
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="email" className="form-label">Email Address</label>
-                  <input
-                    type="email"
-                    id="email"
-                    {...register("email", {
-                      required: "Email is required",
-                      pattern: { value: /\S+@\S+\.\S+/, message: "Email is invalid" }
-                    })}
-                    className={`form-input ${errors.email ? "error" : ""}`}
-                    placeholder="Enter your email"
-                  />
-                  {errors.email && <span className="error-text">{errors.email.message}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="phone" className="form-label">Phone Number</label>
-                  <div className={`phone-input-group ${errors.phone ? "error" : ""}`}>
-                    <select
-                      className="phone-code-select"
-                      value={phoneCode}
-                      onChange={(e) => setPhoneCode(e.target.value)}
-                      aria-label="Country code"
-                    >
-                      {COUNTRY_CODES.map((c) => (
-                        <option key={`${c.code}-${c.name}`} value={c.code}>
-                          {c.flag} {c.code}
-                        </option>
-                      ))}
-                    </select>
+                <div className="form-row">
+                  <div className="form-group half-width">
+                    <label htmlFor="email" className="form-label">Email Address</label>
                     <input
-                      type="tel"
-                      id="phone"
-                      {...register("phone", { required: "Phone number is required" })}
-                      className="phone-number-input"
-                      placeholder="Enter your phone number"
+                      type="email"
+                      id="email"
+                      {...register("email", {
+                        required: "Email is required",
+                        pattern: { value: /\S+@\S+\.\S+/, message: "Email is invalid" }
+                      })}
+                      className={`form-input ${errors.email ? "error" : ""}`}
+                      placeholder="Enter your email"
                     />
+                    {errors.email && <span className="error-text">{errors.email.message}</span>}
                   </div>
-                  {errors.phone && <span className="error-text">{errors.phone.message}</span>}
+
+                  <div className="form-group half-width">
+                    <label htmlFor="phone" className="form-label">Phone Number</label>
+                    <div className={`phone-input-group ${errors.phone ? "error" : ""}`}>
+                      <select
+                        className="phone-code-select"
+                        value={phoneCode}
+                        onChange={(e) => setPhoneCode(e.target.value)}
+                        aria-label="Country code"
+                      >
+                        {COUNTRY_CODES.map((c) => (
+                          <option key={`${c.code}-${c.name}`} value={c.code}>
+                            {c.flag} {c.code}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="tel"
+                        id="phone"
+                        {...register("phone", { required: "Phone number is required" })}
+                        className="phone-number-input"
+                      />
+                    </div>
+                    {errors.phone && <span className="error-text">{errors.phone.message}</span>}
+                  </div>
                 </div>
 
                 <div className="form-group">
