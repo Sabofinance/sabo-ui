@@ -94,10 +94,12 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const AdminPublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const {  isLoading } = useAuth();
+  const { isAuthenticated: isUserAuthenticated, isLoading: isUserLoading } = useAuth();
   const { isAdminAuthenticated, isAdminLoading } = useAdminAuth();
 
-  if (isLoading || isAdminLoading) return <AppLoader />;
+  if (isUserLoading || isAdminLoading) return <AppLoader />;
+  
+  // If already logged in as admin, go to dashboard
   if (isAdminAuthenticated) return <Navigate to="/dashboard/admin" replace />;
 
   return <>{children}</>;

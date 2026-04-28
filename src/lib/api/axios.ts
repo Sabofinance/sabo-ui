@@ -64,7 +64,9 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       const sessionType = localStorage.getItem("sessionType") || "user";
-      const isAdmin = sessionType === "admin";
+      const isWindowAdmin = typeof window !== "undefined" && window.location.pathname.startsWith("/admin");
+      const isAdmin = sessionType === "admin" || isWindowAdmin;
+      
       const refreshTokenKey = isAdmin ? "adminRefreshToken" : "refreshToken";
       const accessTokenKey = isAdmin ? "adminAccessToken" : "accessToken";
       const userKey = "user";

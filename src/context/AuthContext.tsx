@@ -121,7 +121,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.success && response.data) {
         const { accessToken: newAccess, refreshToken: newRefresh } = response.data;
         
+        // Ensure session is scoped to user
         localStorage.setItem('sessionType', 'user');
+        
+        // Clear admin session to avoid mixing contexts
         localStorage.removeItem('adminAccessToken');
         localStorage.removeItem('adminRefreshToken');
         localStorage.removeItem('adminUser');

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Header } from "../../components/Header";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 import "../../assets/css/AuthPage.css";
-import adminLoginImage from "../../assets/images/3d-illustration-login.png";
+import maskImage from "../../assets/images/Mask group.png";
 
 type AdminOtpForm = {
   otp: string;
@@ -49,7 +49,51 @@ const AdminVerifyOtpPage: React.FC = () => {
       <div className="auth-page">
         <div className="auth-main">
           <div className="auth-image-section">
-            <img src={adminLoginImage} alt="Admin OTP illustration" className="auth-image" />
+            <img src={maskImage} alt="Background mask" className="auth-mask-bg" />
+            <svg 
+              viewBox="0 0 400 400" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="auth-image"
+            >
+              {/* Main Dashboard Panel */}
+              <rect x="40" y="80" width="320" height="220" rx="16" fill="#0A1E28" />
+              
+              {/* Header Bar */}
+              <path d="M40 96 C40 87.1634 47.1634 80 56 80 H344 C352.837 80 360 87.1634 360 96 V120 H40 V96 Z" fill="#112A38" />
+              <circle cx="65" cy="100" r="6" fill="#FF5F56" />
+              <circle cx="85" cy="100" r="6" fill="#FFBD2E" />
+              <circle cx="105" cy="100" r="6" fill="#27C93F" />
+              
+              {/* Sidebar */}
+              <rect x="60" y="140" width="60" height="140" rx="8" fill="#112A38" />
+              <rect x="70" y="155" width="40" height="8" rx="4" fill="#C8F032" opacity="0.8" />
+              <rect x="70" y="175" width="40" height="8" rx="4" fill="#ffffff" opacity="0.2" />
+              <rect x="70" y="195" width="40" height="8" rx="4" fill="#ffffff" opacity="0.2" />
+              <rect x="70" y="215" width="40" height="8" rx="4" fill="#ffffff" opacity="0.2" />
+              
+              {/* Chart Area */}
+              <rect x="140" y="140" width="200" height="80" rx="8" fill="#112A38" />
+              <path d="M150 200 L180 170 L210 185 L260 150 L320 175" stroke="#C8F032" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="180" cy="170" r="4" fill="#C8F032" />
+              <circle cx="210" cy="185" r="4" fill="#C8F032" />
+              <circle cx="260" cy="150" r="4" fill="#C8F032" />
+              
+              {/* Bottom Widgets */}
+              <rect x="140" y="230" width="90" height="50" rx="8" fill="#112A38" />
+              <rect x="150" y="245" width="40" height="6" rx="3" fill="#ffffff" opacity="0.3" />
+              <rect x="150" y="260" width="60" height="6" rx="3" fill="#ffffff" opacity="0.1" />
+
+              <rect x="250" y="230" width="90" height="50" rx="8" fill="#112A38" />
+              <rect x="260" y="245" width="50" height="6" rx="3" fill="#ffffff" opacity="0.3" />
+              <rect x="260" y="260" width="30" height="6" rx="3" fill="#ffffff" opacity="0.1" />
+
+              {/* Shield / Security Overlay */}
+              <g transform="translate(240, 190) scale(1.1)">
+                <path d="M50 0 L90 18V45C90 70 72 93 50 100C27 93 10 70 10 45V18L50 0Z" fill="#C8F032" stroke="#0A1E28" strokeWidth="6" strokeLinejoin="round" />
+                <path d="M35 48 L45 58 L65 35" stroke="#0A1E28" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+              </g>
+            </svg>
           </div>
 
           <div className="auth-form-section">

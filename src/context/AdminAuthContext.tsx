@@ -153,9 +153,19 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const adminLogin = useCallback(async (data: { email: string; password: string }) => {
     setIsAdminLoading(true);
     try {
+      // Clear user session to avoid mixing contexts
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      
+      localStorage.setItem(SESSION_TYPE_KEY, "admin");
       const res = await adminAuthApi.login(data);
       if (!res.success) throw new Error(res.error?.message || "Admin login failed");
       sessionStorage.setItem("adminPendingEmail", data.email);
+    } catch (err) {
+      // If login fails, we don't necessarily need to revert sessionType, 
+      // as they are still on an admin page trying to log in as admin.
+      throw err;
     } finally {
       setIsAdminLoading(false);
     }
@@ -182,6 +192,11 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       localStorage.setItem(SESSION_TYPE_KEY, "admin");
       localStorage.setItem(ADMIN_ACCESS_KEY, accessToken);
       localStorage.setItem(ADMIN_REFRESH_KEY, refreshToken);
+
+      // Clear user session to avoid mixing contexts
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
 
       setAdminAccessToken(accessToken);
       setAdminRefreshToken(refreshToken);

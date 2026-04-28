@@ -5,7 +5,8 @@ import { Header } from "../components/Header";
 import authApi from "../lib/api/auth.api";
 import type { ResetPasswordRequest } from "../modules/auth/types/type";
 import "../assets/css/AuthPage.css";
-import loginImage from "../assets/images/3d-illustration-login.png";
+import maskImage from "../assets/images/Mask group.png";
+import assetImage from "../assets/images/Asset 8@4x 1.png";
 
 interface ResetFormInputs extends ResetPasswordRequest {
   confirmPassword?: string;
@@ -71,11 +72,8 @@ const ResetPasswordPage: React.FC = () => {
       <div className="auth-page">
         <div className="auth-main">
           <div className="auth-image-section">
-            <img
-              src={loginImage}
-              alt="SABO illustration"
-              className="auth-image"
-            />
+            <img src={maskImage} alt="Background mask" className="auth-mask-bg" />
+            <img src={assetImage} alt="SABO illustration" className="auth-image" />
           </div>
 
           <div className="auth-form-section">
