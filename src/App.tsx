@@ -94,7 +94,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const AdminPublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated: isUserAuthenticated, isLoading: isUserLoading } = useAuth();
+  const {  isLoading: isUserLoading } = useAuth();
   const { isAdminAuthenticated, isAdminLoading } = useAdminAuth();
 
   if (isUserLoading || isAdminLoading) return <AppLoader />;
