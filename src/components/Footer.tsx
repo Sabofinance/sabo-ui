@@ -57,7 +57,7 @@ export const Footer = () => {
             <div className="footer-column">
               <h4 className="footer-column-title">Support</h4>
               <ul className="footer-list">
-                <li><a href="/contact">Help</a></li>
+                <li><a href="/contact">Hel</a></li>
               </ul>
             </div>
           </div>
