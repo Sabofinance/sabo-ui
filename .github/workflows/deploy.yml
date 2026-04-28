@@ -24,7 +24,11 @@ jobs:
 
       - name: Build Project
         run: npm run build
-
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_TAWK_PROPERTY_ID: ${{ secrets.VITE_TAWK_PROPERTY_ID }}
+          VITE_TAWK_WIDGET_ID: ${{ secrets.VITE_TAWK_WIDGET_ID }}
+          
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
