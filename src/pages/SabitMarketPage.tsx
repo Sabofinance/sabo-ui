@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect,  useState /*, useMemo */ } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import '../assets/css/SabitMarketPage.css';
 import { ratesApi, sabitsApi } from '../lib/api';
-import { toast } from 'react-toastify';
-import { useAuth } from '../context/AuthContext';
+// import { useAuth } from '../context/AuthContext';
 
 const HOW_IT_WORKS = [
   {
@@ -45,18 +44,17 @@ const TRUST_POINTS = [
 ];
 
 const SabitMarketPage = () => {
-  const { isAuthenticated } = useAuth();
   const [pairRates, setPairRates] = useState<Record<string, string>>({});
-  const [listings, setListings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // const [listings, setListings] = useState<any[]>([]);
+  // const [loading, setLoading] = useState(true);
 
   // Filtering states
-  const [filterType, setFilterType] = useState<'all' | 'buy' | 'sell'>('all');
-  const [filterCurrency, setFilterCurrency] = useState('all');
+  // const [filterType, setFilterType] = useState<'all' | 'buy' | 'sell'>('all');
+  // const [filterCurrency, setFilterCurrency] = useState('all');
 
   useEffect(() => {
     const load = async () => {
-      setLoading(true);
+      // setLoading(true);
       try {
         const [ratesResList, listingsRes] = await Promise.all([
           Promise.all(
@@ -77,74 +75,74 @@ const SabitMarketPage = () => {
         setPairRates(nextRates);
 
         if (listingsRes.success && Array.isArray(listingsRes.data)) {
-          setListings(listingsRes.data);
+          // setListings(listingsRes.data);
         } else if (!listingsRes.success) {
           // toast.error('Failed to load marketplace listings.');
         }
       } catch (err: any) {
         // toast.error('Failed to load marketplace data. Please try again later.');
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
     void load();
   }, []);
 
-  const formattedListings = useMemo(() => {
-    return listings
-      .map((item: Record<string, unknown>, idx: number) => {
-        const seller = (item.seller || item.user || {}) as any;
-        const id = Number(item.id || item.sabitId || idx + 1);
-        const type = String(item.type || (item.side as string) || 'sell').toLowerCase() === 'buy' ? 'buy' : 'sell';
-        const badge = type === 'sell' ? 'SELL' : 'BUY';
-        const currency = String(item.currency || 'GBP');
-        const amount = Number(item.amount || 0);
-        const rate = Number(item.rate || 0);
-        const username = String(
-          item.sellerUsername || 
-          seller?.username || 
-          item.username || 
-          item.sellerName || 
-          seller?.name || 
-          item.name || 
-          'User'
-        );
-        const avatar = String(item.sellerAvatar || seller?.avatar || seller?.profile_picture_url || item.avatar || item.profile_picture_url || '');
-        const trades = Number(item.completedTrades || item.completed || 0);
-        const rating = Number(item.rating || seller?.rating || 0);
+  // const formattedListings = useMemo(() => {
+  //   return listings
+  //     .map((item: Record<string, unknown>, idx: number) => {
+  //       const seller = (item.seller || item.user || {}) as any;
+  //       const id = Number(item.id || item.sabitId || idx + 1);
+  //       const type = String(item.type || (item.side as string) || 'sell').toLowerCase() === 'buy' ? 'buy' : 'sell';
+  //       const badge = type === 'sell' ? 'SELL' : 'BUY';
+  //       const currency = String(item.currency || 'GBP');
+  //       const amount = Number(item.amount || 0);
+  //       const rate = Number(item.rate || 0);
+  //       const username = String(
+  //         item.sellerUsername || 
+  //         seller?.username || 
+  //         item.username || 
+  //         item.sellerName || 
+  //         seller?.name || 
+  //         item.name || 
+  //         'User'
+  //       );
+  //       const avatar = String(item.sellerAvatar || seller?.avatar || seller?.profile_picture_url || item.avatar || item.profile_picture_url || '');
+  //       const trades = Number(item.completedTrades || item.completed || 0);
+  //       const rating = Number(item.rating || seller?.rating || 0);
 
-        return {
-          id,
-          type,
-          badge,
-          currency,
-          amount,
-          rate,
-          sellerName: username,
-          username,
-          avatar,
-          trades,
-          rating,
-          raw: item,
-        };
-      })
-      .filter((item) => {
-        const matchesType = filterType === 'all' || item.type === filterType;
-        const matchesCurrency = filterCurrency === 'all' || item.currency === filterCurrency;
-        return matchesType && matchesCurrency;
-      })
-      .map((item) => ({
-        id: item.id,
-        name: item.sellerName,
-        username: item.username,
-        avatar: item.avatar,
-        badge: item.badge,
-        sell: item.currency && item.amount ? `${item.currency} ${item.amount}` : '',
-        rate: item.rate && item.currency ? `₦${item.rate}/${item.currency}` : '—',
-        trades: item.trades,
-        rating: item.rating,
-      }));
-  }, [listings, filterType, filterCurrency]);
+  //       return {
+  //         id,
+  //         type,
+  //         badge,
+  //         currency,
+  //         amount,
+  //         rate,
+  //         sellerName: username,
+  //         username,
+  //         avatar,
+  //         trades,
+  //         rating,
+  //         raw: item,
+  //       };
+  //     })
+  //     .filter((item) => {
+  //       const matchesType = filterType === 'all' || item.type === filterType;
+  //       const matchesCurrency = filterCurrency === 'all' || item.currency === filterCurrency;
+  //       return matchesType && matchesCurrency;
+  //     })
+  //     .map((item) => ({
+  //       id: item.id,
+  //       name: item.sellerName,
+  //       username: item.username,
+  //       avatar: item.avatar,
+  //       badge: item.badge,
+  //       sell: item.currency && item.amount ? `${item.currency} ${item.amount}` : '',
+  //       rate: item.rate && item.currency ? `₦${item.rate}/${item.currency}` : '—',
+  //       trades: item.trades,
+  //       rating: item.rating,
+  //     }));
+  // }, [listings, filterType, filterCurrency]);
 
   return (
     <div className="smp-page">
