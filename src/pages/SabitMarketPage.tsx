@@ -79,10 +79,10 @@ const SabitMarketPage = () => {
         if (listingsRes.success && Array.isArray(listingsRes.data)) {
           setListings(listingsRes.data);
         } else if (!listingsRes.success) {
-          toast.error('Failed to load marketplace listings.');
+          // toast.error('Failed to load marketplace listings.');
         }
       } catch (err: any) {
-        toast.error('Failed to load marketplace data. Please try again later.');
+        // toast.error('Failed to load marketplace data. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -184,7 +184,7 @@ const SabitMarketPage = () => {
       </section>
 
       {/* ── MOCK LISTINGS ── */}
-      <section className="smp-listings-section">
+      {/* <section className="smp-listings-section">
         <div className="smp-container">
           <div className="smp-section-head">
             <div className="smp-section-title-group">
@@ -315,7 +315,7 @@ const SabitMarketPage = () => {
             <Link to="/signup" className="smp-btn-primary">See all listings →</Link>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ── HOW IT WORKS ── */}
       <section className="smp-how-section">

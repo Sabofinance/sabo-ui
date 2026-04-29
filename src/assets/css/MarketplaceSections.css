@@ -252,6 +252,14 @@
   box-shadow: 0 12px 20px rgba(255, 77, 0, 0.4);
 }
 
+.left {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+}
+.text {
+  width: 600px;
+}
 /* Responsive */
 @media (max-width: 1200px) {
   .everyday-title {
