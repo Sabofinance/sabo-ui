@@ -151,7 +151,7 @@ const CurrencyDropdown: React.FC<DropdownProps> = ({
 
 /* ── Main converter ── */
 const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
-  const [rawAmount, setRawAmount] = useState("30");
+  const [rawAmount, setRawAmount] = useState("0");
   const [sendCurrency, setSendCurrency] = useState<Currency>(CURRENCIES[0]); // GBP
   const [recvCurrency, setRecvCurrency] = useState<Currency>(CURRENCIES[3]); // NGN
   const [companyRates, setCompanyRates] = useState<Record<string, number>>({ NGN: 1 });
