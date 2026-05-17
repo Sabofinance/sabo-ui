@@ -129,9 +129,28 @@ const AdminCompanyRatesPage: React.FC = () => {
   const formTitle = editing ? 'Edit Company Rate' : 'Add Company Rate';
 
   return (
-    <main style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto', fontFamily: 'DM Sans, sans-serif' }}>
+    <main className="rates-main" style={{ maxWidth: '1400px', margin: '0 auto', fontFamily: 'DM Sans, sans-serif' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap');
+        .rates-main {
+          padding: 32px;
+        }
+        .rates-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 24px;
+          margin-bottom: 32px;
+        }
+        @media (min-width: 1024px) {
+          .rates-grid {
+            grid-template-columns: 1fr 420px;
+          }
+        }
+        @media (max-width: 640px) {
+          .rates-main {
+            padding: 16px;
+          }
+        }
       `}</style>
 
       <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '24px' }}>
@@ -156,7 +175,7 @@ const AdminCompanyRatesPage: React.FC = () => {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '24px', marginBottom: '32px' }}>
+      <div className="rates-grid">
         <section style={{ background: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0', padding: '28px', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '24px' }}>
             <div>
