@@ -12,7 +12,8 @@ type AdminOtpForm = {
 
 const AdminVerifyOtpPage: React.FC = () => {
   const navigate = useNavigate();
-  const { adminVerifyOtp, isAdminLoading } = useAdminAuth();
+  const { adminVerifyOtp, adminResendOtp, isAdminLoading } = useAdminAuth();
+  const [resendLoading, setResendLoading] = useState(false);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AdminOtpForm>();
   const [generalError, setGeneralError] = useState("");
@@ -41,6 +42,17 @@ const AdminVerifyOtpPage: React.FC = () => {
   const goBack = () => {
     sessionStorage.removeItem("adminPendingEmail");
     navigate("/admin/login");
+  };
+
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    try {
+      await adminResendOtp({ email });
+    } catch (e) {
+      // Error is handled in context
+    } finally {
+      setResendLoading(false);
+    }
   };
 
   return (
@@ -129,9 +141,16 @@ const AdminVerifyOtpPage: React.FC = () => {
                 </button>
               </form>
 
-              <p className="auth-switch" style={{ marginTop: 14 }}>
-                <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={goBack}>Back to admin login</span>
-              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: 14 }}>
+                <p className="auth-switch">
+                  <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={handleResendOtp} disabled={resendLoading || isAdminLoading}>
+                    {resendLoading ? "Resending..." : "Resend OTP"}
+                  </span>
+                </p>
+                <p className="auth-switch">
+                  <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={goBack}>Back to admin login</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>

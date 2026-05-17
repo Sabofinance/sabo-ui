@@ -64,7 +64,8 @@ const VerifyOtpPage: React.FC = () => {
     setGeneralError("");
     setResending(true);
     try {
-      navigate("/login");
+      await resendOtp({ email });
+      setSecondsLeft(60); // Reset the timer after successful resend
     } catch (err: any) {
       setGeneralError(err?.message || "Failed to resend OTP.");
     } finally {

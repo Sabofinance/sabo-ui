@@ -27,6 +27,7 @@ interface AdminAuthContextValue {
   isAdminLoading: boolean;
   adminLogin: (data: { email: string; password: string }) => Promise<void>;
   adminVerifyOtp: (data: { email: string; otp: string }) => Promise<void>;
+  adminResendOtp: (data: { email: string }) => Promise<void>;
   adminLogout: () => Promise<void>;
   refreshAdmin: () => Promise<void>;
 }
@@ -227,6 +228,20 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     await clearAdminSession();
   }, [clearAdminSession]);
 
+  const adminResendOtp = useCallback(async (data: { email: string }) => {
+    setIsAdminLoading(true);
+    try {
+      const res = await adminAuthApi.resendOtp(data);
+      if (!res.success) throw new Error(res.error?.message || "Failed to resend OTP");
+      toast.success("OTP resent successfully!");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to resend OTP");
+      throw e;
+    } finally {
+      setIsAdminLoading(false);
+    }
+  }, [toast]);
+
   const value = useMemo<AdminAuthContextValue>(
     () => ({
       adminUser,
@@ -236,10 +251,11 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       isAdminLoading,
       adminLogin,
       adminVerifyOtp,
+      adminResendOtp,
       adminLogout,
       refreshAdmin: fetchCurrentAdmin,
     }),
-    [adminUser, adminAccessToken, adminRefreshToken, isAdminAuthenticated, isAdminLoading, adminLogin, adminVerifyOtp, adminLogout, fetchCurrentAdmin]
+    [adminUser, adminAccessToken, adminRefreshToken, isAdminAuthenticated, isAdminLoading, adminLogin, adminVerifyOtp, adminResendOtp, adminLogout, fetchCurrentAdmin]
   );
 
   return <AdminAuthContext.Provider value={value}>{children}</AdminAuthContext.Provider>;
