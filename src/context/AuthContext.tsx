@@ -163,15 +163,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const resendOtp = async (data: { email: string }) => {
+    console.log("AuthContext resendOtp called with data:", data);
     setIsLoading(true);
     setError(null);
     try {
       const response = await authApi.resendOtp(data);
+      console.log("authApi.resendOtp response:", response);
       if (!response.success) {
         throw new Error(response.error?.message || "Failed to resend OTP");
       }
       toast.success("OTP resent. Please check your email.");
     } catch (err: any) {
+      console.error("AuthContext resendOtp error:", err);
       const msg = err?.message || "Failed to resend OTP.";
       setError(msg);
       throw new Error(msg);

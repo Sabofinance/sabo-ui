@@ -26,7 +26,9 @@ const VerifyOtpPage: React.FC = () => {
 
   useEffect(() => {
     const pendingEmail = sessionStorage.getItem("pendingEmail");
+    console.log("VerifyOtpPage useEffect - pendingEmail:", pendingEmail);
     if (!pendingEmail) {
+      console.log("No pendingEmail found, navigating to /login");
       navigate("/login");
     } else {
       setEmail(pendingEmail);
@@ -60,13 +62,19 @@ const VerifyOtpPage: React.FC = () => {
   };
 
   const handleResend = async () => {
+    console.log("handleResend called");
+    console.log("email:", email);
+    console.log("resending:", resending);
     if (!email || resending) return;
     setGeneralError("");
     setResending(true);
     try {
+      console.log("Calling resendOtp...");
       await resendOtp({ email });
+      console.log("resendOtp successful!");
       setSecondsLeft(60); // Reset the timer after successful resend
     } catch (err: any) {
+      console.error("resendOtp error:", err);
       setGeneralError(err?.message || "Failed to resend OTP.");
     } finally {
       setResending(false);

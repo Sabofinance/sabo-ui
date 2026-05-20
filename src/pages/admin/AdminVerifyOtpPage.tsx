@@ -158,19 +158,24 @@ const AdminVerifyOtpPage: React.FC = () => {
                     You can request a new OTP in {secondsLeft}s
                   </p>
                 ) : (
-                  <p className="auth-switch">
-                    <span 
-                      style={{ 
-                        color: "#10B981", 
-                        cursor: "pointer", 
-                        fontWeight: "600"
-                      }} 
-                      onClick={handleResendOtp}
-                      disabled={resendLoading || isAdminLoading}
-                    >
-                      {resendLoading ? "Resending..." : "Resend OTP"}
-                    </span>
-                  </p>
+                  <div>
+                    <p style={{ color: "#64748B", fontSize: "13px", marginBottom: "8px" }}>
+                      Didn’t get a code?
+                    </p>
+                    <p className="auth-switch">
+                      <span 
+                        style={{ 
+                          color: "#10B981", 
+                          cursor: "pointer", 
+                          fontWeight: "600"
+                        }} 
+                        onClick={handleResendOtp}
+                        disabled={resendLoading || isAdminLoading}
+                      >
+                        {resendLoading ? "Resending..." : "Resend OTP"}
+                      </span>
+                    </p>
+                  </div>
                 )}
                 <p className="auth-switch">
                   <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={goBack}>Back to admin login</span>
