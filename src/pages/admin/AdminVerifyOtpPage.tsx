@@ -14,6 +14,7 @@ const AdminVerifyOtpPage: React.FC = () => {
   const navigate = useNavigate();
   const { adminVerifyOtp, adminResendOtp, isAdminLoading } = useAdminAuth();
   const [resendLoading, setResendLoading] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(60);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AdminOtpForm>();
   const [generalError, setGeneralError] = useState("");
@@ -27,6 +28,14 @@ const AdminVerifyOtpPage: React.FC = () => {
       setEmail(pendingEmail);
     }
   }, [navigate]);
+
+  useEffect(() => {
+    setSecondsLeft(60);
+    const id = window.setInterval(() => {
+      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, []);
 
   const onSubmit = async (data: AdminOtpForm) => {
     setGeneralError("");
@@ -45,9 +54,11 @@ const AdminVerifyOtpPage: React.FC = () => {
   };
 
   const handleResendOtp = async () => {
+    if (!email || resendLoading || secondsLeft > 0) return;
     setResendLoading(true);
     try {
       await adminResendOtp({ email });
+      setSecondsLeft(60); // Reset timer after successful resend
     } catch (e) {
       // Error is handled in context
     } finally {
@@ -141,12 +152,26 @@ const AdminVerifyOtpPage: React.FC = () => {
                 </button>
               </form>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: 14 }}>
-                <p className="auth-switch">
-                  <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={handleResendOtp} disabled={resendLoading || isAdminLoading}>
-                    {resendLoading ? "Resending..." : "Resend OTP"}
-                  </span>
-                </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: 14, textAlign: "center" }}>
+                {secondsLeft > 0 ? (
+                  <p style={{ color: "#64748B", fontSize: "13px" }}>
+                    You can request a new OTP in {secondsLeft}s
+                  </p>
+                ) : (
+                  <p className="auth-switch">
+                    <span 
+                      style={{ 
+                        color: "#10B981", 
+                        cursor: "pointer", 
+                        fontWeight: "600"
+                      }} 
+                      onClick={handleResendOtp}
+                      disabled={resendLoading || isAdminLoading}
+                    >
+                      {resendLoading ? "Resending..." : "Resend OTP"}
+                    </span>
+                  </p>
+                )}
                 <p className="auth-switch">
                   <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={goBack}>Back to admin login</span>
                 </p>

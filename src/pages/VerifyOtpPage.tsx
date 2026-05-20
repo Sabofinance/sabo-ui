@@ -184,22 +184,22 @@ const VerifyOtpPage: React.FC = () => {
                       <>You can request a new OTP in {secondsLeft}s</>
                     ) : (
                       <div>
-                        <button
-                          type="button"
-                          className="auth-btn"
-                          style={{
-                            width: "auto",
-                            padding: "8px 16px",
-                            marginTop: 8,
-                          }}
-                          onClick={handleResend}
-                          disabled={resending}
-                        >
-                          {resending ? "Resending..." : "Resend OTP"}
-                        </button>
-                        <div style={{ marginTop: 6 }}>
-                          Didn’t get a code? Resend OTP to {email}.
+                        <div style={{ marginTop: 6, marginBottom: "8px", color: "#64748B", fontSize: "13px" }}>
+                          Didn’t get a code?
                         </div>
+                        <p className="auth-switch">
+                          <span 
+                            style={{ 
+                              color: "#10B981", 
+                              cursor: "pointer", 
+                              fontWeight: "600"
+                            }} 
+                            onClick={handleResend}
+                            disabled={resending}
+                          >
+                            {resending ? "Resending..." : "Resend OTP"}
+                          </span>
+                        </p>
                       </div>
                     )}
                   </div>
