@@ -165,12 +165,11 @@ const AdminVerifyOtpPage: React.FC = () => {
                     <p className="auth-switch">
                       <span 
                         style={{ 
-                          color: "#10B981", 
-                          cursor: "pointer", 
+                          color: resendLoading || isAdminLoading ? "#94A3B8" : "#10B981", 
+                          cursor: resendLoading || isAdminLoading ? "not-allowed" : "pointer", 
                           fontWeight: "600"
                         }} 
-                        onClick={handleResendOtp}
-                        disabled={resendLoading || isAdminLoading}
+                        onClick={() => !resendLoading && !isAdminLoading && handleResendOtp()}
                       >
                         {resendLoading ? "Resending..." : "Resend OTP"}
                       </span>

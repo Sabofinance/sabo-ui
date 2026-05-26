@@ -198,12 +198,11 @@ const VerifyOtpPage: React.FC = () => {
                         <p className="auth-switch">
                           <span 
                             style={{ 
-                              color: "#10B981", 
-                              cursor: "pointer", 
+                              color: resending ? "#94A3B8" : "#10B981", 
+                              cursor: resending ? "not-allowed" : "pointer", 
                               fontWeight: "600"
                             }} 
-                            onClick={handleResend}
-                            disabled={resending}
+                            onClick={() => !resending && handleResend()}
                           >
                             {resending ? "Resending..." : "Resend OTP"}
                           </span>
