@@ -150,6 +150,18 @@ const AdminCompanyRatesPage: React.FC = () => {
           .rates-main {
             padding: 16px;
           }
+          .rates-table {
+            min-width: 100% !important;
+          }
+          .responsive-cell {
+            padding: 12px 8px !important;
+          }
+          .action-btn span {
+            display: none;
+          }
+          .action-btn {
+            padding: 8px !important;
+          }
         }
       `}</style>
 
@@ -186,37 +198,38 @@ const AdminCompanyRatesPage: React.FC = () => {
           </div>
 
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '560px' }}>
+            <table className="rates-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '560px' }}>
               <thead>
                 <tr style={{ textAlign: 'left', background: '#f8fafc', borderBottom: '2px solid #f1f5f9' }}>
-                  <th style={{ padding: '18px 20px', fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.05em' }}>Currency</th>
-                  <th style={{ padding: '18px 20px', fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.05em' }}>Rate (NGN)</th>
-                  <th style={{ padding: '18px 20px', fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
+                  <th className="responsive-cell" style={{ padding: '18px 20px', fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.05em' }}>Currency</th>
+                  <th className="responsive-cell" style={{ padding: '18px 20px', fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.05em' }}>Rate (NGN)</th>
+                  <th className="responsive-cell" style={{ padding: '18px 20px', fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={3} style={{ padding: '44px', textAlign: 'center', color: '#64748b' }}>Loading company rates...</td>
+                    <td colSpan={3} className="responsive-cell" style={{ padding: '44px', textAlign: 'center', color: '#64748b' }}>Loading company rates...</td>
                   </tr>
                 ) : rates.length === 0 ? (
                   <tr>
-                    <td colSpan={3} style={{ padding: '44px', textAlign: 'center', color: '#64748b' }}>No company rates configured yet.</td>
+                    <td colSpan={3} className="responsive-cell" style={{ padding: '44px', textAlign: 'center', color: '#64748b' }}>No company rates configured yet.</td>
                   </tr>
                 ) : (
                   rates.map((item) => (
                     <tr key={item.currency} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '18px 20px', fontWeight: '700', color: '#0A1E28' }}>{item.currency}</td>
-                      <td style={{ padding: '18px 20px', color: '#0A1E28' }}>₦{item.rate_ngn.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td style={{ padding: '18px 20px', textAlign: 'right' }}>
+                      <td className="responsive-cell" style={{ padding: '18px 20px', fontWeight: '700', color: '#0A1E28' }}>{item.currency}</td>
+                      <td className="responsive-cell" style={{ padding: '18px 20px', color: '#0A1E28' }}>₦{item.rate_ngn.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="responsive-cell" style={{ padding: '18px 20px', textAlign: 'right' }}>
                         <button
                           type="button"
+                          className="action-btn"
                           onClick={() => void handleEdit(item.currency)}
                           disabled={formLoading}
                           style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', color: '#0A1E28', fontWeight: '700', cursor: 'pointer' }}
                         >
                           <Edit3 size={16} />
-                          Edit
+                          <span>Edit</span>
                         </button>
                       </td>
                     </tr>
