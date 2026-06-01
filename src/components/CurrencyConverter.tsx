@@ -48,13 +48,6 @@ interface CurrencyConverterProps {
   onSuccess?: () => void;
 }
 
-const FLAT_FEES: Record<string, number> = {
-  GBP: 1,
-  USD: 1.5,
-  CAD: 2,
-  NGN: 1500,
-};
-
 const convertAmount = (
   amount: number,
   from: string,
@@ -192,9 +185,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
   }, []);
 
   const amount = Math.max(0, parseFloat(rawAmount) || 0);
-  const fee = FLAT_FEES[sendCurrency.code] ?? 1;
   const received = convertAmount(amount, sendCurrency.code, recvCurrency.code, companyRates);
-  const total = amount + fee;
   const rate = convertAmount(1, sendCurrency.code, recvCurrency.code, companyRates);
 
   const handleSwap = () => {
@@ -219,9 +210,9 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
         <span className="cc-panel-label">You're sending</span>
         <div className="cc-panel-body">
           <div className="cc-amount-group">
-            <span className="cc-symbol">{sendCurrency.symbol}</span>
+            <span className={`cc-symbol ${amount === 0 ? "cc-symbol--grey" : ""}`}>{sendCurrency.symbol}</span>
             <input
-              className="cc-input"
+              className={`cc-input ${amount === 0 ? "cc-input--grey" : ""}`}
               type="number"
               min="0"
               step="any"
@@ -271,8 +262,8 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
         <span className="cc-panel-label">Recipient gets</span>
         <div className="cc-panel-body">
           <div className="cc-amount-group">
-            <span className="cc-symbol">{recvCurrency.symbol}</span>
-            <span className="cc-output">{fmt(received)}</span>
+            <span className={`cc-symbol ${amount === 0 ? "cc-symbol--grey" : ""}`}>{recvCurrency.symbol}</span>
+            <span className={`cc-output ${amount === 0 ? "cc-output--grey" : ""}`}>{fmt(received)}</span>
           </div>
           <CurrencyDropdown
             selected={recvCurrency}
@@ -282,15 +273,11 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
         </div>
       </div>
 
-      {/* RATE + FEE BADGES */}
+      {/* RATE BADGE ONLY */}
       <div className="cc-badges-row">
         <span className="cc-badge cc-badge--rate">
           {sendCurrency.symbol}1 = {recvCurrency.symbol}
           {fmt(rate)}
-        </span>
-        <span className="cc-badge cc-badge--fee">
-          Fee = {sendCurrency.symbol}
-          {fmt(fee)}
         </span>
       </div>
 
@@ -303,8 +290,8 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
       {/* TOTAL */}
       <div className="cc-total-row">
         <span className="cc-total-label">Total amount to be sent</span>
-        <span className="cc-total-value">
-          {sendCurrency.symbol} {fmt(total)}
+        <span className={`cc-total-value ${amount === 0 ? "cc-total-value--grey" : ""}`}>
+          {sendCurrency.symbol} {fmt(amount)}
         </span>
       </div>
     </div>
