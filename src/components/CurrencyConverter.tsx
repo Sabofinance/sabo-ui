@@ -210,7 +210,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
         <span className="cc-panel-label">You're sending</span>
         <div className="cc-panel-body">
           <div className="cc-amount-group">
-            <span className={`cc-symbol ${amount === 0 ? "cc-symbol--grey" : ""}`}>{sendCurrency.symbol}</span>
+            <span className="cc-symbol">{sendCurrency.symbol}</span>
             <input
               className={`cc-input ${amount === 0 ? "cc-input--grey" : ""}`}
               type="number"
@@ -262,7 +262,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
         <span className="cc-panel-label">Recipient gets</span>
         <div className="cc-panel-body">
           <div className="cc-amount-group">
-            <span className={`cc-symbol ${amount === 0 ? "cc-symbol--grey" : ""}`}>{recvCurrency.symbol}</span>
+            <span className="cc-symbol">{recvCurrency.symbol}</span>
             <span className={`cc-output ${amount === 0 ? "cc-output--grey" : ""}`}>{fmt(received)}</span>
           </div>
           <CurrencyDropdown
@@ -290,8 +290,9 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
       {/* TOTAL */}
       <div className="cc-total-row">
         <span className="cc-total-label">Total amount to be sent</span>
-        <span className={`cc-total-value ${amount === 0 ? "cc-total-value--grey" : ""}`}>
-          {sendCurrency.symbol} {fmt(amount)}
+        <span>
+          <span className="cc-total-symbol">{sendCurrency.symbol}</span>
+          <span className={`cc-total-value ${amount === 0 ? "cc-total-value--grey" : ""}`}>{fmt(amount)}</span>
         </span>
       </div>
     </div>
