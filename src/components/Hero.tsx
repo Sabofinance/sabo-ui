@@ -19,7 +19,7 @@ export const Hero = () => {
 
         <div className="hero-cta-wrapper">
           <button className="btn-get-started btn-3d">
-            Launch Your Wallet
+            Get Started
           </button>
         </div>
       </div>

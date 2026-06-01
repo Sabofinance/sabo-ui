@@ -10,10 +10,10 @@ export const FXStruggleSection = () => {
     {
       id: "fees",
       image: feeIcon,
-      title: "High fees",
+      title: "No conversion fees",
       description: (
         <>
-          Banks and remittance apps take a large cut. <strong>SABO keeps costs low and clear.</strong>
+          Banks and remittance apps take a large cut. <strong>SABO has no conversion fees at all.</strong>
         </>
       )
     },

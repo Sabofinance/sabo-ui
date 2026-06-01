@@ -8,7 +8,7 @@ export const ContactPage = () => {
     <div className="contact-page-container">
       <Header />
 
-      {/* HERO – white & lime, with subtle 3D depth */}
+      {/* HERO: white & lime, with subtle 3D depth */}
       <section className="contact-hero">
         <img src={contactHeroImg} alt="Contact Sabo" className="contact-hero-image" />
         <div className="contact-hero-overlay"></div>
@@ -115,7 +115,7 @@ export const ContactPage = () => {
         </div>
       </section>
 
-      {/* GOOGLE MAP – with subtle 3D tilt */}
+      {/* GOOGLE MAP: with subtle 3D tilt */}
       {/* <section className="contact-map-section">
         <div className="map-container">
           <iframe

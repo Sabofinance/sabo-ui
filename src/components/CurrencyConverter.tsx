@@ -230,7 +230,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
         </div>
       </div>
 
-      {/* SWAP BUTTON — large visible arrow circle like Figma */}
+      {/* SWAP BUTTON: large visible arrow circle like Figma */}
       <div className="cc-swap-row">
         <div className="cc-divider-line" />
         <button
@@ -239,7 +239,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
           aria-label="Swap currencies"
           type="button"
         >
-          {/* Down arrow — clearly visible, matches Figma */}
+          {/* Down arrow: clearly visible, matches Figma */}
           <svg
             width="18"
             height="18"

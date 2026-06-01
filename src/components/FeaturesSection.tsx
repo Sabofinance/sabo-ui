@@ -48,8 +48,8 @@ export const FeaturesSection = () => {
               The Easiest Way for Africans in the Diaspora to Send Money Back Home
             </h2>
             <p className="features-desc-main">
-              A payment platform built by Africans for Africans in the diaspora facing the challenges 
-              of sending money to their loved ones or paying bills back at home.
+              A payment platform built by Africans for Africans in the diaspora facing the challenges
+              of sending money to their loved ones back at home.
             </p>
           </div>
           

@@ -86,8 +86,7 @@ export const MarketplaceSections = () => {
           <h2 className="marketlist-title">Join our Marketlist</h2>
           <p className="marketlist-subtitle">
             A payment platform built by Africans for Africans in the diaspora
-            facing the challenges of sending money to their loved ones or paying
-            bills back at home.
+            facing the challenges of sending money to their loved ones back at home.
           </p>
 
           {/* ✅ Now correctly inside marketlist-container */}

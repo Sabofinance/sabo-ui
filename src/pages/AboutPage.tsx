@@ -83,7 +83,7 @@ export const AboutPage = () => {
         <div className="origin-text-content">
           <h2 className="origin-heading">Inspired by the Aboki Culture. <br /> Rebuilt for the Digital Age.</h2>
           <p>
-            For decades, Nigerians relied on <strong>"Abokis"</strong> — trusted currency exchangers found in 
+            For decades, Nigerians relied on <strong>"Abokis"</strong>. Trusted currency exchangers found in 
             places like Sabo, airports, and community centers.
           </p>
           
@@ -107,12 +107,12 @@ export const AboutPage = () => {
           </div>
 
           <div className="origin-conclusion">
-            <p>But with digital came a new problem — <strong>Risk.</strong></p>
+            <p>But with digital came a new problem: <strong>Risk.</strong></p>
             <p>People began sending money to strangers, hoping they would keep their word.</p>
             <p>SABO was created to protect this community spirit while removing the danger.</p>
             <p>
-              We digitized the original "Aboki" experience — keeping the trust, the fairness, the 
-              flexibility — but adding structure, security, and instant settlement through wallets.
+              We digitized the original "Aboki" experience. Keeping the trust, the fairness, the
+              flexibility, but adding structure, security, and instant settlement through wallets.
             </p>
             <p className="final-quote">SABO is not just an App.<br />It’s the evolution of a culture Nigerians already trust.</p>
           </div>
@@ -133,7 +133,7 @@ export const AboutPage = () => {
           </div>
           <div className="principle-item">
             <span className="p-num">2. Built for Nigerians, not Imported</span>
-            <p>SABO is tailor-made for Nigerian realities — both at home and abroad.</p>
+            <p>SABO is tailor-made for Nigerian realities, both at home and abroad.</p>
           </div>
           <div className="principle-item">
             <span className="p-num">3. Wallet-Centric Architecture</span>
@@ -160,7 +160,6 @@ export const AboutPage = () => {
             </div>
           ))}
         </div>
-        <button className="join-us-btn">Join Us</button>
       </section>
 
       <Footer />

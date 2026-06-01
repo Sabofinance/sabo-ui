@@ -83,7 +83,7 @@ const featureGrid = [
       </svg>
     ),
     title: "Transparent Fees",
-    desc: "No hidden charges. See exactly what you pay every time."
+    desc: "No conversion fees. Get the best rates without hidden charges."
   },
   {
     icon: (

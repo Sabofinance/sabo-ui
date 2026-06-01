@@ -8,7 +8,7 @@ import faqHeroImg from '../assets/images/faq-hero.png'; // your image
 const faqData = [
   {
     question: "How does Sabo work?",
-    answer: "Sabo is a payment platform built by Africans for Africans in the diaspora. We simplify sending money to loved ones and paying bills back home with instant, secure wallet-to-wallet transfers."
+    answer: "Sabo is a currency exchange platform built by Africans for Africans in the diaspora. We simplify exchanging currencies and managing funds with secure, instant wallet transfers and P2P trading."
   },
   {
     question: "Is my money safe?",
@@ -16,19 +16,19 @@ const faqData = [
   },
   {
     question: "What currencies can I exchange?",
-    answer: "You can exchange NGN, USD, GBP, and CAD with transparent rates and low fees."
+    answer: "You can exchange NGN, USD, GBP, and CAD with transparent rates and no fees."
   },
   {
     question: "What are the fees?",
-    answer: "Sabo keeps costs low with transparent fees. Conversion fees are clearly shown before you confirm, and there are no hidden spreads."
+    answer: "Sabo keeps costs simple and transparent. No conversion fees! Get the best rates without hidden charges."
   },
   {
     question: "How long do withdrawals take?",
-    answer: "Withdrawals to Nigerian banks are typically processed within minutes. International withdrawals may take 1-2 business days depending on your bank."
+    answer: "Withdrawals are processed quickly. Nigerian bank withdrawals are typically processed within minutes, and international withdrawals are completed within 1-2 business days depending on your bank."
   },
   {
     question: "How do I secure my account?",
-    answer: "We recommend enabling 2FA, using our built-in biometric security features, and never sharing your login credentials with anyone."
+    answer: "We recommend using a strong password, enabling email verification, and never sharing your login credentials with anyone."
   }
 ];
 
