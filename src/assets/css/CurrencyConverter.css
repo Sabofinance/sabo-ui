@@ -401,6 +401,19 @@
     }
 }
 
+.cc-total-label-fee{
+    font-size: 12px;
+    color: rgb(141, 8, 8);
+    font-weight: 500;
+    font-style: italic;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
 
 /* Touch tap highlight */
 

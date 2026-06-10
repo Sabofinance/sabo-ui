@@ -144,7 +144,7 @@ const CurrencyDropdown: React.FC<DropdownProps> = ({
 
 /* ── Main converter ── */
 const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
-  const [rawAmount, setRawAmount] = useState("0");
+  const [rawAmount, setRawAmount] = useState("");
   const [sendCurrency, setSendCurrency] = useState<Currency>(CURRENCIES[0]); // GBP
   const [recvCurrency, setRecvCurrency] = useState<Currency>(CURRENCIES[3]); // NGN
   const [companyRates, setCompanyRates] = useState<Record<string, number>>({ NGN: 1 });
@@ -295,6 +295,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onSuccess }) => {
           <span className={`cc-total-value ${amount === 0 ? "cc-total-value--grey" : ""}`}>{fmt(amount)}</span>
         </span>
       </div>
+      <span className="cc-total-label-fee"> No platform fees charged</span>
     </div>
   );
 };
